@@ -1,6 +1,8 @@
 # 2DTacticalRPG
 
 Compiled with OpenJDK 13 and OpenJFX 13.
+I use OpenJDK from https://adoptopenjdk.net/ 13 but 14 should compile fine as far as I'm aware.
+I use OpenJFX from https://openjfx.io/ same applies as above.
 
 To test go to the latest release and download the TacticalRPG.zip, extract where you wish, go into the folder and into /bin and run App.bat
 
