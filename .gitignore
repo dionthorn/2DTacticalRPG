@@ -1,4 +1,1 @@
-DEV_SOURCE/.idea/workspace.xml
-DEV_SOURCE/.idea/vcs.xml
-DEV_SOURCE/.idea/modules.xml
-DEV_SOURCE/.idea/DEV_SOURCE.iml
+.idea/*.xml
