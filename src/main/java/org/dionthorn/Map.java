@@ -22,6 +22,7 @@ public class Map {
     private String metaPATH;
     private String metaEnemies;
     private String metaAllies;
+    private String metaStartLoc;
     private int TILE_SIZE = 32; // Tile size in pixels could be per map basis though
     private MapTile[][] mapTiles;
     private int mapWidth; // Unit: Tiles
@@ -62,6 +63,8 @@ public class Map {
                 metaEnemies = line;
             } else if(line.contains("ALLIES")) {
                 metaAllies = line;
+            } else if(line.contains("STARTLOC")) {
+                metaStartLoc = line;
             }
         }
         // process tile data
@@ -208,11 +211,22 @@ public class Map {
     public void setMapImpassableTileIDs(int tileID, boolean remove) {
         if(remove) {
             int index = mapDataTileMetaIDs.get(MapTile.TileType.IMPASSABLE.ordinal()).indexOf(tileID);
-            System.out.println(index);
             mapDataTileMetaIDs.get(MapTile.TileType.IMPASSABLE.ordinal()).remove(index);
         } else {
             mapDataTileMetaIDs.get(MapTile.TileType.IMPASSABLE.ordinal()).add(tileID);
         }
+    }
+
+    public String getMetaEnemies() {
+        return metaEnemies;
+    }
+
+    public String getMetaAllies() {
+        return metaAllies;
+    }
+
+    public String getMetaStartLoc() {
+        return metaStartLoc;
     }
 
     // File Operation Static methods
@@ -316,7 +330,7 @@ public class Map {
         writeFileLines(PATH, dataAsString);
 
         // Next make the .meta file
-        dataAsString = new String[4];
+        dataAsString = new String[5];
         dataAsString[0] = "";
         for(int i=0; i<mapDataTileMetaIDs.get(MapTile.TileType.FIRE.ordinal()).size(); i++) {
             dataAsString[0] += mapDataTileMetaIDs.get(MapTile.TileType.FIRE.ordinal()).get(i) + ",";
@@ -330,6 +344,8 @@ public class Map {
         // make sure to write the allies/enemies too
         dataAsString[2] = metaEnemies;
         dataAsString[3] = metaAllies;
+        // Need to add STARTLOC meta data
+        dataAsString[4] += metaStartLoc;
         // Save map .meta
         writeFileLines(metaPATH, dataAsString);
     }

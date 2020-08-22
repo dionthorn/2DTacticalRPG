@@ -98,6 +98,12 @@ public class GameState {
                 allies = line.split(":")[0].split("/");
             }
         }
+        String[] loc = new String[2];
+        for(String line: data) {
+            if(line.contains("STARTLOC")) {
+                loc = line.split(":")[0].split(",");
+            }
+        }
         // clear stuff
         playerTeam.clear();
         enemyTeam.clear();
@@ -141,6 +147,7 @@ public class GameState {
                 enemyTeam.add(tempChar);
             }
         }
+        getPlayerEntity().setCurrentMap(currentMap, Integer.parseInt(loc[0]), Integer.parseInt(loc[1]));
         playerTeam.trimToSize();
         enemyTeam.trimToSize();
         entities.trimToSize();

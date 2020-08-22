@@ -29,7 +29,7 @@ public class Run extends Application {
     public static boolean DEBUG_OUTPUT = false; // If true will allow debug information to be printed to console
     // Wrap System.out.println call with if(DEBUG_OUTPUT) {} to allow it to work or in other classes Run.DEBUG_OUTPUT
     private static final int SCREEN_WIDTH = 1024; // Constant of screen width in pixels
-    private final int SCREEN_HEIGHT = 1024; // Constant of screen height in pixels
+    private static final int SCREEN_HEIGHT = 1024; // Constant of screen height in pixels
     private static final int SCREEN_MAP_HEIGHT = 768; // to show end of map drawing area
     private static final int TILE_SIZE = 32; // Hardcoded 32*32 pixels8
     private int[] DRAG_LOC = {-1, -1}; // This is a sentinel value that when -1 means there is no mouse drag to process
@@ -413,16 +413,26 @@ public class Run extends Application {
             gc.setFill(Color.BLACK);
             gc.setFont(new Font(12));
             for(Map m: gameState.getMaps()) {
-                gc.fillText(m.getPATH(), squareXY[count][0]+10, squareXY[count][1]+10);
+                String[] path = m.getPATH().split("/");
+                int index = 0;
+                if((path.length - 1) < 0) {
+                    index = 0;
+                } else {
+                    index = path.length - 1;
+                }
+                gc.fillText(path[index], squareXY[count][0]+10, squareXY[count][1]+10);
                 count++;
             }
 
             // draw lower paper 'console' area
             gc.drawImage(paperBg, 0, SCREEN_MAP_HEIGHT);
             gc.setFont(new Font("Arial", 32));
-            gc.fillText(gameState.getCurrentMap().getPATH(), SCREEN_WIDTH>>4, SCREEN_MAP_HEIGHT + (SCREEN_MAP_HEIGHT>>4));
+            String[] path = gameState.getCurrentMap().getPATH().split("/");
+            gc.fillText(path[path.length - 1], SCREEN_WIDTH>>4, SCREEN_MAP_HEIGHT + (SCREEN_MAP_HEIGHT>>4));
 
-        } else if(gameState.getCurrentState() == GameState.STATE.GAME_OVER) {
+            gc.fillText("Press Enter to Load The Selected Map", SCREEN_WIDTH>>4, SCREEN_MAP_HEIGHT + (SCREEN_MAP_HEIGHT>>2));
+
+        } else if(gameState != null && gameState.getCurrentState() == GameState.STATE.GAME_OVER) {
             gc.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
             gc.drawImage(mainMenuBg, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
             gc.setFill(Color.WHITE);
@@ -449,8 +459,6 @@ public class Run extends Application {
     private void newGame() {
         // When they click Play on the Main Menu this starts the initialization of a new game
         // First we will load the first map in the GameData directory
-        // Name first map something that will always be first like: 0_map.dat or
-        // For alpha we should only have 1 map anyway
         for(String path: getFileNamesFromDirectory(GAME_DATA_PATH + "/Maps/")) {
             // Be sure to ignore any non map files
             if(!path.equals("config.dat") && !path.equals(".gitattributes") && !path.contains("meta")) {
@@ -462,57 +470,58 @@ public class Run extends Application {
                 }
             }
         }
-        // TESTING: Add a new Player
+        String[] startLoc = gameState.getCurrentMap().getMetaStartLoc().split(":")[0].split(",");
+        String[] allies = gameState.getCurrentMap().getMetaAllies().split(":")[0].split("/");
+        String[] enemies = gameState.getCurrentMap().getMetaEnemies().split(":")[0].split("/");
+        // Create the new Player. In the future the CHARACTER_CREATION gameState
+        // will be the first to load and this will all edited there for now just generate a default Player UID=0.
         gameState.getEntities().add(
                 new Player(
                         gameState.getCurrentMap(),
                         "MartialClassPlayer.png", "Player",
-                        11, 17, // x, y
+                        Integer.parseInt(startLoc[0]), Integer.parseInt(startLoc[1]), // x, y pull from meta.
                         new MartialClass()
                 )
         );
-        // TESTING: Add 4 NPCs to player team
-        int startX = 11;
-        int startY = 18;
-        for(int i=0; i<4; i++) {
-            gameState.getEntities().add(
-                    new NonPlayerCharacter(
-                            gameState.getCurrentMap(), "MartialClassComputerAlly.png",
-                            String.format("NPC%d", i),
-                            startX, startY, // x, y
-                            new MartialClass()
-                    )
-            );
-            startY++;
+        gameState.getPlayerTeam().add(gameState.getPlayerEntity());
+        // Generate default maps allies/enemies
+        CharacterClass tempClass = null;
+        for(String ally: allies) {
+            if(!ally.equals("")) {
+                String[] temp = ally.split(",");
+                String name = temp[0];
+                int x = Integer.parseInt(temp[1]);
+                int y = Integer.parseInt(temp[2]);
+                if(temp[3].equals("magic")) {
+                    tempClass = new MagicClass();
+                } else if(temp[3].equals("martial")) {
+                    tempClass = new MartialClass();
+                }
+                assert tempClass != null;
+                NonPlayerCharacter tempChar = new NonPlayerCharacter(gameState.getCurrentMap(), tempClass.getDefaultSpriteAlly(), name, x, y, tempClass);
+                gameState.getEntities().add(tempChar);
+                gameState.getPlayerTeam().add(tempChar);
+            }
         }
-        // TESTING: Add 5 NPCs
-        startX = 20;
-        startY = 17;
-        for(int i=0; i<5; i++) {
-            gameState.getEntities().add(
-                    new NonPlayerCharacter(
-                            gameState.getCurrentMap(), "MagicClassComputer.png",
-                            String.format("NPC%d", i + 4),
-                            startX, startY, // x, y
-                            new MagicClass()
-                    )
-            );
-            startY++;
+        for(String enemy: enemies) {
+            if(!enemy.equals("")) {
+                String[] temp = enemy.split(",");
+                String name = temp[0];
+                int x = Integer.parseInt(temp[1]);
+                int y = Integer.parseInt(temp[2]);
+                if(temp[3].equals("magic")) {
+                    tempClass = new MagicClass();
+                } else if(temp[3].equals("martial")) {
+                    tempClass = new MartialClass();
+                }
+                assert tempClass != null;
+                NonPlayerCharacter tempChar = new NonPlayerCharacter(gameState.getCurrentMap(), tempClass.getDefaultSpriteEnemy(), name, x, y, tempClass);
+                gameState.getEntities().add(tempChar);
+                gameState.getEnemyTeam().add(tempChar);
+            }
         }
-        // TESTING: Creating teams and then enabling turns to take place starting with player
-        gameState.createPlayerTeam(gameState.getPlayerEntity(),
-                gameState.getEntities().get(1),
-                gameState.getEntities().get(2),
-                gameState.getEntities().get(3),
-                gameState.getEntities().get(4));
-        gameState.createEnemyTeam(gameState.getEntities().get(5),
-                gameState.getEntities().get(6),
-                gameState.getEntities().get(7),
-                gameState.getEntities().get(8),
-                gameState.getEntities().get(9));
-        gameState.getPlayerEntity().setMoveTurn(true);
-        // Change to GAME state, won't leave main menu without this call at end of newGame
-        gameState.setState(GameState.STATE.GAME);
+        // Move to Level Selection
+        gameState.setState(GameState.STATE.LEVEL_SELECTION);
     }
 
     // GUI logic for JavaFX
@@ -574,7 +583,6 @@ public class Run extends Application {
                             } else {
                                 gameState.getPlayerEntity().move(0, -1);
                                 gameState.getPlayerEntity().setMoveTurn(false);
-                                System.out.println(gameState.getPlayerTeam().get(1).getUID());
                                 gameState.nextTurn(gameState.getPlayerTeam().get(1).getUID());
                             }
                         }
@@ -637,23 +645,29 @@ public class Run extends Application {
                     }
                 }
             } else if(gameState.getCurrentState() == GameState.STATE.BATTLE) {
-                if(key.getCode() == KeyCode.ESCAPE) {
+                if (key.getCode() == KeyCode.ESCAPE) {
                     // For now just exit back to map view
                     gameState.setState(GameState.STATE.GAME);
-                } else if(key.getCode() == KeyCode.A) {
-                    if(DEBUG_OUTPUT) {
+                } else if (key.getCode() == KeyCode.A) {
+                    if (DEBUG_OUTPUT) {
                         System.out.println("Name: " + gameState.getAttacker().getName());
-                        System.out.println("IsAttacking: " +gameState.getAttacker().IsAttacking());
-                        System.out.println("isBattleTurn: " +gameState.getAttacker().isBattleTurn());
+                        System.out.println("IsAttacking: " + gameState.getAttacker().IsAttacking());
+                        System.out.println("isBattleTurn: " + gameState.getAttacker().isBattleTurn());
                         System.out.println("CompletedCycles: " + gameState.getAttacker().getCharClass().getCompletedCycles());
                     }
-                } else if(key.getCode() == KeyCode.D) {
-                    if(DEBUG_OUTPUT) {
+                } else if (key.getCode() == KeyCode.D) {
+                    if (DEBUG_OUTPUT) {
                         System.out.println("Name: " + gameState.getDefender().getName());
-                        System.out.println("IsAttacking: " +gameState.getDefender().IsAttacking());
-                        System.out.println("isBattleTurn: " +gameState.getDefender().isBattleTurn());
+                        System.out.println("IsAttacking: " + gameState.getDefender().IsAttacking());
+                        System.out.println("isBattleTurn: " + gameState.getDefender().isBattleTurn());
                         System.out.println("CompletedCycles: " + gameState.getDefender().getCharClass().getCompletedCycles());
                     }
+                }
+            } else if(gameState.getCurrentState() == GameState.STATE.LEVEL_SELECTION) {
+                if(key.getCode() == KeyCode.ENTER) {
+                    // if you press enter on the level selection screen the game will load the selected map
+                    gameState.setState(GameState.STATE.GAME);
+                    gameState.getPlayerEntity().setMoveTurn(true);
                 }
             } else if(gameState.getCurrentState() == GameState.STATE.GAME_OVER) {
                 if(key.getCode() == KeyCode.ESCAPE) {
