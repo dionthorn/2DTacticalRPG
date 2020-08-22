@@ -2,6 +2,9 @@
 
 Compiled with OpenJDK 13 and OpenJFX 13.
 
+If you get the latest version of IntellijIDEA community edition for free and create a new Mave project and setup the openjfx archetype: https://openjfx.io/openjfx-docs/#IDE-Intellij
+Then you can go to the project folder in your /IdeaProjects/yourProject folder and copy the .idea, pom.xml, src, and MavenTactical.iml (rename this to yourProject.iml)
+
 Controls: 
 	WASD to move character, move into an enemy to start a battle.
 	Space bar to advance player turn or NPC turn, you will be prompted in the bottom part of the game screen.
