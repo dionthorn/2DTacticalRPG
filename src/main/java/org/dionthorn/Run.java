@@ -25,10 +25,7 @@ public class Run extends Application {
         This java class will hold a reference to a single GameState object which is used to control game flow
      */
     private final String PROGRAM_VERSION = "v0.2.0a"; // Constant to identify Program Version
-    // Really hack way to do it but I can't figure out a way to organize the file structures so it works both ways. So I use this:
-    // Paths.get("").toAbsolutePath().toString() + "/GameData"; when making a jlink image, and I have to manually place the /GameData folder into /bin.
-    // and I use this when otherwise developing: Paths.get("").toAbsolutePath().toString() + "/target/classes/GameData";
-    public static String GAME_DATA_PATH = Paths.get("").toAbsolutePath().toString() + "/target/classes/GameData"; // Run.GAME_DATA_PATH to access else where
+    public static String GAME_DATA_PATH = "";
     public static boolean DEBUG_OUTPUT = false; // If true will allow debug information to be printed to console
     // Wrap System.out.println call with if(DEBUG_OUTPUT) {} to allow it to work or in other classes Run.DEBUG_OUTPUT
     private static final int SCREEN_WIDTH = 1024; // Constant of screen width in pixels
@@ -946,8 +943,12 @@ public class Run extends Application {
     public int getLastSelectChar () { return lastSelectedCharUID;}
     // Run the JavaFX program, this will call the start() method and give it a Stage object to use as primary stage
     public static void main(String[] args) {
-        System.out.println(GAME_DATA_PATH);
+        String[] classPath = System.getProperty("java.class.path").split(";");
+        if(!classPath[0].equals("")) {
+            GAME_DATA_PATH = classPath[0] + "/GameData";
+        } else {
+            GAME_DATA_PATH = Paths.get("").toAbsolutePath().toString() + "/GameData";
+        }
         launch(args);
     }
 }
-

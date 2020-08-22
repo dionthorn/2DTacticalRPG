@@ -1,4 +1,7 @@
-module org.dionthorn {
+module MavenTactical {
     requires javafx.controls;
-    exports org.dionthorn;
+    requires javafx.graphics;
+    requires javafx.base;
+
+    exports org.dionthorn to javafx.graphics;
 }
