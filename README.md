@@ -5,7 +5,7 @@ I use OpenJDK from https://adoptopenjdk.net/ 13 but 14 should compile fine as fa
 I use OpenJFX from https://openjfx.io/ same applies as above.
 
 To test go to the latest release and download the TacticalRPG.zip, extract where you wish, go into the folder and into /bin and run App.bat
-https://github.com/dionthorn/2DTacticalRPG/releases/tag/v0.2.0-alphaMaven - under 'assets' get the .zip file.
+https://github.com/dionthorn/2DTacticalRPG/releases/tag/v0.2.1-alpha - under 'assets' get the .zip file.
 
 If you get the latest version of IntellijIDEA community edition for free and create a new Maven project and setup the openjfx archetype: https://openjfx.io/openjfx-docs/#IDE-Intellij
 Then you can go to the project folder in your /IdeaProjects/yourProject folder and copy the pom.xml, src, and MavenTactical.iml (rename this to yourProject.iml)
