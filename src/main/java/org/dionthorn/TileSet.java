@@ -8,31 +8,33 @@ import javafx.scene.paint.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-/*
-    A TileSet is a .png file saved on Disk that can be split into 32*32 pixel tiles
-    A TileID is the occurrence of the tile in the sheet going from left to right, from the top to bottom
-    [ 0, 1, 2,
-      3, 4, 5,
-      6, 7, 8 ]
-    A TileSet can also be a sprite sheet of 32*32 pixel character images
-    The LAST image of a tileSet must be a 'blank' tile
-    If the entire tileset isn't composed of unique images all other unused space must be the same image as the 'blank' tile
-    All tiles matching the 'blank' tile will be automatically trimmed to save space in the Image[]
-    All tileSets should be found in GameData/Art
+
+/**
+ * A TileSet is a .png file saved on Disk that can be split into 32*32 pixel tiles
+ *     A TileID is the occurrence of the tile in the sheet going from left to right, from the top to bottom
+ *     [ 0, 1, 2,
+ *       3, 4, 5,
+ *       6, 7, 8 ]
+ *     A TileSet can also be a sprite sheet of 32*32 pixel character images
+ *     The LAST image of a tileSet must be a 'blank' tile
+ *     If the entire tileset isn't composed of unique images all other unused space must be the same image as the 'blank' tile
+ *     All tiles matching the 'blank' tile will be automatically trimmed to save space in the Image[]
+ *     All tileSets should be found in GameData/Art
  */
 public class TileSet {
-    // tileSetCache is a static list of all created tileSets
     private static ArrayList<TileSet> tileSetCache = new ArrayList<>();
-    private String tileSetPath; // The relative file path of the tileSet should be in /Art
-    private Image tileSetSrc;   // A copy of the full tileSet
-    private Image[] tiles;      // Image[] of all the separated tiles in the tileSet
-    private Image blank;        // A copy of the 'blank' tile
-    private int totalTiles;     // Number of tiles in set after removing excess 'blanks'
-    private ArrayList<Integer> removedTileIDList = new ArrayList<>(); // Used to track which tileIDs are same as blank
-
+    private String tileSetPath;
+    private Image tileSetSrc;
+    private Image[] tiles;
+    private Image blank;
+    private int totalTiles;
+    private ArrayList<Integer> removedTileIDList = new ArrayList<>();
+    /**
+     * Constructor creates the TileSet object from a path to a .png file and the size of the squares to cut.
+     * @param path the relative String that points to the desired .png file on disk
+     * @param TILE_SIZE the size of the squares to cut the image into default 32
+     */
     public TileSet(String path, int TILE_SIZE) {
-        // A tile set requires only a relative path and the tileSize (32 fixed for now)
-        // See if tileSet already exists
         boolean sameFound = false;
         int sameIndex = 0;
         for(int i=0; i<tileSetCache.size(); i++) {
@@ -42,9 +44,8 @@ public class TileSet {
                 break;
             }
         }
+        tileSetPath = path;
         if(sameFound) {
-            // If it exists we will copy already existing info over.
-            tileSetPath = path;
             tileSetSrc = tileSetCache.get(sameIndex).getTileSetSrc();
             tiles = tileSetCache.get(sameIndex).getTiles();
             blank = tileSetCache.get(sameIndex).getBlank();
@@ -52,17 +53,11 @@ public class TileSet {
             Collections.addAll(removedTileIDList, boxedArray);
             totalTiles = tileSetCache.get(sameIndex).getTotalTiles();
         } else {
-            // If it doesn't already exist in cache then attempt to load from disk
-            tileSetPath = path;
             tileSetSrc = new Image("file:"+ Run.GAME_DATA_PATH + "/Art/" + path);
             tiles = makeTiles(tileSetSrc, TILE_SIZE);
-            // The last tile of a tileset should be the 'blank' tile for the set
-            // To compare other tiles with for reducing Image[] size
             if (tiles.length == 0) {
-                // Something has gone horribly wrong.
                 System.err.println("NO TILES DETECTED");
             } else {
-                // If nothing bad happened from makeTiles() then we should be good
                 blank = tiles[tiles.length - 1];
                 int sizeOriginal = tiles.length;
                 for (int step = 0; step < tiles.length; step++) {
@@ -77,13 +72,16 @@ public class TileSet {
                     System.out.println(String.format("Tiles Removed: %d", removedTilesCount));
                 }
             }
-            TileSet.tileSetCache.add(this); // After finishing the tileSet we add to master cache
+            TileSet.tileSetCache.add(this);
             tileSetCache.trimToSize();
         }
     }
     // Getters and Setters
+    /**
+     * Returns an integer array representing the id of where 'blank' duplicate tiles would be on the full image.
+     * @return the integer array of tileIDs of 'blank' duplicates.
+     */
     public int[] getRemovedTileID() {
-        // returns an int[] of the 'TileID' of the removed tiles off the sheet
         int[] toReturn = new int[removedTileIDList.size()];
         int step = 0;
         for(Integer i: removedTileIDList) {
@@ -94,34 +92,66 @@ public class TileSet {
         return toReturn;
     }
 
-    public String getTileSetPath() { return tileSetPath; }
+    /**
+     * Returns the TileSet objects relative path as a String object.
+     * @return the tileset path as a string.
+     */
 
+    public String getTileSetPath() { return tileSetPath; }
+    /**
+     * Returns the full source image stored for the TileSet.
+     * @return the image of the original full tileset
+     */
     public Image getTileSetSrc() { return tileSetSrc; }
 
+    /**
+     * Returns an image array of all the tiles associated with the TileSet.
+     * @return the image array of all the tileset tiles
+     */
     public Image[] getTiles() { return tiles; }
 
+    /**
+     * Returns the Image object of a tile specified by its tileID.
+     * @param tileID the index of the tile
+     * @return the image of the tile specified by tileID
+     */
     public Image getTile(int tileID) { return tiles[tileID]; }
 
+    /**
+     * Returns the count of the usable Tiles in the TileSet.
+     * @return the integer reference to the total usable tiles in the set
+     */
     public int getTotalTiles() { return totalTiles; }
 
+    /**
+     * Returns the Image object in the TileSet that represents the 'blank' Tile.
+     * The 'blank' tile will be whatever the last square in the image is, it is used to remove duplicate 'blank' tiles.
+     * @return the image of the 'blank' tile in the tileset
+     */
     public Image getBlank() { return blank; }
 
     // Static Methods
+    /**
+     * Processes a full Image tileset into an Image[] where each Image in the array is a square where all sides are
+     * of length TILE_SIZE.
+     * @param tileSet the full size image of the tileset
+     * @param TILE_SIZE the size of the squares that the image will be cut into
+     * @return
+     */
     private static Image[] makeTiles(Image tileSet, int TILE_SIZE) {
-        // This is the most complicated part of the program probably.
-        int srcW = (int) tileSet.getWidth(); // Get the source Images width/height
+        int srcW = (int) tileSet.getWidth();
         int srcH = (int) tileSet.getHeight();
-        int maxTiles = ((srcW / TILE_SIZE) * (srcH/ TILE_SIZE)); // Calculate the maximum amount of tiles
-        int maxTilesWidth = (srcW / TILE_SIZE); // Calc max tiles width
-        Image[] toReturn = new Image[maxTiles]; // Prep an Image[] which will be the final returned array
-        PixelReader pr = tileSet.getPixelReader(); // Need a pixel reader and writer to read and create Images
+        int maxTiles = ((srcW / TILE_SIZE) * (srcH/ TILE_SIZE));
+        int maxTilesWidth = (srcW / TILE_SIZE);
+        Image[] toReturn = new Image[maxTiles];
+        PixelReader pr = tileSet.getPixelReader();
         PixelWriter pw;
-        int wCount = 0; // Tracking variables
+        int wCount = 0;
         int hCount = 0;
         int xOffset;
         int yOffset;
         for(int i=0; i<maxTiles; i++) {
-            WritableImage wImg = new WritableImage(TILE_SIZE, TILE_SIZE); // Need a Writable Image of 32*32 pixels
+            WritableImage wImg = new WritableImage(TILE_SIZE, TILE_SIZE);
             pw = wImg.getPixelWriter();
             if(wCount >= maxTilesWidth) {
                 wCount = 0;
@@ -131,7 +161,6 @@ public class TileSet {
             yOffset = hCount * TILE_SIZE;
             for(int readY = 0; readY < TILE_SIZE; readY++) {
                 for(int readX = 0; readX < TILE_SIZE; readX++) {
-                    // Grab the source tile's color for each individual pixel then apply to the writableImage
                     Color color = pr.getColor(readX + xOffset, readY + yOffset);
                     pw.setColor(readX, readY, color);
                 }
@@ -139,15 +168,19 @@ public class TileSet {
             toReturn[i] = wImg;
             wCount++;
         }
-        return toReturn; // Finally return the resulting Image[]
+        return toReturn;
     }
 
+    /**
+     * Compares two Images pixel by pixel for color, if every pixel is the same it returns true, otherwise false.
+     * @param a first image to compare
+     * @param b second image to compare
+     * @return true if the images are per pixel matches
+     */
     public static boolean areImagesSame(Image a, Image b) {
-        // Compares two JavaFX Images per pixel with each other by Color
         if(a.getWidth() == b.getWidth() && a.getHeight() == b.getHeight()) {
             for(int x=0; x<(int) a.getWidth(); x++) {
                 for(int y=0; y<(int) a.getHeight(); y++) {
-                    // If even a single pixel doesn't match color then it will return false
                     if(!a.getPixelReader().getColor(x, y).equals(b.getPixelReader().getColor(x, y))) return false;
                 }
             }
@@ -155,17 +188,23 @@ public class TileSet {
         return true;
     }
 
+    /**
+     * Removes all Images in the original Image[] that match the Image provided in toRemove.
+     * toRemove is preserved at the end of the array, this is intended to be the 'blank' tile in the set.
+     * @param original the image array to search through
+     * @param toRemove the image to remove from the array
+     * @return returns a new image array where all images matching toRemove inside the original array are removed,
+     *         toRemove is appended
+     */
     private static Image[] removeSameElements(Image[] original, Image toRemove) {
-        // Removes on a per pixel & color sameness basis every Image in an Image[] that is the same as toRemove
-        // Keeps toRemove in the return array at the last index
         ArrayList<Image> toReturn = new ArrayList<>();
         for(Image i: original) {
             if (!areImagesSame(i, toRemove)) {
                 toReturn.add(i);
             }
         }
-        toReturn.add(toRemove); // ensure the last Image in the Image[] is the original toRemove
-        toReturn.trimToSize(); // ensure size is reduced all the way
+        toReturn.add(toRemove);
+        toReturn.trimToSize();
         Image[] newArray = new Image[toReturn.size()];
         return toReturn.toArray(newArray);
     }

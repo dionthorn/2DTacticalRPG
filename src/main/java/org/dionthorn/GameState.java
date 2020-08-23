@@ -1,30 +1,35 @@
 package org.dionthorn;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
+/**
+ * The GameState class will be responsible for the master references to game objects via its .entities list
+ * as well as all maps via its .maps list
+ * it will also manage the 'state' of the game or different 'screens' of the game
+ */
 public class GameState {
-    // Simply used as flags to determine the 'state' of the game
+
     enum STATE {MAIN_MENU, BATTLE, GAME, GAME_OVER, LEVEL_SELECTION, CHARACTER_STATUS, CHARACTER_CREATION}
-    // The currently assigned 'state'
+
     private STATE currentState;
-    // Needed references to game objects
-    private ArrayList<Map> maps; // List of all created maps
-    private ArrayList<Entity> entities; // List of all created entities
-    private Map currentMap; // The currently selected map, which is to be displayed
-    // Entity list of player/enemies team used for map level
+    private ArrayList<Map> maps;
+    private ArrayList<Entity> entities;
+    private Map currentMap;
     private ArrayList<Entity> playerTeam;
     private ArrayList<Entity> enemyTeam;
-    private boolean nextTurn; // Flag to determine turn transitions
-    // Battle Scene references to an attacker and defender
+    private boolean nextTurn;
     private Character attacker;
     private Character defender;
 
+    /**
+     * Default GameState Constructor will generate the base state need for the game to initiate.
+     * @param initialMap the default map to load for seamless initial game flow
+     */
     public GameState(Map initialMap) {
         maps = new ArrayList<>();
-        maps.add(initialMap); // Load initial map on startup
+        maps.add(initialMap);
         currentMap = initialMap;
-        currentState = STATE.MAIN_MENU; // Start at the main menu screen
+        currentState = STATE.MAIN_MENU;
         entities = new ArrayList<>();
         playerTeam = new ArrayList<>();
         enemyTeam = new ArrayList<>();
@@ -33,41 +38,50 @@ public class GameState {
         Entity.GEN_COUNT = 0;
     }
 
-    public void createPlayerTeam(Entity... toAddList) {
-        // Add an arbitrary list of Entity objects to the playerTeam ArrayList
-        // Will clear any previous assignment!
-        playerTeam.clear();
-        playerTeam.addAll(Arrays.asList(toAddList));
-        playerTeam.trimToSize();
-    }
-
-    public void createEnemyTeam(Entity... toAddList) {
-        // Add an arbitrary list of Entity objects to the enemyTeam ArrayList
-        // Will clear any previous assignment!
-        enemyTeam.clear();
-        enemyTeam.addAll(Arrays.asList(toAddList));
-        enemyTeam.trimToSize();
-    }
-
+    /**
+     * Will begin a battle between the characters provided
+     * @param attacker the assaulting character
+     * @param defender the defending character
+     */
     public void startBattle(Character attacker, Character defender) {
         if(Run.DEBUG_OUTPUT) {
             System.out.println("Battle Started");
         }
-        // Set attacker/defender and start battle
         this.currentState = STATE.BATTLE;
         this.attacker = attacker;
         this.defender = defender;
         this.attacker.setBattleTurn(true);
     }
+
     // Getters and Setters
+    /**
+     * Returns the boolean value of nextTurn flag
+     * @return the boolean value of the next turn flag
+     */
     public boolean getNextTurn() { return nextTurn; }
 
+    /**
+     * Will set the nextTurn boolean flag.
+     * @param value the value to assign to next turn flag
+     */
     public void setNextTurn(boolean value) { nextTurn = value; }
 
+    /**
+     * Returns the playerTeam entity ArrayList.
+     * @return the player team entity array list
+     */
     public ArrayList<Entity> getPlayerTeam() { return playerTeam; }
 
+    /**
+     * Returns the enemyTeam entity ArrayList.
+     * @return the enemy team entity array list
+     */
     public ArrayList<Entity> getEnemyTeam() { return enemyTeam; }
 
+    /**
+     * will assign the entity with UID to take their move turn.
+     * @param UID the integer id of the entity to advance to their move turn
+     */
     public void nextTurn(int UID) {
         for(Entity e: entities) {
             if(e.getUID() == UID) {
@@ -76,14 +90,29 @@ public class GameState {
         }
     }
 
+    /**
+     * Returns the GameState map ArrayList.
+     * @return the gamestate map array list
+     */
     public ArrayList<Map> getMaps() { return maps; }
 
+    /**
+     * Returns the GameState entities ArrayList.
+     * @return the gamestate entities array list
+     */
     public ArrayList<Entity> getEntities() { return entities; }
 
+    /**
+     * Returns the GameState current map object.
+     * @return the gamestate current map
+     */
     public Map getCurrentMap() { return currentMap; }
 
+    /**
+     * Will set the GameState currentMap to the provided newMap
+     * @param newMap set the gamestate current map to this new map
+     */
     public void setCurrentMap(Map newMap) {
-        // Have a load of map also reset player team and enemy team x,y,etc based on .meta file
         currentMap = newMap;
         String[] data = Map.getFileLines(currentMap.getMetaPATH());
         String[] enemies = new String[0];
@@ -104,13 +133,11 @@ public class GameState {
                 loc = line.split(":")[0].split(",");
             }
         }
-        // clear stuff
         playerTeam.clear();
         enemyTeam.clear();
         Entity tempPlayer = getPlayerEntity();
         entities.clear();
         entities.add(tempPlayer);
-        // add Player and ally NPCs
         playerTeam.add(getPlayerEntity());
         CharacterClass tempClass = null;
         for(String ally: allies) {
@@ -130,7 +157,6 @@ public class GameState {
                 playerTeam.add(tempChar);
             }
         }
-        // add enemy NPCs
         for(String enemy: enemies) {
             if(!enemy.equals("")) {
                 String[] temp = enemy.split(",");
@@ -142,6 +168,7 @@ public class GameState {
                 } else if(temp[3].equals("martial")) {
                     tempClass = new MartialClass();
                 }
+                assert tempClass != null;
                 NonPlayerCharacter tempChar = new NonPlayerCharacter(currentMap, tempClass.getDefaultSpriteEnemy(), name, x, y, tempClass);
                 entities.add(tempChar);
                 enemyTeam.add(tempChar);
@@ -153,12 +180,23 @@ public class GameState {
         entities.trimToSize();
     }
 
+    /**
+     * Returns the currentState of the GameState.
+     * @return the current state of the gamestate
+     */
     public STATE getCurrentState() { return currentState; }
 
+    /**
+     * Will set the currentState of the GameState to the provided newState
+     * @param newState the target new state to place the gamestate into
+     */
     public void setState(STATE newState) { currentState = newState; }
 
+    /**
+     * Returns the current Player Character Object. Player object should always exist from Run.newGame()
+     * @return the current player character
+     */
     public Player getPlayerEntity() {
-        // Will either return the player if they exist or null (player should always exist)
         for(Entity e: entities) {
             if(e instanceof Player) {
                 return (Player) e;
@@ -167,8 +205,16 @@ public class GameState {
         return null;
     }
 
+    /**
+     * Returns the current attacker Character object.
+     * @return the current attacker character
+     */
     public Character getAttacker() { return attacker; }
 
+    /**
+     * Returns the current defender Character object.
+     * @return the current defender character
+     */
     public Character getDefender() { return defender; }
 }
 

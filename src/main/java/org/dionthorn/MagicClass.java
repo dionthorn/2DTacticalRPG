@@ -1,7 +1,14 @@
 package org.dionthorn;
 
+/**
+ * The MagicClass defines the 'Mage' or 'Magic' character class type
+ * it will provide the needed default information as well as Animation frames and spritesheet paths
+ */
 public class MagicClass extends CharacterClass {
 
+    /**
+     * Default Constructor assigns level 1 values and meta information on animation for the class
+     */
     public MagicClass() {
         this.deadTileID = 8;
         this.perLevelAttack = 10;

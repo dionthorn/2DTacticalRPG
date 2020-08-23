@@ -19,38 +19,37 @@ import java.io.File;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Run will handle the core engine of the game including the JavaFX Application, rendering, updating, etc.
+ */
 public class Run extends Application {
-    /*
-        This java class is responsible for all GUI handling including keyboard/mouse inputs
-        This java class will hold a reference to a single GameState object which is used to control game flow
-     */
-    private final String PROGRAM_VERSION = "v0.2.0a"; // Constant to identify Program Version
+
+    private final String PROGRAM_VERSION = "v0.2.1a";
     public static String GAME_DATA_PATH = "";
-    public static boolean DEBUG_OUTPUT = false; // If true will allow debug information to be printed to console
-    // Wrap System.out.println call with if(DEBUG_OUTPUT) {} to allow it to work or in other classes Run.DEBUG_OUTPUT
-    private static final int SCREEN_WIDTH = 1024; // Constant of screen width in pixels
-    private static final int SCREEN_HEIGHT = 1024; // Constant of screen height in pixels
-    private static final int SCREEN_MAP_HEIGHT = 768; // to show end of map drawing area
-    private static final int TILE_SIZE = 32; // Hardcoded 32*32 pixels8
-    private int[] DRAG_LOC = {-1, -1}; // This is a sentinel value that when -1 means there is no mouse drag to process
-    // if it is set to a positive value it will be the mouse(x,y) upon the start of a drag
-    private int[] menuNewGameBounds; // Used to determine where new game button is on the main menu
+    public static boolean DEBUG_OUTPUT = false;
+    private static final int SCREEN_WIDTH = 1024;
+    private static final int SCREEN_HEIGHT = 1024;
+    private static final int SCREEN_MAP_HEIGHT = 768;
+    private static final int TILE_SIZE = 32;
+    private int[] DRAG_LOC = {-1, -1};
+    private int[] menuNewGameBounds;
     private int lastSelectedCharUID;
-    private long FPS = TimeUnit.SECONDS.toNanos(1 / 30); // 30 FPS used by AnimationTimer
-    private long startTime = System.nanoTime(); // These two are switches used for render/update logic
+    private long FPS = TimeUnit.SECONDS.toNanos(1 / 30);
+    private long startTime = System.nanoTime();
     private long currentTime;
     private Image mainMenuBg = new Image("file:" + GAME_DATA_PATH + "/Art/main_menu.png");
     private Image paperBg = new Image("file:" + GAME_DATA_PATH + "/Art/paper.png", SCREEN_WIDTH, SCREEN_HEIGHT-SCREEN_MAP_HEIGHT, false, false);
-    private int battleFrameCounter = 0; // Used to count frames during battle animations,
-    // a value of 30 means ~1 sec has passed and should be set back to 0.
-    private GraphicsContext gc; // Directly access draw methods on the canvas
-    private GameState gameState; // Now controls the maps/entities and general game flow via flags
+    private int battleFrameCounter = 0;
+    private GraphicsContext gc;
+    private GameState gameState;
     private DevMenu devMenu;
 
+    /**
+     * Called after every update()
+     * will check gameState and decide what to render from that.
+     */
     private void render() {
-        // Render the frame based on GameState.currentState
         if (gameState != null && devMenu != null) {
-            // Load dev menu related rendering
             Image selectedTileImg = gameState.getCurrentMap().getTile(devMenu.SELECTED_TILE_SET_ID,
                     devMenu.SELECTED_TILE_ID);
             ImageView selectedTileImgView = new ImageView(selectedTileImg);
@@ -65,37 +64,31 @@ public class Run extends Application {
                     6, 6);
         }
         if (gameState == null || gameState.getCurrentState() == GameState.STATE.MAIN_MENU) {
-            // Main menu rendering
-            gc.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT); // Clear canvas
-            // Perhaps load a menuBackground.png here
+            gc.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
             gc.drawImage(mainMenuBg, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-            // Draw the menu title as dynamically as possible
             gc.setTextAlign(TextAlignment.LEFT);
-            Font menuTitleFont = new Font("Arial", 32); // Can change to whatever font we wish
+            Font menuTitleFont = new Font("Arial", 32);
             gc.setFont(menuTitleFont);
-            gc.setFill(Color.WHITE);  // Can change text color as well
+            gc.setFill(Color.WHITE);
             String title = "Game Project";
             Text menuTitle = new Text(title);
             menuTitle.setFont(menuTitleFont);
             gc.fillText(title, (SCREEN_WIDTH >> 1) - (menuTitle.getLayoutBounds().getWidth() / 2),
                     SCREEN_HEIGHT >> 4);
-            Font menuOptionsFont = new Font("Arial", 28); // Can change to whatever font we wish
+            Font menuOptionsFont = new Font("Arial", 28);
             gc.setFont(menuOptionsFont);
             String newGameString = "Play";
             Text newGameText = new Text(newGameString);
             newGameText.setFont(menuOptionsFont);
-            menuNewGameBounds = new int[4]; // x, y, width, height used to identify a rectangle
-            // Around the bounds of the "Play" text
+            menuNewGameBounds = new int[4];
             menuNewGameBounds[0] = (int) ((SCREEN_WIDTH >> 1) - (newGameText.getLayoutBounds().getWidth() / 2));
             menuNewGameBounds[1] = (SCREEN_HEIGHT >> 4) * 4;
             menuNewGameBounds[2] = (int) newGameText.getLayoutBounds().getWidth();
             menuNewGameBounds[3] = (int) newGameText.getLayoutBounds().getHeight();
             gc.fillText(newGameString, menuNewGameBounds[0], menuNewGameBounds[1]);
         } else if (gameState != null && gameState.getCurrentState() == GameState.STATE.GAME) {
-            // Graphics logic for displaying a Map to the screen one tile at a time and all present characters
             gc.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT); // Clear canvas
             MapTile[][] mapTiles = gameState.getCurrentMap().getMapTiles();
-
             for (int y = 0; y < mapTiles.length; y++) {
                 for (int x = 0; x < mapTiles[0].length; x++) {
                     gc.drawImage(gameState.getCurrentMap().getTile(mapTiles[y][x].getTileSet(), mapTiles[y][x].getTileID()),
@@ -105,36 +98,28 @@ public class Run extends Application {
                 }
             }
             gc.drawImage(paperBg, 0, gameState.getCurrentMap().getMapHeight() * TILE_SIZE);
-            // Draw all entities that have drawable and are in the currentMap
             for (Entity e : gameState.getEntities()) {
                 if (e instanceof Drawable) {
                     if (((PhysicalEntity) e).getCurrentMap().equals(gameState.getCurrentMap())) {
-                        // Only draw entities tied to the current map
                         if (e instanceof Character) {
                             if (!((Character) e).isAlive()) {
                                 ((Character) e).setCurrentSprite(((Character) e).getCharClass().getDeadTileID());
                             }
                         }
-                        ((Drawable) e).draw(gc); // This draws the sprite
+                        ((Drawable) e).draw(gc);
                         if (e instanceof Character) {
                             double x, y, maxHP, pixelPerHP, currentHP, currentHPDisplayed, YaxisMod;
                             x = ((Character) e).getX();
                             y = ((Character) e).getY();
                             maxHP = ((Character) e).getMaxHP();
-                            // 32 pixels is max bar size, one tile that character occupies
-                            // Max hp for level 1 = 50. 50hp / 32 total pixels = 1.5625 hp per pixel
                             pixelPerHP = maxHP / TILE_SIZE;
                             currentHP = ((Character) e).getHp();
-                            // If current HP is 25hp and hp per pixel is 1.5625 then 25/1.5625 = 16 pixels width
                             currentHPDisplayed = currentHP / pixelPerHP;
-                            YaxisMod = (y * TILE_SIZE) + ((maxHP - currentHP) / pixelPerHP); // makes the green bar go down
-
-                            // Draw max hp red rectangle
+                            YaxisMod = (y * TILE_SIZE) + ((maxHP - currentHP) / pixelPerHP);
                             gc.setFill(Color.RED);
                             gc.setStroke(Color.BLACK);
                             if (gameState.getPlayerTeam().contains(e)) {
                                 gc.fillRect(x * TILE_SIZE, y * TILE_SIZE, 3, 32);
-                                // Draw current hp green rectangle on top of it
                                 gc.setFill(Color.GREEN);
                                 gc.setStroke(Color.BLACK);
                                 if (currentHPDisplayed < 0) {
@@ -143,7 +128,6 @@ public class Run extends Application {
                                 gc.fillRect(x * TILE_SIZE, YaxisMod, 3, currentHPDisplayed);
                             } else if (gameState.getEnemyTeam().contains(e)) {
                                 gc.fillRect((x * TILE_SIZE) + 29, y * TILE_SIZE, 3, 32);
-                                // Draw current hp green rectangle on top of it
                                 gc.setFill(Color.GREEN);
                                 gc.setStroke(Color.BLACK);
                                 if (currentHPDisplayed < 0) {
@@ -156,7 +140,6 @@ public class Run extends Application {
                 }
             }
             if (!gameState.getNextTurn()) {
-                // Turn indicator
                 String name = "";
                 Entity target = null;
                 for (Entity e : gameState.getEnemyTeam()) {
@@ -196,47 +179,27 @@ public class Run extends Application {
                 }
             }
         } else if (gameState != null && gameState.getCurrentState() == GameState.STATE.BATTLE) {
-            // Battle Scene
             gc.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-            gc.setFill(Color.rgb(43, 107, 140)); //To be changed to the more appealing 43,107,140 once
-            //I figure out why custom color makes it freak out.
-            //For Beta: Creating an image for the border might look nice
-            gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_MAP_HEIGHT); //set HUD background
-
-            // Put character stats here
+            gc.setFill(Color.rgb(43, 107, 140));
+            gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_MAP_HEIGHT);
             gc.drawImage(paperBg, 0, SCREEN_MAP_HEIGHT);
-
             gc.setFill(Color.GREY);
-
-            //draw the battle stage as dynamically as possible
-            //Battle stage should take up 15/16 width, and 5/8 height,
-            //centered with even border on left and right, 1/32 height border on top
-            int stageX, stageY, stageW, stageH;//Variables to store the location and size of the battle stage
-
-
-            gc.fillRect(stageX = SCREEN_WIDTH >> 5, stageY = SCREEN_MAP_HEIGHT >> 5, //this will eventually be replaced
-                    stageW = (SCREEN_WIDTH - (SCREEN_WIDTH >> 4)), stageH = (SCREEN_MAP_HEIGHT >> 1) + (SCREEN_MAP_HEIGHT >> 3)); //with the background image of the fight scene
-
-
-            //Draw the fighters onto the stage
-
+            int stageX, stageY, stageW, stageH;
+            gc.fillRect(stageX = SCREEN_WIDTH >> 5, stageY = SCREEN_MAP_HEIGHT >> 5,
+                    stageW = (SCREEN_WIDTH - (SCREEN_WIDTH >> 4)), stageH = (SCREEN_MAP_HEIGHT >> 1) + (SCREEN_MAP_HEIGHT >> 3));
             Character ally = gameState.getAttacker();
             Character enemy = gameState.getDefender();
-
             for (Entity c : gameState.getEnemyTeam()) {
                 if (c == gameState.getAttacker()) {
                     ally = gameState.getDefender();
-                    enemy = gameState.getAttacker();  //Make sure each person is on the correct side of the screen
-                    //regardless of who is attacking
+                    enemy = gameState.getAttacker();
                 }
             }
-
-            // Draw Ally
             int allyX, allyY, spriteSize = stageW >> 2;
             gc.drawImage(ally.currentSprite,
                     allyX = stageX + (stageW >> 3), allyY = stageY + (stageH >> 2) + (stageH >> 4),
-                    spriteSize, spriteSize);//keep sprite square
-            gc.setFill(Color.RED); // max hp is red, current hp is green
+                    spriteSize, spriteSize);
+            gc.setFill(Color.RED);
             gc.setStroke(Color.BLACK);
             double maxHP = ally.getMaxHP();
             double pixelPerHP = maxHP / (stageW >> 2);
@@ -252,13 +215,11 @@ public class Run extends Application {
             double textHeight = new Text(heightTest).getBoundsInLocal().getHeight() + 5;
             gc.fillText(heightTest, 50, SCREEN_MAP_HEIGHT + textHeight + 5);
             gc.fillText(String.format("HP: %.0f / %.0f", ally.getHp(), ally.getMaxHP()), 50, SCREEN_MAP_HEIGHT + textHeight * 3);
-
-            // Draw Enemy
             int enemyX, enemyY;
             gc.drawImage(enemy.currentSprite,
                     enemyX = stageX + stageW - (stageW >> 3) - (stageW >> 2), enemyY = stageY + (stageH >> 2) + (stageH >> 4),
-                    stageW >> 2, stageW >> 2);//keep sprite square
-            gc.setFill(Color.RED); // max hp is red, current hp is green
+                    stageW >> 2, stageW >> 2);
+            gc.setFill(Color.RED);
             gc.setStroke(Color.BLACK);
             maxHP = enemy.getMaxHP();
             pixelPerHP = maxHP / (stageW >> 2);
@@ -270,45 +231,27 @@ public class Run extends Application {
             gc.setFill(Color.BLACK);
             gc.fillText(String.format("Name: %s", enemy.getName()), (SCREEN_WIDTH >> 1) + 50, SCREEN_MAP_HEIGHT + textHeight + 5);
             gc.fillText(String.format("HP: %.0f / %.0f", enemy.getHp(), enemy.getMaxHP()), (SCREEN_WIDTH >> 1) + 50, SCREEN_MAP_HEIGHT + textHeight * 3);
-
-            //draw Border for fight scene
             gc.setStroke(Color.BLACK);
             gc.setLineWidth(5);
             gc.strokeRect(SCREEN_WIDTH >> 5, SCREEN_MAP_HEIGHT >> 5, (SCREEN_WIDTH - (SCREEN_WIDTH >> 4)), (SCREEN_MAP_HEIGHT >> 1) + (SCREEN_MAP_HEIGHT >> 3));
-
-            //Create Buttons
             gc.setFill(Color.GREY);
             gc.setLineWidth(2);
-
-            //ATTACK BUTTON,
-            // 1/16 width from left, 1/16 height from bottom of the stage (1/2+1/8+1/16 from top)
-            // 3/8 width, 1/4 height
             final int y1 = (SCREEN_MAP_HEIGHT >> 1) + (SCREEN_MAP_HEIGHT >> 3) + (SCREEN_MAP_HEIGHT >> 4);
             gc.fillRect(SCREEN_WIDTH >> 4, y1,
                     (SCREEN_WIDTH >> 2) + (SCREEN_WIDTH >> 3), SCREEN_MAP_HEIGHT >> 2);
             gc.strokeRect(SCREEN_WIDTH >> 4, y1,
                     (SCREEN_WIDTH >> 2) + (SCREEN_WIDTH >> 3), SCREEN_MAP_HEIGHT >> 2);
             gc.setTextAlign(TextAlignment.CENTER);
-            //Next Line will be replaced with image in beta
             final int y2 = (SCREEN_MAP_HEIGHT >> 1) + (SCREEN_MAP_HEIGHT >> 2) + (SCREEN_MAP_HEIGHT >> 4);
             gc.strokeText("ATTACK", SCREEN_WIDTH >> 2, y2);
-
-            //DEFEND BUTTON
-            // 9/16 (1/2+1/16), 1/16 height from bottom of the stage
-            // 3/8 width, 1/4 height
             gc.fillRect((SCREEN_WIDTH >> 1) + (SCREEN_WIDTH >> 4), y1,
                     (SCREEN_WIDTH >> 2) + (SCREEN_WIDTH >> 3), SCREEN_MAP_HEIGHT >> 2);
             gc.strokeRect((SCREEN_WIDTH >> 1) + (SCREEN_WIDTH >> 4), y1,
                     (SCREEN_WIDTH >> 2) + (SCREEN_WIDTH >> 3), SCREEN_MAP_HEIGHT >> 2);
-            //Next Line will be replaced with image in beta
             gc.strokeText("DEFEND", SCREEN_WIDTH - (SCREEN_WIDTH >> 2), y2);
-
             battleFrameCounter++;
-
-            // animation logic
             if (ally.isBattleTurn()) {
                 if (gameState.getPlayerEntity().equals(ally)) {
-                    // Wait for Player Input on the attack button
                     if (ally.IsAttacking()) {
                         if (ally.getCharClass().getCompletedCycles() > 2) {
                             ally.setIsAttacking(false);
@@ -317,7 +260,7 @@ public class Run extends Application {
                             ally.attack(enemy);
                             ally.getCharClass().setCompletedCycles(0);
                             if (!enemy.isAlive()) {
-                                boolean didLevel = ally.getCharClass().addXP(1000 * enemy.getCharClass().getLevel()); // changed to just 1000 xp gain per kill per level
+                                boolean didLevel = ally.getCharClass().addXP(1000 * enemy.getCharClass().getLevel());
                                 if (didLevel) {
                                     ally.levelUp();
                                 }
@@ -337,7 +280,7 @@ public class Run extends Application {
                             ally.attack(enemy);
                             ally.getCharClass().setCompletedCycles(0);
                             if (!enemy.isAlive()) {
-                                boolean didLevel = ally.getCharClass().addXP(1000 * enemy.getCharClass().getLevel()); // changed to just 1000 xp gain per kill per level
+                                boolean didLevel = ally.getCharClass().addXP(1000 * enemy.getCharClass().getLevel());
                                 if (didLevel) {
                                     ally.levelUp();
                                 }
@@ -352,7 +295,6 @@ public class Run extends Application {
                     gc.drawImage(enemy.getCurrentSprite(), enemyX, enemyY, spriteSize, spriteSize);
                 }
             } else if (enemy.isBattleTurn()) {
-                // enemy is always AI so no need to check for player
                 if (enemy.IsAttacking()) {
                     if (enemy.getCharClass().getCompletedCycles() > 2) {
                         enemy.setIsAttacking(false);
@@ -364,7 +306,7 @@ public class Run extends Application {
                             if (ally.equals(gameState.getPlayerEntity())) {
                                 gameState.setState(GameState.STATE.GAME_OVER);
                             } else {
-                                boolean didLevel = enemy.getCharClass().addXP(1000 * ally.getCharClass().getLevel()); // changed to just 1000 xp gain per kill per level
+                                boolean didLevel = enemy.getCharClass().addXP(1000 * ally.getCharClass().getLevel());
                                 if (didLevel) {
                                     enemy.levelUp();
                                 }
@@ -374,24 +316,18 @@ public class Run extends Application {
                     }
                     enemy.attackAnimation(battleFrameCounter);
                 } else {
-                    // for now enemy always chooses attack
                     enemy.setIsAttacking(true);
                 }
                 gc.drawImage(ally.getCurrentSprite(), allyX, allyY, spriteSize, spriteSize);
                 gc.drawImage(enemy.getCurrentSprite(), enemyX, enemyY, spriteSize, spriteSize);
             }
-            // reset battleFrameCounter every 30 frames
             if (battleFrameCounter == 30) {
                 battleFrameCounter = 0;
             }
         } else if(gameState != null && gameState.getCurrentState() == GameState.STATE.LEVEL_SELECTION) {
-            int selectedBox = 0;
-            // draw boxes for maps in memory, maybe 4 boxes and use arrow keys to select different maps
             gc.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
             gc.drawImage(mainMenuBg, 0, 0, SCREEN_WIDTH, SCREEN_MAP_HEIGHT);
             gc.setFill(Color.rgb(43, 107, 140));
-
-            // Draw map selection squares
             int squareSize = 200;
             int[][] squareXY = {
                     {(SCREEN_WIDTH>>4),         SCREEN_HEIGHT>>5},
@@ -407,8 +343,6 @@ public class Run extends Application {
             for(int[] xy: squareXY) {
                 gc.fillRect(xy[0], xy[1], squareSize, squareSize);
             }
-
-            // Draw map names into squares
             int count = 0;
             gc.setFill(Color.BLACK);
             gc.setFont(new Font(12));
@@ -423,15 +357,11 @@ public class Run extends Application {
                 gc.fillText(path[index], squareXY[count][0]+10, squareXY[count][1]+10);
                 count++;
             }
-
-            // draw lower paper 'console' area
             gc.drawImage(paperBg, 0, SCREEN_MAP_HEIGHT);
             gc.setFont(new Font("Arial", 32));
             String[] path = gameState.getCurrentMap().getPATH().split("/");
             gc.fillText(path[path.length - 1], SCREEN_WIDTH>>4, SCREEN_MAP_HEIGHT + (SCREEN_MAP_HEIGHT>>4));
-
             gc.fillText("Press Enter to Load The Selected Map", SCREEN_WIDTH>>4, SCREEN_MAP_HEIGHT + (SCREEN_MAP_HEIGHT>>2));
-
         } else if(gameState != null && gameState.getCurrentState() == GameState.STATE.GAME_OVER) {
             gc.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
             gc.drawImage(mainMenuBg, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -443,11 +373,13 @@ public class Run extends Application {
         }
     }
 
+    /**
+     * Called before every draw call
+     */
     public void update() {
-        // Update game logic in between frames only update if a gameState exists and in GAME state
         if(gameState != null && gameState.getCurrentState() == GameState.STATE.GAME) {
-            for(Entity e: gameState.getEntities()) { // Go through all entities
-                if(e instanceof Updateable) { // Only try to check ones that are updatable and on current map
+            for(Entity e: gameState.getEntities()) {
+                if(e instanceof Updateable) {
                     if( ((PhysicalEntity) e).getCurrentMap().equals(gameState.getCurrentMap()) ) {
                         ((Updateable) e).update(gameState);
                     }
@@ -456,13 +388,12 @@ public class Run extends Application {
         }
     }
 
+    /**
+     * Sets up the gameState for a new game environment.
+     */
     private void newGame() {
-        // When they click Play on the Main Menu this starts the initialization of a new game
-        // First we will load the first map in the GameData directory
         for(String path: getFileNamesFromDirectory(GAME_DATA_PATH + "/Maps/")) {
-            // Be sure to ignore any non map files
             if(!path.equals("config.dat") && !path.equals(".gitattributes") && !path.contains("meta")) {
-                // properly start an entirely new game.
                 if(gameState != null) {
                     gameState.getMaps().add(new Map(GAME_DATA_PATH + "/Maps" + File.separator + path));
                 } else {
@@ -473,18 +404,15 @@ public class Run extends Application {
         String[] startLoc = gameState.getCurrentMap().getMetaStartLoc().split(":")[0].split(",");
         String[] allies = gameState.getCurrentMap().getMetaAllies().split(":")[0].split("/");
         String[] enemies = gameState.getCurrentMap().getMetaEnemies().split(":")[0].split("/");
-        // Create the new Player. In the future the CHARACTER_CREATION gameState
-        // will be the first to load and this will all edited there for now just generate a default Player UID=0.
         gameState.getEntities().add(
                 new Player(
                         gameState.getCurrentMap(),
                         "MartialClassPlayer.png", "Player",
-                        Integer.parseInt(startLoc[0]), Integer.parseInt(startLoc[1]), // x, y pull from meta.
+                        Integer.parseInt(startLoc[0]), Integer.parseInt(startLoc[1]),
                         new MartialClass()
                 )
         );
         gameState.getPlayerTeam().add(gameState.getPlayerEntity());
-        // Generate default maps allies/enemies
         CharacterClass tempClass = null;
         for(String ally: allies) {
             if(!ally.equals("")) {
@@ -520,47 +448,40 @@ public class Run extends Application {
                 gameState.getEnemyTeam().add(tempChar);
             }
         }
-        // Move to Level Selection
         gameState.setState(GameState.STATE.LEVEL_SELECTION);
     }
 
-    // GUI logic for JavaFX
+
+    /**
+     * This is the core GUI processing of the program and the initial JavaFX setup point.
+     * @param primaryStage the 'stage' or 'window' object to be used by the OS.
+     */
     @Override
     public void start(Stage primaryStage) {
-        // Set properties of the Stage object
-        primaryStage.setTitle("OOP Game Project " + PROGRAM_VERSION); // Set the title of the window
-        primaryStage.setResizable(false); // Do not allow resize of screen width/height
-        // Build a Group/Scene with a black background and create a new Canvas Object
-        // The Canvas is the actual game screen area of the Window
-        // The Graphics Context is used to draw onto the canvas and is needed to draw objects
+        primaryStage.setTitle("OOP Game Project " + PROGRAM_VERSION);
+        primaryStage.setResizable(false);
         Group rootGroup = new Group();
         Scene rootScene = new Scene(rootGroup, SCREEN_WIDTH, SCREEN_HEIGHT, Color.BLACK);
         primaryStage.sizeToScene();
-        // The main node we draw onto think of it like a painting canvas.
         Canvas canvas = new Canvas(SCREEN_WIDTH, SCREEN_HEIGHT);
         gc = canvas.getGraphicsContext2D();
         rootGroup.getChildren().add(canvas);
-        // Keyboard Input Handling for the Game Window is processed here.
         rootScene.addEventHandler(KeyEvent.KEY_PRESSED, (key) -> {
             if (DEBUG_OUTPUT) {
                 System.out.println("[DEBUG] KeyInput: " + key.getCode());
             }
-            // Example of how to use key handling to make the escape key close the game (will make exit to menu later)
             if (gameState == null || gameState.getCurrentState() == GameState.STATE.MAIN_MENU) {
                 if (key.getCode() == KeyCode.ESCAPE) {
-                    // If in main menu and you press escape it will close the window and exit the JVM
                     primaryStage.close();
                     System.exit(0);
                 }
             } else if(gameState.getCurrentState() == GameState.STATE.GAME) {
                 if(key.getCode() == KeyCode.ESCAPE) {
-                    // Exit to Main Menu
                     gameState = null;
                 }
                 if(key.getCode() == KeyCode.BACK_QUOTE) {
-                    // DEV MENU
                     if(devMenu == null) {
-                        devMenu = new DevMenu(this); // create the devMenuWindow and pass this app as a reference
+                        devMenu = new DevMenu(this);
                         devMenu.getDevMapPath().setText(String.format("%s", gameState.getCurrentMap().getPATH()));
                         for(Map toLoad: gameState.getMaps()) {
                             devMenu.getMapList().getItems().add(toLoad.getPATH());
@@ -571,7 +492,6 @@ public class Run extends Application {
                     }
                 }
                 if(key.getCode() == KeyCode.UP) {
-                    // Move Up
                     if(gameState.getPlayerEntity().isMoveTurn()) {
                         Character player = gameState.getPlayerEntity();
                         Character enemy = player.checkEnemyCollision(gameState, player.getX(), player.getY() - 1);
@@ -588,7 +508,6 @@ public class Run extends Application {
                         }
                     }
                 } else if(key.getCode() == KeyCode.RIGHT) {
-                    // Move Right
                     if(gameState.getPlayerEntity().isMoveTurn()) {
                         Character player = gameState.getPlayerEntity();
                         Character enemy = player.checkEnemyCollision(gameState, player.getX() + 1, player.getY());
@@ -605,7 +524,6 @@ public class Run extends Application {
                         }
                     }
                 } else if(key.getCode() == KeyCode.LEFT) {
-                    // Move Left
                     if(gameState.getPlayerEntity().isMoveTurn()) {
                         Character player = gameState.getPlayerEntity();
                         Character enemy = player.checkEnemyCollision(gameState, player.getX() - 1, player.getY());
@@ -622,7 +540,6 @@ public class Run extends Application {
                         }
                     }
                 } else if(key.getCode() == KeyCode.DOWN) {
-                    // Move Down
                     if(gameState.getPlayerEntity().isMoveTurn()) {
                         Character player = gameState.getPlayerEntity();
                         Character enemy = player.checkEnemyCollision(gameState, player.getX(), player.getY() + 1);
@@ -639,14 +556,12 @@ public class Run extends Application {
                         }
                     }
                 } else if(key.getCode() == KeyCode.SPACE) {
-                    // Advance the turn
                     if(!gameState.getNextTurn() && !gameState.getPlayerEntity().isMoveTurn()) {
                         gameState.setNextTurn(true);
                     }
                 }
             } else if(gameState.getCurrentState() == GameState.STATE.BATTLE) {
                 if (key.getCode() == KeyCode.ESCAPE) {
-                    // For now just exit back to map view
                     gameState.setState(GameState.STATE.GAME);
                 } else if (key.getCode() == KeyCode.A) {
                     if (DEBUG_OUTPUT) {
@@ -665,21 +580,17 @@ public class Run extends Application {
                 }
             } else if(gameState.getCurrentState() == GameState.STATE.LEVEL_SELECTION) {
                 if(key.getCode() == KeyCode.ENTER) {
-                    // if you press enter on the level selection screen the game will load the selected map
                     gameState.setState(GameState.STATE.GAME);
                     gameState.getPlayerEntity().setMoveTurn(true);
                 }
             } else if(gameState.getCurrentState() == GameState.STATE.GAME_OVER) {
                 if(key.getCode() == KeyCode.ESCAPE) {
-                    // If you press escape on game over screen it'll exit to the main menu.
                     gameState = null;
                 }
             }
         });
-
-        // Mouse Input handling if needed this is the shell
         canvas.addEventHandler(MouseEvent.MOUSE_CLICKED, (mouseEvent) -> {
-            int mouseX = (int) mouseEvent.getX(); // This pulls the x and y coordinate from the mouseEvent
+            int mouseX = (int) mouseEvent.getX();
             int mouseY = (int) mouseEvent.getY();
             if(DEBUG_OUTPUT) {
                 System.out.println("Mouse Event: (" + mouseX + ", " + mouseY + ")");
@@ -687,8 +598,6 @@ public class Run extends Application {
             if(gameState != null && devMenu != null && devMenu.EDIT_MODE && gameState.getCurrentState() == GameState.STATE.GAME) {
                 int tileX = mouseX / gameState.getCurrentMap().getTileSize();
                 int tileY = mouseY / gameState.getCurrentMap().getTileSize();
-                //tileX += gameState.getCurrentMap().getXOffset();
-                //tileY += gameState.getCurrentMap().getYOffset();
                 if(DEBUG_OUTPUT) {
                     System.out.println("x,y: " + tileX + " " + tileY);
                 }
@@ -714,7 +623,6 @@ public class Run extends Application {
                         gameState.getCurrentMap().setMapTiles(tempMapTiles);
                     }
                 } else {
-                    // Handle Mouse Drag
                     if (mouseEvent.getButton() == MouseButton.PRIMARY) {
                         int releasedX = (int) mouseEvent.getSceneX() / gameState.getCurrentMap().getTileSize();
                         int releasedY = (int) mouseEvent.getSceneY() / gameState.getCurrentMap().getTileSize();
@@ -788,30 +696,26 @@ public class Run extends Application {
                             }
                         }
                     }
-                    // Reset Drag Values
                     DRAG_LOC[0] = -1;
                     DRAG_LOC[1] = -1;
                 }
             } else if(gameState == null || gameState.getCurrentState() == GameState.STATE.MAIN_MENU) {
-                // If no gameState exists or gameState is currently in MAIN_MENU mode
-                // We take the mouse click and see if it is in the same space as the "Play" label
-                int xLoc = menuNewGameBounds[0]; // (x,y) Location is the upper left of the rectangle
+                int xLoc = menuNewGameBounds[0];
                 int yLoc = menuNewGameBounds[1];
-                int xWidth = menuNewGameBounds[2]; // (x,y) Width/Height is the pixel width and height of the label
+                int xWidth = menuNewGameBounds[2];
                 int yHeight = menuNewGameBounds[3];
                 if(mouseX >= xLoc && mouseX <= xWidth + xLoc) {
                     if(mouseY <= yLoc && mouseY >= yLoc - yHeight) {
-                        newGame(); // If clicked start a new game
+                        newGame();
                     }
                 }
             } else if(gameState.getCurrentState() == GameState.STATE.GAME) {
-                int[] tileXY = { mouseX / TILE_SIZE, mouseY / TILE_SIZE }; // Gets the ( x, y ) of a tile
+                int[] tileXY = { mouseX / TILE_SIZE, mouseY / TILE_SIZE };
                 for(Entity e: gameState.getEntities()) {
-                    if(e instanceof Character) { // Only check characters
-                        int charX = ((Character) e).getX(); // get their x and y
+                    if(e instanceof Character) {
+                        int charX = ((Character) e).getX();
                         int charY = ((Character) e).getY();
                         if(charX == tileXY[0] && charY == tileXY[1]) {
-                            // If it is equal you've pressed the tile that that character occupies
                             lastSelectedCharUID = e.getUID();
                             if(DEBUG_OUTPUT) {
                                 System.out.println("You've clicked a Character");
@@ -829,31 +733,23 @@ public class Run extends Application {
                     }
                 }
             } else if(gameState.getCurrentState() == GameState.STATE.BATTLE) {
-                // DEFEND BUTTON
                 final int defendX = (SCREEN_WIDTH>>1)+(SCREEN_WIDTH>>4);
                 final int defendY = (SCREEN_MAP_HEIGHT>>1)+(SCREEN_MAP_HEIGHT>>3)+(SCREEN_MAP_HEIGHT>>4);
                 final int defendW = (SCREEN_WIDTH>>2)+(SCREEN_WIDTH>>3);
                 final int defendH = SCREEN_MAP_HEIGHT>>2;
                 if(mouseX >= defendX && mouseX <= defendX + defendW) {
-                    // within x bounds
                     if(mouseY >= defendY && mouseY <= defendY + defendH) {
-                        // also within y bounds
                         if(DEBUG_OUTPUT) {
                             System.out.println("Defend Button Clicked");
                         }
                     }
                 }
-                // ATTACK BUTTON
                 final int attackX = SCREEN_WIDTH>>4;
-                final int attackY = defendY; // Same code line
+                final int attackY = defendY;
                 final int attackW = (SCREEN_WIDTH>>2)+(SCREEN_WIDTH>>3);
                 final int attackH = SCREEN_MAP_HEIGHT>>2;
                 if(mouseX >= attackX && mouseX <= attackX + attackW) {
-                    // within x bounds
                     if(mouseY >= attackY && mouseY <= mouseY + attackH) {
-                        // within y bounds
-
-                        // activate animation
                         if(gameState.getPlayerEntity().isBattleTurn()) {
                             gameState.getPlayerEntity().setIsAttacking(true);
                         }
@@ -878,11 +774,8 @@ public class Run extends Application {
                 int count = 0;
                 for(int[] xy: squareXY) {
                     if(mouseX >= xy[0] && mouseX <= xy[0] + squareSize) {
-                        // within x bounds
                         if(mouseY >= xy[1] && mouseY <= xy[1] + squareSize) {
-                            // within y bounds
                             if(count < gameState.getMaps().size()) {
-                                // sets current map
                                 gameState.setCurrentMap(gameState.getMaps().get(count));
                             }
                         }
@@ -891,24 +784,14 @@ public class Run extends Application {
                 }
             }
         });
-        // Game screen mouse drag handler, only used for editMode
         canvas.addEventHandler(MouseDragEvent.DRAG_DETECTED, (mouseEvent) -> {
-            // Captures the tile x,y of the start of a mouse drag
             if(gameState != null && devMenu.EDIT_MODE && gameState.getCurrentState() == GameState.STATE.GAME) {
                 DRAG_LOC[0] = (int) mouseEvent.getSceneX() / gameState.getCurrentMap().getTileSize();
                 DRAG_LOC[1] = (int) mouseEvent.getSceneY() / gameState.getCurrentMap().getTileSize();
-
-                //DRAG_LOC[0] += gameState.getCurrentMap().getXOffset();
-                //DRAG_LOC[1] += gameState.getCurrentMap().getYOffset();
             }
         });
-        // Show the window after it's fully initialized
         primaryStage.setScene(rootScene);
         primaryStage.show();
-        // GAME LOOP, we use a lambda to override the handle() method of the animator
-        // Update then render and only every 1/30 of a second
-        // Animation timer tries to go for 1/60 or 60fps but we cap it
-        // Does a lot of the leg work needed to keep things running smoothly
         AnimationTimer animator = new AnimationTimer() {
             @Override
             public void handle(long arg0) {
@@ -922,9 +805,14 @@ public class Run extends Application {
         };
         animator.start();
     }
-    // Pulls all file names from a given directory and returns a String[] of the names including .dat .png etc
+
+    /**
+     * Returns the filenames from a directory as a string array where
+     * each index is a name of a file including extensions
+     * @param path the target directory path
+     * @return a string array where each index is the name of a file in the directory at path
+     */
     private static String[] getFileNamesFromDirectory(String path) {
-        // String path must be a windows directory, it can be an absolute path or relative path to the .jar/.class files
         File[] files;
         String[] fileNames = new String[0];
         try {
@@ -939,23 +827,46 @@ public class Run extends Application {
             }
 
         } catch (Exception e) {
-            // Need better error handling here, this indicates a significant flaw in file structure
             e.printStackTrace();
         }
         return fileNames;
     }
+
+    /**
+     * Return the int array [width, height] in tiles of the current map area
+     * @return the int array [width, height] in tiles of the current map area
+     */
     public static int[] getMapDimensions() {
         int[] result = new int[2];
         result[0] = SCREEN_WIDTH/TILE_SIZE;
         result[1] = SCREEN_MAP_HEIGHT/TILE_SIZE;
         return result;
     }
+
+    /**
+     * Returns the program version string.
+     * @return the program version string
+     */
     public String getProgramVersion() { return PROGRAM_VERSION; }
+
+    /**
+     * Returns the current game state.
+     * @return the current game state
+     */
     public GameState getGameState() {
         return gameState;
     }
+
+    /**
+     * Returns the last selected characters unique id.
+     * @return the last selected characters unique id
+     */
     public int getLastSelectChar () { return lastSelectedCharUID;}
-    // Run the JavaFX program, this will call the start() method and give it a Stage object to use as primary stage
+
+    /**
+     * The entry point for the program. We determine where /GameData/ parent folder is here.
+     * @param args command line options - unused.
+     */
     public static void main(String[] args) {
         String[] classPath = System.getProperty("java.class.path").split(";");
         if(!classPath[0].equals("")) {
@@ -965,4 +876,5 @@ public class Run extends Application {
         }
         launch(args);
     }
+
 }

@@ -1,7 +1,14 @@
 package org.dionthorn;
 
+/**
+ * The MartialClass defines the 'Fighter' or 'Martial' character class type
+ * it will provide the needed default information as well as Animation frames and spritesheet paths
+ */
 public class MartialClass extends CharacterClass {
 
+    /**
+     * Default Constructor assigns level 1 values and meta information on animation for the class
+     */
     public MartialClass() {
         this.deadTileID = 4;
         this.perLevelAttack = 5;

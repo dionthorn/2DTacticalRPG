@@ -18,32 +18,34 @@ import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-
 import java.util.ArrayList;
 
+/**
+ * DevMenu Class will be a secondary window that can be used for development related functions
+ * Such as draw maps, editing maps, etc.
+ */
 public class DevMenu extends Stage {
-    private Run app; // reference to parent application
 
-    public int SELECTED_TILE_ID = 0; // This is a sentinel value that determines which tileID to be used for drawing
-    public int SELECTED_TILE_SET_ID = 0; // This is a sentinel value that determines which tileSetID to be used
-    public int SELECTED_MAP_ID = 0; //  This is a sentinel value that determines which mapID to be used
+    private Run app;
+    public int SELECTED_TILE_ID = 0;
+    public int SELECTED_TILE_SET_ID = 0;
+    public int SELECTED_MAP_ID = 0;
     public boolean EDIT_MODE;
-
-    // Dev menu UI
-    private GridPane devMenu; // The main container
-    private Text devTileID, devTileSetID, devMapID, devMapPath; // dynamic updating text to show: tileID, tileSetID, etc
+    private GridPane devMenu;
+    private Text devTileID, devTileSetID, devMapID, devMapPath;
     private ScrollPane charInfoPane;
-    private CheckBox editMode;
     private CheckBox isFire;
     private CheckBox isImpassable;
-    private ArrayList<Integer> fireTileIDs = new ArrayList<Integer>();
-    private ArrayList<Integer> impassableTileIDs = new ArrayList<Integer>();
-    private ImageView tileSetView; // the currently selected tile set view
+    private ImageView tileSetView;
     private ComboBox<String> mapList = new ComboBox<>();
     private ComboBox<String> stateList = new ComboBox<>();
     private ArrayList<Text> charInfo, memInfo;
     private Font arial = new Font("Arial", 10);
 
+    /**
+     * Default DevMenu Constructor will generate the devMenu
+     * @param app the main game application as a reference, so we can draw and such on the map.
+     */
     public DevMenu(Run app) {
         this.app = app;
         this.setTitle(String.format("DEVMENU %s", app.getProgramVersion()));
@@ -51,85 +53,59 @@ public class DevMenu extends Stage {
         this.setY(0);
         Group devRoot = new Group();
         Scene devRootScene = new Scene(devRoot, 1024, 1024);
-        // Cardinal Direction style main UI container
         BorderPane devMainUI = new BorderPane();
         devRoot.getChildren().add(devMainUI);
-        // Add Main UI area
         devMenu = new GridPane();
         devMenu.setHgap(10);
         devMenu.setVgap(10);
-        // devMenu.setGridLinesVisible(true); // useful for testing alignment
         devMainUI.setCenter(devMenu);
         devMenu.setOnMouseClicked(this::devMenuClicked);
-
-        // devMenu.setGridLinesVisible(true); // DEBUG
-        // Add dev controls to devMenu
         devTileID = new Text(String.format("TileID: %s", SELECTED_TILE_ID));
         devTileID.setFont(new Font("Arial", 16));
         GridPane.setConstraints(devTileID, 0, 0);
-
         Button increaseTileID = new Button("+");
         GridPane.setConstraints(increaseTileID, 2, 0);
         increaseTileID.setOnAction(event -> tileMaxCheck());
-
         Button decreaseTileID = new Button("-");
         GridPane.setConstraints(decreaseTileID, 3, 0);
         decreaseTileID.setOnAction(event -> tileMinCheck());
-
-        // colIndex 4 is the selected tile image
-
-        editMode = new CheckBox("Edit Mode");
+        CheckBox editMode = new CheckBox("Edit Mode");
         editMode.setSelected(false);
         EDIT_MODE = false;
         GridPane.setConstraints(editMode, 5, 0);
         editMode.setOnAction(event -> EDIT_MODE = !EDIT_MODE);
-
         isFire = new CheckBox("isFire");
         GridPane.setConstraints(isFire, 6, 0);
         isFire.setOnAction(event -> setFire());
-
         isImpassable = new CheckBox("isImpassable");
         GridPane.setConstraints(isImpassable, 7, 0);
         isImpassable.setOnAction(event -> setImpassable());
-
         tileMetaCheck();
-
-        // rowIndex 1-7 are filled with the tileSetView Image
-
         devTileSetID = new Text(String.format("TileSet ID: %s", SELECTED_TILE_SET_ID));
         devTileSetID.setFont(new Font("Arial", 16));
         GridPane.setConstraints(devTileSetID, 0, 8, 4, 1);
-
         Button increaseTileSetID = new Button("+");
         GridPane.setConstraints(increaseTileSetID, 2, 8);
         increaseTileSetID.setOnAction(event -> tileSetMaxCheck());
-
         Button decreaseTileSetID = new Button("-");
         GridPane.setConstraints(decreaseTileSetID, 3, 8);
         decreaseTileSetID.setOnAction(event -> tileSetMinCheck());
-
         devMapID = new Text(String.format("Map ID: %s", SELECTED_MAP_ID));
         devMapID.setFont(new Font("Arial", 16));
         GridPane.setConstraints(devMapID, 0, 9, 3, 1);
-
         Button increaseMapID = new Button("+");
         GridPane.setConstraints(increaseMapID, 2, 9);
         increaseMapID.setOnAction(event -> mapIDMaxCheck());
-
         Button decreaseMapID = new Button("-");
         GridPane.setConstraints(decreaseMapID, 3, 9);
         decreaseMapID.setOnAction(event -> mapIDMinCheck());
-
         devMapPath = new Text("null");
         devMapPath.setFont(new Font("Arial", 10));
         GridPane.setConstraints(devMapPath, 0, 10, 2, 1);
-
         Button saveButton = new Button("Save Map");
         GridPane.setConstraints(saveButton, 2, 10, 3, 1);
         saveButton.setOnAction(event -> app.getGameState().getCurrentMap().saveData());
-
         GridPane.setConstraints(mapList, 0, 11, 2, 1);
-
         Button loadMap = new Button("Load Map");
         GridPane.setConstraints(loadMap, 2, 11, 3, 1);
         loadMap.setOnAction(event -> {
@@ -141,22 +117,19 @@ public class DevMenu extends Stage {
                 }
             }
         });
-
         Button devUpdate = new Button("Update");
         GridPane.setConstraints(devUpdate, 0, 12);
         devUpdate.setOnAction(event -> app.update());
-
         Button devLevelUp = new Button("Level Up");
-        devMenu.setConstraints(devLevelUp, 1, 12);
+        GridPane.setConstraints(devLevelUp, 1, 12);
         devLevelUp.setOnAction(event -> {
-            if(app.DEBUG_OUTPUT) {
+            if(Run.DEBUG_OUTPUT) {
                 System.out.println(app.getLastSelectChar());
             }
             if (app.getLastSelectChar() != -1) {
                 ((Character) app.getGameState().getEntities().get(app.getLastSelectChar())).levelUp();
             }
         });
-
         Button memData = new Button("Update resource usage data");
         GridPane.setConstraints(memData, 0, 13);
         memData.setOnAction(event -> {
@@ -178,7 +151,6 @@ public class DevMenu extends Stage {
             GridPane.setConstraints(memInfo.get(1), 0, 15, 3, 1);
             devMenu.getChildren().add(memInfo.get(1));
         });
-
         Button entityInfo = new Button("Update Entity Info");
         GridPane.setConstraints(entityInfo, 0, 16, 3, 1);
         entityInfo.setOnAction(event -> {
@@ -214,12 +186,10 @@ public class DevMenu extends Stage {
             GridPane.setConstraints(charInfoPane, 0, 17);
             devMenu.getChildren().add(charInfoPane);
         });
-
         for(GameState.STATE state: GameState.STATE.values()) {
             stateList.getItems().add(state.name());
         }
         GridPane.setConstraints(stateList, 0, 18);
-
         Button updateState = new Button("!Update State! CAN BREAK ENGINE");
         GridPane.setConstraints(updateState, 1, 18);
         updateState.setOnAction(event -> {
@@ -232,7 +202,6 @@ public class DevMenu extends Stage {
                 }
             }
         });
-
         devMenu.getChildren().addAll(devTileID, increaseTileID, decreaseTileID, editMode,
                 isFire, isImpassable, devUpdate, devLevelUp,
                 devTileSetID, increaseTileSetID, decreaseTileSetID,
@@ -241,14 +210,11 @@ public class DevMenu extends Stage {
                 mapList, loadMap,
                 memData, entityInfo,
                 stateList, updateState);
-
         this.setX(0D);
         this.setScene(devRootScene);
         this.show();
-
         devRootScene.addEventHandler(KeyEvent.KEY_PRESSED, (key) -> {
             if(key.getCode() == KeyCode.S) {
-                // save current map to file (PATH when created or "CUSTOM.{mapNum}.dat")
                 app.getGameState().getCurrentMap().saveData();
             } else if(key.getCode() == KeyCode.L) {
                 // Need to work on loading (maybe an actual splash screen with menu or something)
@@ -256,42 +222,39 @@ public class DevMenu extends Stage {
         });
     }
 
+    /**
+     * Mouse interaction handling for dev menu
+     * @param event the mouse event passed in by javafx
+     */
     private void devMenuClicked(MouseEvent event) {
         Node clickedNode = event.getPickResult().getIntersectedNode();
         if(clickedNode == tileSetView) {
-            // getCellBounds returns the cell size
             Bounds topCell = devMenu.getCellBounds(0,0);
-            double heightDiff = topCell.getHeight() + devMenu.getVgap() * 2; // We need to account for the nodes above
-            // the tilesetview AND the vertical gap (doubled because v gap is above & below each node)
+            double heightDiff = topCell.getHeight() + devMenu.getVgap() * 2;
             Bounds bounds = clickedNode.getBoundsInParent();
             double x = event.getX();
             double y = event.getY();
-
             ImageView view = tileSetView;
             double xScale = bounds.getWidth() / view.getImage().getWidth();
             double yScale = bounds.getHeight() / view.getImage().getHeight();
-
             x /= xScale;
             y /= yScale;
-
             int xCord = (int) x;
             int yCord = (int) y;
             yCord -= heightDiff;
             if(Run.DEBUG_OUTPUT) {
-                System.out.println(String.format("Ix=%d, Iy=%d", xCord, yCord)); // This is the (x, y) of the tileset Image
+                System.out.println(String.format("Ix=%d, Iy=%d", xCord, yCord));
             }
-
             int tileX = xCord / app.getGameState().getCurrentMap().getTileSize();
             int tileY = yCord / app.getGameState().getCurrentMap().getTileSize();
             if(Run.DEBUG_OUTPUT) {
-                System.out.println(String.format("Tx=%d, Ty=%d", tileX, tileY)); // This is the (x, y) of the Tile in the Image
+                System.out.println(String.format("Tx=%d, Ty=%d", tileX, tileY));
             }
             int maxX = (int) view.getImage().getWidth() / app.getGameState().getCurrentMap().getTileSize();
             if(tileY > 0) {
                 tileY = tileY * maxX;
             }
             int tileIDToChange = tileX + tileY;
-            // Need to check for if tile is 'blank' or not
             WritableImage toCheck = new WritableImage(app.getGameState().getCurrentMap().getTileSize(), app.getGameState().getCurrentMap().getTileSize());
             PixelReader pr = tileSetView.getImage().getPixelReader();
             int yOffset = (tileY / maxX) * app.getGameState().getCurrentMap().getTileSize();
@@ -302,8 +265,7 @@ public class DevMenu extends Stage {
                 }
             }
             if(TileSet.areImagesSame(app.getGameState().getCurrentMap().getTileSet(SELECTED_TILE_SET_ID).getBlank(), toCheck)) {
-                SELECTED_TILE_ID = app.getGameState().getCurrentMap().getTileSet(SELECTED_TILE_SET_ID).getTotalTiles() - 1; // Sets Tile to Blank
-                devTileID.setText(String.format("TileID: %s", SELECTED_TILE_ID));
+                SELECTED_TILE_ID = app.getGameState().getCurrentMap().getTileSet(SELECTED_TILE_SET_ID).getTotalTiles() - 1;
             } else {
                 int blankOffset = 0;
                 int[] removedIDs = app.getGameState().getCurrentMap().getTileSet(SELECTED_TILE_SET_ID).getRemovedTileID();
@@ -313,12 +275,15 @@ public class DevMenu extends Stage {
                     }
                 }
                 SELECTED_TILE_ID = tileIDToChange - blankOffset;
-                devTileID.setText(String.format("TileID: %s", SELECTED_TILE_ID));
             }
+            devTileID.setText(String.format("TileID: %s", SELECTED_TILE_ID));
         }
         tileMetaCheck();
     }
 
+    /**
+     * checks current tile meta data to ensure the check boxes are correct when you click on one.
+     */
     public void tileMetaCheck() {
         isFire.setSelected(false);
         isImpassable.setSelected(false);
@@ -334,6 +299,10 @@ public class DevMenu extends Stage {
         }
     }
 
+    /**
+     * tag the selected tile id as an fire tile in its meta data
+     * this allows quick tileset meta data generation with a graphical ui
+     */
     public void setFire() {
         if(!isFire.isSelected()) {
             app.getGameState().getCurrentMap().setMapFireTileIDs(SELECTED_TILE_ID, true);
@@ -345,6 +314,10 @@ public class DevMenu extends Stage {
         tileMetaCheck();
     }
 
+    /**
+     * tag the selected tile id as an impassable tile in its meta data
+     * this allows quick tileset meta data generation with a graphical ui
+     */
     public void setImpassable() {
         if(!isImpassable.isSelected()) {
             app.getGameState().getCurrentMap().setMapImpassableTileIDs(SELECTED_TILE_ID, true);
@@ -354,6 +327,9 @@ public class DevMenu extends Stage {
         tileMetaCheck();
     }
 
+    /**
+     * Will safely increase the selected tile id flag
+     */
     private void tileMaxCheck() {
         if(SELECTED_TILE_ID + 1 >= app.getGameState().getCurrentMap().getTileSet(SELECTED_TILE_SET_ID).getTotalTiles()) {
             System.err.println("TileID cannot exceed TileSet maximum");
@@ -366,6 +342,9 @@ public class DevMenu extends Stage {
         }
     }
 
+    /**
+     * Will safely decrease the selected tile id flag
+     */
     private void tileMinCheck() {
         if(SELECTED_TILE_ID - 1 < 0) {
             System.err.println("TileID cannot exceed map minimum");
@@ -378,6 +357,9 @@ public class DevMenu extends Stage {
         }
     }
 
+    /**
+     * Will safely increase the selected tile set id flag
+     */
     private void tileSetMaxCheck() {
         if(SELECTED_TILE_SET_ID + 1 >= app.getGameState().getCurrentMap().getTileSets().length) {
             System.err.println("TileSetID cannot exceed map maximum");
@@ -391,6 +373,9 @@ public class DevMenu extends Stage {
         }
     }
 
+    /**
+     * Will safely decrease the selected tile set id flag
+     */
     private void tileSetMinCheck() {
         if(SELECTED_TILE_SET_ID - 1 < 0) {
             System.err.println("TileSetID cannot exceed map minimum");
@@ -404,8 +389,12 @@ public class DevMenu extends Stage {
         }
     }
 
+    /**
+     * Will safely increase the selected map id flag
+     * if you go beyond the map id of the current count of loaded maps it will auto generate a new
+     * randomly generated map based off the currently loaded tilesets
+     */
     private void mapIDMaxCheck() {
-        // move up a map ID or generate a new one
         try {
             app.getGameState().setCurrentMap(app.getGameState().getMaps().get(SELECTED_MAP_ID + 1));
             app.getGameState().getPlayerEntity().setCurrentMap(app.getGameState().getCurrentMap(), 0, 0);
@@ -425,8 +414,10 @@ public class DevMenu extends Stage {
         }
     }
 
+    /**
+     * Will safely decrease the selected map id flag
+     */
     private void mapIDMinCheck() {
-        // move down a map ID
         if(SELECTED_MAP_ID - 1 < 0) {
             System.err.println("Map ID cannot be less than 0");
         } else {
@@ -442,14 +433,35 @@ public class DevMenu extends Stage {
         }
     }
 
+    /**
+     * Returns the root grind pane object.
+     * @return the root grind pane object
+     */
     public GridPane getDevMenu() { return devMenu; }
 
+    /**
+     * Returns the current tile set view.
+     * @return the current tile set view
+     */
     public ImageView getTileSetView() { return tileSetView; }
 
+    /**
+     * Sets the tileSetView for rendering the tileset original.
+     * @param tileSetView the full tile set to be rendered on the devmenu
+     */
     public void setTileSetView(ImageView tileSetView) { this.tileSetView = tileSetView; }
 
+    /**
+     * Returns the map path text object.
+     * @return the map path text object
+     */
     public Text getDevMapPath() { return devMapPath; }
 
+    /**
+     * Returns the mapList drop box.
+     * @return the map list drop box
+     */
     public ComboBox<String> getMapList() { return mapList; }
+
 }
 

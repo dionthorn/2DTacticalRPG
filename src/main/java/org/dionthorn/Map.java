@@ -4,58 +4,53 @@ import javafx.scene.image.Image;
 import java.io.*;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Random;
 
-// Pre-Complied Maps Should be located in /GameData/Maps
-
+/**
+ * The Map Class will manage tilesets and tile meta information
+ */
 public class Map {
-    // Map class is the in memory representation of a game map
-    private static int GEN_COUNT = 0; // will only be used in beta for more maps
-    // Used to determine metaData
-    private final int WIDTH_DATA = 0; // Width in tiles
-    private final int HEIGHT_DATA = 1; // Height in tiles
-    private final int TILE_DATA = 2; // Tile Size in pixels
-    private final int IMG_SRC_DATA = 3; // tile set paths should be third entry and all past that.
-    // Tile meta data should be a file named the exact same as .dat but named .meta
-    private String PATH; // Relative path to this maps .dat file
+    private static int GEN_COUNT = 0;
+    private String PATH;
     private String metaPATH;
     private String metaEnemies;
     private String metaAllies;
     private String metaStartLoc;
-    private int TILE_SIZE = 32; // Tile size in pixels could be per map basis though
+    private int TILE_SIZE = 32;
     private MapTile[][] mapTiles;
-    private int mapWidth; // Unit: Tiles
+    private int mapWidth;
     private int mapHeight;
-    private ArrayList<ArrayList<Integer>> mapDataTileMetaIDs = new ArrayList<ArrayList<Integer>>();
-    // List of tileSets used by map (maybe for Beta enable use of multiple tileSets per map)
+    private ArrayList<ArrayList<Integer>> mapDataTileMetaIDs = new ArrayList<>();
     private ArrayList<TileSet> tileSets = new ArrayList<>();
 
+    /**
+     * Default Map Constructor will take a .dat file path and generate based on that,
+     * the .meta file is assumed to have the same name as the .dat file.
+     * @param datPath the associated .dat file path to generate the map with.
+     */
     public Map(String datPath) {
-        // Load a map from a file
         GEN_COUNT++;
         PATH = datPath;
         String[] tempStr = datPath.split("\\.");
-        // process meta data
         metaPATH = tempStr[0] + ".meta";
         String[] tileMetaData = getFileLines(metaPATH);
         for(int i=0; i< MapTile.TileType.values().length; i++) {
-            mapDataTileMetaIDs.add(new ArrayList<Integer>());
+            mapDataTileMetaIDs.add(new ArrayList<>());
         }
         for(String line: tileMetaData) {
             if(line.contains("FIRE")) {
                 String[] tileIdsFire = line.split(":")[0].split(",");
-                for(int i=0; i<tileIdsFire.length; i++) {
-                    if(!tileIdsFire[i].equals("")) {
-                        int tempInt = Integer.parseInt(tileIdsFire[i]);
+                for (String s : tileIdsFire) {
+                    if (!s.equals("")) {
+                        int tempInt = Integer.parseInt(s);
                         mapDataTileMetaIDs.get(MapTile.TileType.FIRE.ordinal()).add(tempInt);
                     }
                 }
             } else if(line.contains("IMPASSABLE")) {
                 String[] tileIdsImpassable = tileMetaData[1].split(":")[0].split(",");
-                for(int i=0; i<tileIdsImpassable.length; i++) {
-                    if(!tileIdsImpassable[i].equals("")) {
-                        int tempInt = Integer.parseInt(tileIdsImpassable[i]);
+                for (String s : tileIdsImpassable) {
+                    if (!s.equals("")) {
+                        int tempInt = Integer.parseInt(s);
                         mapDataTileMetaIDs.get(MapTile.TileType.IMPASSABLE.ordinal()).add(tempInt);
                     }
                 }
@@ -67,33 +62,30 @@ public class Map {
                 metaStartLoc = line;
             }
         }
-        // process tile data
         boolean first = true;
         String[] data = getFileLines(PATH);
         int xCount = 0;
         int yCount = 0;
         for(String line: data) {
             if(first) {
-                // The first line of file must contain metadata about the map: width/height in tiles
-                // tileSetID:TileID for each tile, and finally the tile size in pixels.
                 String[] splitLine = line.replaceAll(" ", "").split(",");
+                int WIDTH_DATA = 0;
+                int HEIGHT_DATA = 1;
+                int TILE_DATA = 2;
+                int IMG_SRC_DATA = 3;
                 mapWidth = Integer.parseInt(splitLine[WIDTH_DATA]);
                 mapHeight = Integer.parseInt(splitLine[HEIGHT_DATA]);
                 mapTiles = new MapTile[mapHeight][mapWidth];
                 TILE_SIZE = Integer.parseInt(splitLine[TILE_DATA]);
-                // For each space after this we should have tileSet paths
-                for(int step=IMG_SRC_DATA; step<splitLine.length; step++) {
+                for(int step = IMG_SRC_DATA; step<splitLine.length; step++) {
                     tileSets.add(new TileSet(splitLine[step], TILE_SIZE));
                 }
                 first = false;
             } else {
-                // This is the parsing of tileSetIDs and tileIDs
                 String[] splitLine = line.replaceAll(" ", "").split(",");
                 for(String toProcess: splitLine) {
                     String[] finalSplit = toProcess.split(":");
-                    // tileSetID:tileID
                     mapTiles[yCount][xCount] = new MapTile(Integer.parseInt(finalSplit[0]),Integer.parseInt(finalSplit[1]));
-                    //Temporary parsing for metadata
                     boolean cont = true;
                     for(int x = 0; x <mapDataTileMetaIDs.get(MapTile.TileType.FIRE.ordinal()).size(); x++) {
                         if(mapTiles[yCount][xCount].getTileID() == mapDataTileMetaIDs.get(MapTile.TileType.FIRE.ordinal()).get(x)) {
@@ -116,8 +108,11 @@ public class Map {
         }
     }
 
+    /**
+     * Random Map Constructor, will generate a new map based on the provided tileset paths
+     * @param tilePaths the target paths to use for the new random map generation
+     */
     public Map(String[] tilePaths) {
-        // Random map generation based on the provided tilePaths
         GEN_COUNT++;
         Random rand = new Random();
         PATH = String.format("src/main/java/resources/GameData/Maps/RANDOM%d.dat", GEN_COUNT);
@@ -135,11 +130,14 @@ public class Map {
             }
         }
     }
-
-
     // Getters and Setters
+    /**
+     * Returns an Image of the tile provided by its TileSet index and TileID associated with this Map.
+     * @param setIndex the tileset index associated to this map
+     * @param tileID the tileid index associated to this map
+     * @return the image of the tile at the provided setindex and tileid
+     */
     public Image getTile(int setIndex, int tileID) {
-        // Access the Image of a specific tileSetID/tileID
         if(setIndex > tileSets.size() - 1) {
             return tileSets.get(0).getBlank();
         } else if(tileID > tileSets.get(setIndex).getTiles().length - 1) {
@@ -149,18 +147,46 @@ public class Map {
         }
     }
 
+    /**
+     * Returns a int of the Maps tile size in pixels
+     * @return the int of the maps tile size in pixels
+     */
     public int getTileSize() { return TILE_SIZE; }
 
+    /**
+     * Returns a MapTile[][] of the current Maps tiles
+     * @return the maptile matrix of the current maps tiles.
+     */
     public MapTile[][] getMapTiles() { return mapTiles; }
 
+    /**
+     * Returns a int of the current Maps width in Tiles
+     * @return the int of the current maps width in tiles
+     */
     public int getMapWidth() { return mapWidth; }
 
+    /**
+     * Returns a int of the current Maps height in Tiles
+     * @return the int of the current maps height in tiles
+     */
     public int getMapHeight() { return mapHeight; }
 
+    /**
+     * Returns a String of the associated .dat file to this Map.
+     * @return the string of the associated .dat file to this map
+     */
     public String getPATH() { return PATH; }
 
+    /**
+     * Returns a String of the associated .meta file to this Map.
+     * @return the string of the associated .meta file to this map
+     */
     public String getMetaPATH() { return metaPATH; }
 
+    /**
+     * Returns a String[] of the relative paths to all the TileSets associated to this map.
+     * @return the string array of the relative paths to all the tilesets associated to this map
+     */
     public String[] getTileSetPaths() {
         String[] tilePaths = new String[tileSets.size()];
         for(int step=0; step<tileSets.size(); step++) {
@@ -169,18 +195,41 @@ public class Map {
         return tilePaths;
     }
 
+    /**
+     * Returns a TileSet[] of all the associated TileSets to this map.
+     * @return the tileset array of all tilesets associated to this map
+     */
     public TileSet[] getTileSets() {
         TileSet[] toReturn = new TileSet[tileSets.size()];
         tileSets.toArray(toReturn);
         return toReturn;
     }
 
+    /**
+     * Returns the TileSet associated with this map at index.
+     * @param index the tileset to check
+     * @return the tileset of this map for index provided
+     */
     public TileSet getTileSet(int index) { return tileSets.get(index); }
 
+    /**
+     * Will set the Maps mapTiles array to a new MapTile[][] set.
+     * @param newMap the new MapTile matrix to set this Maps mapTiles
+     */
     public void setMapTiles(MapTile[][] newMap) { mapTiles = newMap; }
 
+    /**
+     * Returns the TileType of the MapTile located at x,y.
+     * @param x the target x location to check
+     * @param y the target y location to check
+     * @return the MapTile.TileType of the target tile
+     */
     public MapTile.TileType getTileType(int x, int y) { return mapTiles[y][x].getType(); }
 
+    /**
+     * Returns an int[] of all the tileIDs on this map that are considered Fire.
+     * @return an integer array of all the tileIDs on this map that are considered fire
+     */
     public int[] getMapFireTileIDs() {
         int steps = mapDataTileMetaIDs.get(MapTile.TileType.FIRE.ordinal()).size();
         int[] result = new int[steps];
@@ -190,6 +239,10 @@ public class Map {
         return result;
     }
 
+    /**
+     * Returns an int[] of all the tileIDs on this map that are considered Impassable.
+     * @return an integer array of all the tileIDs on this map that are considered impassable
+     */
     public int[] getMapImpassableTileIDs() {
         int steps = mapDataTileMetaIDs.get(MapTile.TileType.IMPASSABLE.ordinal()).size();
         int[] result = new int[steps];
@@ -199,6 +252,11 @@ public class Map {
         return result;
     }
 
+    /**
+     * Sets this maps fire tile ids or removes them
+     * @param tileID the target tileID to add or remove from the fire list
+     * @param remove true will remove the tileID from the list and false will add it
+     */
     public void setMapFireTileIDs(int tileID, boolean remove) {
         if(remove) {
             int index = mapDataTileMetaIDs.get(MapTile.TileType.FIRE.ordinal()).indexOf(tileID);
@@ -208,6 +266,11 @@ public class Map {
         }
     }
 
+    /**
+     * Sets this maps impassable tile ids or removes them.
+     * @param tileID the target tileID to add or remove from the impassable list
+     * @param remove true will remove the tileID from the list and false will add it
+     */
     public void setMapImpassableTileIDs(int tileID, boolean remove) {
         if(remove) {
             int index = mapDataTileMetaIDs.get(MapTile.TileType.IMPASSABLE.ordinal()).indexOf(tileID);
@@ -217,19 +280,36 @@ public class Map {
         }
     }
 
+    /**
+     * Returns the full line of meta data for Enemies information.
+     * @return a string that represents the enemies for this map
+     */
     public String getMetaEnemies() {
         return metaEnemies;
     }
 
+    /**
+     * Returns the full line of meta data for Allies information.
+     * @return a string that represents the allies for this map
+     */
     public String getMetaAllies() {
         return metaAllies;
     }
 
+    /**
+     * Returns the full line of meta data for Start Location information.
+     * @return a string that represents the players start location for this map
+     */
     public String getMetaStartLoc() {
         return metaStartLoc;
     }
 
     // File Operation Static methods
+    /**
+     * Will check to see if a file at path exists and return true or false.
+     * @param path the target files path
+     * @return returns boolean true if a file exists at path and boolean false if it doesn't.
+     */
     public static boolean doesFileExist(String path) {
         boolean answer = false;
         try {
@@ -240,8 +320,13 @@ public class Map {
         return answer;
     }
 
+    /**
+     * Will convert the file at path into a String[] where each index is a line from the file.
+     * @param path the target files path
+     * @return a string array where each index is the corresponding line in the target file at path
+     *         will return null if it fails or file doesn't exist
+     */
     public static String[] getFileLines(String path) {
-        // Will return null if it fails or file doesn't exist
         String[] toReturn = null;
         if(doesFileExist(path)) {
             File targetFile = new File(path);
@@ -252,25 +337,24 @@ public class Map {
                 e.printStackTrace();
             }
         } else {
-            // Pretty serious file structure problem if this happens
             System.err.println(String.format("File: %s Doesn't Exist!", path));
         }
         return toReturn;
     }
 
+    /**
+     * Will either create a new file at path, or overwrite an existing one. will take each string in data and
+     * write a new line per string into the file at path.
+     * @param path the destination to create or overwrite data
+     * @param data the data where each index in data will be a new line in the file
+     */
     public static void writeFileLines(String path, String[] data) {
-        // Will either write over file from beginning or create a new file
-        if(doesFileExist(path)) {
-            // File already exists so we will write over it
-        } else {
-            // File doesn't already exist so we will create a new one
+        if(!doesFileExist(path)) {
             System.out.println(String.format("File: %s Doesn't Exist Creating New File!", path));
             createFile(path);
         }
         File targetFile = new File(path);
         try {
-            // We must take the input String[] and convert each index into a byte[]
-            // of the string + a system dependant line separator
             ByteArrayOutputStream convertToBytes = new ByteArrayOutputStream();
             FileOutputStream fileWriter = new FileOutputStream(targetFile);
             for(String s: data) {
@@ -284,8 +368,11 @@ public class Map {
         }
     }
 
+    /**
+     * Will create a new File if no file at the given path exists otherwise it does nothing.
+     * @param path the target path to create a new file, will do nothing if a file already exists
+     */
     public static void createFile(String path) {
-        // will either create a new file or inform that the file already exists
         File file = new File(path);
         try {
             if(file.createNewFile()) {
@@ -298,17 +385,24 @@ public class Map {
         }
     }
 
+    /**
+     * Will generate both a name.meta + name.dat file inside /GameData/Maps
+     * this will overwrite any files of the same name.
+     * This should be the inverse of the deserial process used by the Map constructor.
+     * the .dat file has one line of meta data of the form: width,height,tilesize,tilesetpaths
+     * such as: 32, 24, 32, 0_mapOne.png, 1_mapTwo.png,
+     * where tilesetpaths can be arbitrarily long.
+     * the rest of the .dat files will be of the form 1:0, where , is the delimiter of a tile and 1:0 is the tilesetID:tileID
+     * the .meta file will be several lines of meta data where associated data is tagged at the end with a :{type}
+     * where type is the meta tag such as 5,7,:STARTLOC where :STARTLOC is the meta tag
+     */
     public void saveData() {
-        // Formats the current maps information into a text editable .dat file
-        // The map constructor and this method must use the same serial/deserial system
         String[] dataAsString = new String[mapHeight + 1];
         String formattedPaths = "";
         for(String path: getTileSetPaths()) {
             formattedPaths += path + ", ";
         }
         dataAsString[0] = String.format("%d, %d, %d, %s", mapWidth, mapHeight, TILE_SIZE, formattedPaths);
-        // First Line Must be Width/Height/TileSize/TileSetPaths metadata
-        // TileSetPaths can be as long as needed
         int yCount = 0;
         int xCount = 0;
         int lineCount = 1;
@@ -326,10 +420,7 @@ public class Map {
                 yCount++;
             }
         }
-        // save .dat file
         writeFileLines(PATH, dataAsString);
-
-        // Next make the .meta file
         dataAsString = new String[5];
         dataAsString[0] = "";
         for(int i=0; i<mapDataTileMetaIDs.get(MapTile.TileType.FIRE.ordinal()).size(); i++) {
@@ -341,12 +432,9 @@ public class Map {
             dataAsString[1] += mapDataTileMetaIDs.get(MapTile.TileType.IMPASSABLE.ordinal()).get(i) + ",";
         }
         dataAsString[1] += ":IMPASSABLE";
-        // make sure to write the allies/enemies too
         dataAsString[2] = metaEnemies;
         dataAsString[3] = metaAllies;
-        // Need to add STARTLOC meta data
         dataAsString[4] += metaStartLoc;
-        // Save map .meta
         writeFileLines(metaPATH, dataAsString);
     }
 

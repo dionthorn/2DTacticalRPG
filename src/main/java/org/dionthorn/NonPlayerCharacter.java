@@ -2,27 +2,41 @@ package org.dionthorn;
 
 import javafx.scene.canvas.GraphicsContext;
 
+/**
+ * The NPC class creates Character objects but adds the needed AI logic for NPCs
+ */
 public class NonPlayerCharacter extends Character {
 
     private Dice dice = new Dice(2);
     private int collisionCounter = 0;
 
+    /**
+     * NPC Default Constructor will assign all needed superclass requirements
+     * @param map the assigned map for the NPC
+     * @param spritePath the path to the NPC spritesheet
+     * @param name the name of the NPC
+     * @param x the default x location of the NPC
+     * @param y the default y location of the NPC
+     * @param charClass the default CharacterClass of the NPC
+     */
     public NonPlayerCharacter(Map map, String spritePath, String name, int x, int y, CharacterClass charClass) {
         super(map, spritePath, name, x, y, charClass);
     }
 
+    /**
+     * NPC AI random movement logic will attempt 10 random directions if no solution is found it will end turn
+     * @param gameState used to determine where other entities are for NPC movement.
+     */
     public void moveRandom(GameState gameState) {
-        int direction = dice.roll() - 1; // 0 is x        1 is y
-        int posORneg = dice.roll() - 1;  // 0 is positive 1 is negative
+        int direction = dice.roll() - 1;
+        int posORneg = dice.roll() - 1;
         if (direction == 0) {
-            // x axis
             if (posORneg == 0) {
-                // Positive
                 Character target = checkEnemyCollision(gameState, this.x + 1, this.y);
                 if (target == null) {
                     if(checkFriendlyCollision(gameState, this.x + 1, this.y)) {
                         collisionCounter++;
-                        this.update(gameState); // Reroll
+                        this.update(gameState);
                     } else {
                         move(1, 0);
                     }
@@ -31,16 +45,15 @@ public class NonPlayerCharacter extends Character {
                         gameState.startBattle(this, target);
                     } else {
                         collisionCounter++;
-                        this.update(gameState); // Reroll
+                        this.update(gameState);
                     }
                 }
             } else {
-                // Negative
                 Character target = checkEnemyCollision(gameState, this.x - 1, this.y);
                 if (target == null) {
                     if(checkFriendlyCollision(gameState, this.x - 1, this.y)) {
                         collisionCounter++;
-                        this.update(gameState); // Reroll
+                        this.update(gameState);
                     } else {
                         move(-1, 0);
                     }
@@ -49,19 +62,17 @@ public class NonPlayerCharacter extends Character {
                         gameState.startBattle(this, target);
                     } else {
                         collisionCounter++;
-                        this.update(gameState); // Reroll
+                        this.update(gameState);
                     }
                 }
             }
         } else {
-            // y axis
             if (posORneg == 0) {
-                // Positive
                 Character target = checkEnemyCollision(gameState, this.x, this.y + 1);
                 if (target == null) {
                     if(checkFriendlyCollision(gameState, this.x, this.y + 1)) {
                         collisionCounter++;
-                        this.update(gameState); // Reroll
+                        this.update(gameState);
                     } else {
                         move(0, 1);
                     }
@@ -70,16 +81,15 @@ public class NonPlayerCharacter extends Character {
                         gameState.startBattle(this, target);
                     } else {
                         collisionCounter++;
-                        this.update(gameState); // Reroll
+                        this.update(gameState);
                     }
                 }
             } else {
-                // Negative
                 Character target = checkEnemyCollision(gameState, this.x, this.y - 1);
                 if (target == null) {
                     if(checkFriendlyCollision(gameState, this.x, this.y - 1)) {
                         collisionCounter++;
-                        this.update(gameState); // Reroll
+                        this.update(gameState);
                     } else {
                         move(0, -1);
                     }
@@ -88,39 +98,42 @@ public class NonPlayerCharacter extends Character {
                         gameState.startBattle(this, target);
                     } else {
                         collisionCounter++;
-                        this.update(gameState); // Reroll
+                        this.update(gameState);
                     }
                 }
             }
         }
     }
 
+    /**
+     * Draws the NPC to the Canvas
+     * @param gc the graphics context is used to draw onto the canvas object during gameplay
+     */
     @Override
     public void draw(GraphicsContext gc) {
-        // Will be called by the JavaFX AnimationTimer each frame!
-        // The gc can be used to draw onto the canvas
         gc.drawImage(getCurrentSprite(), getX() * tileSize, getY() * tileSize,32,32);
     }
 
+    /**
+     * When an NPC is updated it will perform its AI functions
+     * @param gameState the current gameState used to update the entity
+     */
     @Override
     public void update(GameState gameState) {
-        // Will be called just before a draw() call, can be used to update in between frames
         if(isMoveTurn && gameState.getNextTurn()) {
             if(isAlive && collisionCounter < 10) {
-                // New move logic, check if enemy is on same x axis, if true move towards, otherwise random move.
                 boolean playerTeamCheck = false;
                 for(Entity e: gameState.getPlayerTeam()) {
-                    if(e.equals(this)) {
+                    if (e.equals(this)) {
                         playerTeamCheck = true;
+                        break;
                     }
                 }
-                boolean onSameY = false; // if enemy on same Y axis
-                boolean posX = false; // if enemy is in the pos x direction otherwise in neg x direction
+                boolean onSameY = false;
+                boolean posX = false;
                 if(playerTeamCheck) {
-                    // this entity is on player team so search enemy team
                     for(Entity e: gameState.getEnemyTeam()) {
                         if(((PhysicalEntity) e).getY() == this.getY()) {
-                            // on same y axis
                             if(((Character) e).isAlive()) {
                                 onSameY = true;
                                 if(((PhysicalEntity) e).getX() > this.getX()) {
@@ -130,7 +143,6 @@ public class NonPlayerCharacter extends Character {
                         }
                     }
                 } else {
-                    // this entity is on enemy team so search player team
                     for(Entity e: gameState.getPlayerTeam()) {
                         if(((PhysicalEntity) e).getY() == this.getY()) {
                             if(((Character) e).isAlive()) {
@@ -143,9 +155,7 @@ public class NonPlayerCharacter extends Character {
                     }
                 }
                 if(onSameY) {
-                    // move toward enemy
                     if(posX) {
-                        // move in posX direction
                         Character target = checkEnemyCollision(gameState, this.x + 1, this.y);
                         if (target == null) {
                             if(checkFriendlyCollision(gameState, this.x + 1, this.y)) {
@@ -161,7 +171,6 @@ public class NonPlayerCharacter extends Character {
                             }
                         }
                     } else {
-                        // move in negX direction
                         Character target = checkEnemyCollision(gameState, this.x - 1, this.y);
                         if (target == null) {
                             if(checkFriendlyCollision(gameState, this.x - 1, this.y)) {
@@ -178,7 +187,6 @@ public class NonPlayerCharacter extends Character {
                         }
                     }
                 } else {
-                    // If AI attempt isn't possible attempt to move randomly.
                     moveRandom(gameState);
                 }
             } else if(collisionCounter >= 10) {
@@ -187,7 +195,6 @@ public class NonPlayerCharacter extends Character {
                 }
                 collisionCounter = 0;
             }
-            // Advance turn to next in line
             if(gameState.getPlayerTeam().contains(this)) {
                 boolean found = false;
                 for(Entity e: gameState.getPlayerTeam()) {
@@ -215,7 +222,6 @@ public class NonPlayerCharacter extends Character {
                     ((Character) gameState.getPlayerTeam().get(0)).setMoveTurn(true);
                 }
             }
-            // End this NPCs turn and inform gameState
             isMoveTurn = false;
             gameState.setNextTurn(false);
         }
