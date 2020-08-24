@@ -18,6 +18,8 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Run will handle the core engine of the game including the JavaFX Application, rendering, updating, etc.
@@ -25,8 +27,8 @@ import java.util.concurrent.TimeUnit;
 public class Run extends Application {
 
     private final String PROGRAM_VERSION = "v0.2.1a";
+    public static Logger programLogger = Logger.getLogger("programLogger");
     public static String GAME_DATA_PATH = "";
-    public static boolean DEBUG_OUTPUT = false;
     private static final int SCREEN_WIDTH = 1024;
     private static final int SCREEN_HEIGHT = 1024;
     private static final int SCREEN_MAP_HEIGHT = 768;
@@ -38,7 +40,9 @@ public class Run extends Application {
     private long startTime = System.nanoTime();
     private long currentTime;
     private Image mainMenuBg = new Image("file:" + GAME_DATA_PATH + "/Art/main_menu.png");
-    private Image paperBg = new Image("file:" + GAME_DATA_PATH + "/Art/paper.png", SCREEN_WIDTH, SCREEN_HEIGHT-SCREEN_MAP_HEIGHT, false, false);
+    private Image paperBg = new Image("file:" + GAME_DATA_PATH + "/Art/paper.png",
+            SCREEN_WIDTH, SCREEN_HEIGHT-SCREEN_MAP_HEIGHT, false, false
+    );
     private int battleFrameCounter = 0;
     private GraphicsContext gc;
     private GameState gameState;
@@ -51,17 +55,19 @@ public class Run extends Application {
     private void render() {
         if (gameState != null && devMenu != null) {
             Image selectedTileImg = gameState.getCurrentMap().getTile(devMenu.SELECTED_TILE_SET_ID,
-                    devMenu.SELECTED_TILE_ID);
+                    devMenu.SELECTED_TILE_ID
+            );
             ImageView selectedTileImgView = new ImageView(selectedTileImg);
             devMenu.getDevMenu().getChildren().add(selectedTileImgView);
             GridPane.setConstraints(selectedTileImgView, 4, 0);
-
             devMenu.getDevMenu().getChildren().remove(devMenu.getTileSetView());
             Image tileSet = gameState.getCurrentMap().getTileSet(devMenu.SELECTED_TILE_SET_ID).getTileSetSrc();
             devMenu.setTileSetView(new ImageView(tileSet));
             devMenu.getDevMenu().getChildren().add(devMenu.getTileSetView());
-            GridPane.setConstraints(devMenu.getTileSetView(), 0, 2,
-                    6, 6);
+            GridPane.setConstraints(devMenu.getTileSetView(),
+                    0, 2,
+                    6, 6
+            );
         }
         if (gameState == null || gameState.getCurrentState() == GameState.STATE.MAIN_MENU) {
             gc.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -74,7 +80,8 @@ public class Run extends Application {
             Text menuTitle = new Text(title);
             menuTitle.setFont(menuTitleFont);
             gc.fillText(title, (SCREEN_WIDTH >> 1) - (menuTitle.getLayoutBounds().getWidth() / 2),
-                    SCREEN_HEIGHT >> 4);
+                    SCREEN_HEIGHT >> 4
+            );
             Font menuOptionsFont = new Font("Arial", 28);
             gc.setFont(menuOptionsFont);
             String newGameString = "Play";
@@ -91,7 +98,8 @@ public class Run extends Application {
             MapTile[][] mapTiles = gameState.getCurrentMap().getMapTiles();
             for (int y = 0; y < mapTiles.length; y++) {
                 for (int x = 0; x < mapTiles[0].length; x++) {
-                    gc.drawImage(gameState.getCurrentMap().getTile(mapTiles[y][x].getTileSet(), mapTiles[y][x].getTileID()),
+                    gc.drawImage(gameState.getCurrentMap().getTile(mapTiles[y][x].getTileSet(),
+                            mapTiles[y][x].getTileID()),
                             x * gameState.getCurrentMap().getTileSize(),
                             y * gameState.getCurrentMap().getTileSize()
                     );
@@ -165,11 +173,12 @@ public class Run extends Application {
                             gameState.setState(GameState.STATE.GAME_OVER);
                         }
                     } else {
-                        if (target != null && ((Character) target).isAlive()) {
+                        if (((Character) target).isAlive()) {
                             gc.setStroke(Color.WHITE);
                             gc.setFill(Color.BLACK);
                             gc.setTextAlign(TextAlignment.LEFT);
-                            gc.fillText(name + " Please Press Spacebar To Advance Their Turn", 10, SCREEN_HEIGHT - 20);
+                            gc.fillText(name + " Please Press Spacebar To Advance Their Turn",
+                                    10, SCREEN_HEIGHT - 20);
                         } else {
                             if (!gameState.getNextTurn() && !gameState.getPlayerEntity().isMoveTurn()) {
                                 gameState.setNextTurn(true);
@@ -186,19 +195,24 @@ public class Run extends Application {
             gc.setFill(Color.GREY);
             int stageX, stageY, stageW, stageH;
             gc.fillRect(stageX = SCREEN_WIDTH >> 5, stageY = SCREEN_MAP_HEIGHT >> 5,
-                    stageW = (SCREEN_WIDTH - (SCREEN_WIDTH >> 4)), stageH = (SCREEN_MAP_HEIGHT >> 1) + (SCREEN_MAP_HEIGHT >> 3));
+                    stageW = (SCREEN_WIDTH - (SCREEN_WIDTH >> 4)),
+                    stageH = (SCREEN_MAP_HEIGHT >> 1) + (SCREEN_MAP_HEIGHT >> 3)
+            );
             Character ally = gameState.getAttacker();
             Character enemy = gameState.getDefender();
             for (Entity c : gameState.getEnemyTeam()) {
                 if (c == gameState.getAttacker()) {
                     ally = gameState.getDefender();
                     enemy = gameState.getAttacker();
+                    break;
                 }
             }
             int allyX, allyY, spriteSize = stageW >> 2;
             gc.drawImage(ally.currentSprite,
-                    allyX = stageX + (stageW >> 3), allyY = stageY + (stageH >> 2) + (stageH >> 4),
-                    spriteSize, spriteSize);
+                    allyX = stageX + (stageW >> 3),
+                    allyY = stageY + (stageH >> 2) + (stageH >> 4),
+                    spriteSize, spriteSize
+            );
             gc.setFill(Color.RED);
             gc.setStroke(Color.BLACK);
             double maxHP = ally.getMaxHP();
@@ -214,11 +228,15 @@ public class Run extends Application {
             String heightTest = String.format("Name: %s", ally.getName());
             double textHeight = new Text(heightTest).getBoundsInLocal().getHeight() + 5;
             gc.fillText(heightTest, 50, SCREEN_MAP_HEIGHT + textHeight + 5);
-            gc.fillText(String.format("HP: %.0f / %.0f", ally.getHp(), ally.getMaxHP()), 50, SCREEN_MAP_HEIGHT + textHeight * 3);
+            gc.fillText(String.format("HP: %.0f / %.0f", ally.getHp(), ally.getMaxHP()),
+                    50, SCREEN_MAP_HEIGHT + textHeight * 3
+            );
             int enemyX, enemyY;
             gc.drawImage(enemy.currentSprite,
-                    enemyX = stageX + stageW - (stageW >> 3) - (stageW >> 2), enemyY = stageY + (stageH >> 2) + (stageH >> 4),
-                    stageW >> 2, stageW >> 2);
+                    enemyX = stageX + stageW - (stageW >> 3) - (stageW >> 2),
+                    enemyY = stageY + (stageH >> 2) + (stageH >> 4),
+                    stageW >> 2, stageW >> 2
+            );
             gc.setFill(Color.RED);
             gc.setStroke(Color.BLACK);
             maxHP = enemy.getMaxHP();
@@ -229,25 +247,35 @@ public class Run extends Application {
             gc.setFill(Color.GREEN);
             gc.fillRect(enemyX, yAxisMod, currentHPDisplayed, 10);
             gc.setFill(Color.BLACK);
-            gc.fillText(String.format("Name: %s", enemy.getName()), (SCREEN_WIDTH >> 1) + 50, SCREEN_MAP_HEIGHT + textHeight + 5);
-            gc.fillText(String.format("HP: %.0f / %.0f", enemy.getHp(), enemy.getMaxHP()), (SCREEN_WIDTH >> 1) + 50, SCREEN_MAP_HEIGHT + textHeight * 3);
+            gc.fillText(String.format("Name: %s", enemy.getName()), (SCREEN_WIDTH >> 1) + 50,
+                    SCREEN_MAP_HEIGHT + textHeight + 5
+            );
+            gc.fillText(String.format("HP: %.0f / %.0f", enemy.getHp(), enemy.getMaxHP()),
+                    (SCREEN_WIDTH >> 1) + 50, SCREEN_MAP_HEIGHT + textHeight * 3
+            );
             gc.setStroke(Color.BLACK);
             gc.setLineWidth(5);
-            gc.strokeRect(SCREEN_WIDTH >> 5, SCREEN_MAP_HEIGHT >> 5, (SCREEN_WIDTH - (SCREEN_WIDTH >> 4)), (SCREEN_MAP_HEIGHT >> 1) + (SCREEN_MAP_HEIGHT >> 3));
+            gc.strokeRect(SCREEN_WIDTH >> 5, SCREEN_MAP_HEIGHT >> 5,
+                    (SCREEN_WIDTH - (SCREEN_WIDTH >> 4)), (SCREEN_MAP_HEIGHT >> 1) + (SCREEN_MAP_HEIGHT >> 3)
+            );
             gc.setFill(Color.GREY);
             gc.setLineWidth(2);
             final int y1 = (SCREEN_MAP_HEIGHT >> 1) + (SCREEN_MAP_HEIGHT >> 3) + (SCREEN_MAP_HEIGHT >> 4);
             gc.fillRect(SCREEN_WIDTH >> 4, y1,
-                    (SCREEN_WIDTH >> 2) + (SCREEN_WIDTH >> 3), SCREEN_MAP_HEIGHT >> 2);
+                    (SCREEN_WIDTH >> 2) + (SCREEN_WIDTH >> 3), SCREEN_MAP_HEIGHT >> 2
+            );
             gc.strokeRect(SCREEN_WIDTH >> 4, y1,
-                    (SCREEN_WIDTH >> 2) + (SCREEN_WIDTH >> 3), SCREEN_MAP_HEIGHT >> 2);
+                    (SCREEN_WIDTH >> 2) + (SCREEN_WIDTH >> 3), SCREEN_MAP_HEIGHT >> 2
+            );
             gc.setTextAlign(TextAlignment.CENTER);
             final int y2 = (SCREEN_MAP_HEIGHT >> 1) + (SCREEN_MAP_HEIGHT >> 2) + (SCREEN_MAP_HEIGHT >> 4);
             gc.strokeText("ATTACK", SCREEN_WIDTH >> 2, y2);
             gc.fillRect((SCREEN_WIDTH >> 1) + (SCREEN_WIDTH >> 4), y1,
-                    (SCREEN_WIDTH >> 2) + (SCREEN_WIDTH >> 3), SCREEN_MAP_HEIGHT >> 2);
+                    (SCREEN_WIDTH >> 2) + (SCREEN_WIDTH >> 3), SCREEN_MAP_HEIGHT >> 2
+            );
             gc.strokeRect((SCREEN_WIDTH >> 1) + (SCREEN_WIDTH >> 4), y1,
-                    (SCREEN_WIDTH >> 2) + (SCREEN_WIDTH >> 3), SCREEN_MAP_HEIGHT >> 2);
+                    (SCREEN_WIDTH >> 2) + (SCREEN_WIDTH >> 3), SCREEN_MAP_HEIGHT >> 2
+            );
             gc.strokeText("DEFEND", SCREEN_WIDTH - (SCREEN_WIDTH >> 2), y2);
             battleFrameCounter++;
             if (ally.isBattleTurn()) {
@@ -260,7 +288,9 @@ public class Run extends Application {
                             ally.attack(enemy);
                             ally.getCharClass().setCompletedCycles(0);
                             if (!enemy.isAlive()) {
-                                boolean didLevel = ally.getCharClass().addXP(1000 * enemy.getCharClass().getLevel());
+                                boolean didLevel = ally.getCharClass().addXP(
+                                        1000 * enemy.getCharClass().getLevel()
+                                );
                                 if (didLevel) {
                                     ally.levelUp();
                                 }
@@ -269,8 +299,6 @@ public class Run extends Application {
                         }
                         ally.attackAnimation(battleFrameCounter);
                     }
-                    gc.drawImage(ally.getCurrentSprite(), allyX, allyY, spriteSize, spriteSize);
-                    gc.drawImage(enemy.getCurrentSprite(), enemyX, enemyY, spriteSize, spriteSize);
                 } else {
                     if (ally.IsAttacking()) {
                         if (ally.getCharClass().getCompletedCycles() > 2) {
@@ -280,7 +308,9 @@ public class Run extends Application {
                             ally.attack(enemy);
                             ally.getCharClass().setCompletedCycles(0);
                             if (!enemy.isAlive()) {
-                                boolean didLevel = ally.getCharClass().addXP(1000 * enemy.getCharClass().getLevel());
+                                boolean didLevel = ally.getCharClass().addXP(
+                                        1000 * enemy.getCharClass().getLevel()
+                                );
                                 if (didLevel) {
                                     ally.levelUp();
                                 }
@@ -291,9 +321,9 @@ public class Run extends Application {
                     } else {
                         ally.setIsAttacking(true);
                     }
-                    gc.drawImage(ally.getCurrentSprite(), allyX, allyY, spriteSize, spriteSize);
-                    gc.drawImage(enemy.getCurrentSprite(), enemyX, enemyY, spriteSize, spriteSize);
                 }
+                gc.drawImage(ally.getCurrentSprite(), allyX, allyY, spriteSize, spriteSize);
+                gc.drawImage(enemy.getCurrentSprite(), enemyX, enemyY, spriteSize, spriteSize);
             } else if (enemy.isBattleTurn()) {
                 if (enemy.IsAttacking()) {
                     if (enemy.getCharClass().getCompletedCycles() > 2) {
@@ -306,7 +336,9 @@ public class Run extends Application {
                             if (ally.equals(gameState.getPlayerEntity())) {
                                 gameState.setState(GameState.STATE.GAME_OVER);
                             } else {
-                                boolean didLevel = enemy.getCharClass().addXP(1000 * ally.getCharClass().getLevel());
+                                boolean didLevel = enemy.getCharClass().addXP(
+                                        1000 * ally.getCharClass().getLevel()
+                                );
                                 if (didLevel) {
                                     enemy.levelUp();
                                 }
@@ -348,12 +380,8 @@ public class Run extends Application {
             gc.setFont(new Font(12));
             for(Map m: gameState.getMaps()) {
                 String[] path = m.getPATH().split("/");
-                int index = 0;
-                if((path.length - 1) < 0) {
-                    index = 0;
-                } else {
-                    index = path.length - 1;
-                }
+                int index;
+                index = Math.max((path.length - 1), 0);
                 gc.fillText(path[index], squareXY[count][0]+10, squareXY[count][1]+10);
                 count++;
             }
@@ -361,7 +389,9 @@ public class Run extends Application {
             gc.setFont(new Font("Arial", 32));
             String[] path = gameState.getCurrentMap().getPATH().split("/");
             gc.fillText(path[path.length - 1], SCREEN_WIDTH>>4, SCREEN_MAP_HEIGHT + (SCREEN_MAP_HEIGHT>>4));
-            gc.fillText("Press Enter to Load The Selected Map", SCREEN_WIDTH>>4, SCREEN_MAP_HEIGHT + (SCREEN_MAP_HEIGHT>>2));
+            gc.fillText("Press Enter to Load The Selected Map", SCREEN_WIDTH>>4,
+                    SCREEN_MAP_HEIGHT + (SCREEN_MAP_HEIGHT>>2)
+            );
         } else if(gameState != null && gameState.getCurrentState() == GameState.STATE.GAME_OVER) {
             gc.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
             gc.drawImage(mainMenuBg, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -392,7 +422,7 @@ public class Run extends Application {
      * Sets up the gameState for a new game environment.
      */
     private void newGame() {
-        for(String path: getFileNamesFromDirectory(GAME_DATA_PATH + "/Maps/")) {
+        for(String path: FileOps.getFileNamesFromDirectory(GAME_DATA_PATH + "/Maps/")) {
             if(!path.equals("config.dat") && !path.equals(".gitattributes") && !path.contains("meta")) {
                 if(gameState != null) {
                     gameState.getMaps().add(new Map(GAME_DATA_PATH + "/Maps" + File.separator + path));
@@ -426,7 +456,9 @@ public class Run extends Application {
                     tempClass = new MartialClass();
                 }
                 assert tempClass != null;
-                NonPlayerCharacter tempChar = new NonPlayerCharacter(gameState.getCurrentMap(), tempClass.getDefaultSpriteAlly(), name, x, y, tempClass);
+                NonPlayerCharacter tempChar = new NonPlayerCharacter(gameState.getCurrentMap(),
+                        tempClass.getDefaultSpriteAlly(), name, x, y, tempClass
+                );
                 gameState.getEntities().add(tempChar);
                 gameState.getPlayerTeam().add(tempChar);
             }
@@ -443,7 +475,9 @@ public class Run extends Application {
                     tempClass = new MartialClass();
                 }
                 assert tempClass != null;
-                NonPlayerCharacter tempChar = new NonPlayerCharacter(gameState.getCurrentMap(), tempClass.getDefaultSpriteEnemy(), name, x, y, tempClass);
+                NonPlayerCharacter tempChar = new NonPlayerCharacter(gameState.getCurrentMap(),
+                        tempClass.getDefaultSpriteEnemy(), name, x, y, tempClass
+                );
                 gameState.getEntities().add(tempChar);
                 gameState.getEnemyTeam().add(tempChar);
             }
@@ -467,9 +501,7 @@ public class Run extends Application {
         gc = canvas.getGraphicsContext2D();
         rootGroup.getChildren().add(canvas);
         rootScene.addEventHandler(KeyEvent.KEY_PRESSED, (key) -> {
-            if (DEBUG_OUTPUT) {
-                System.out.println("[DEBUG] KeyInput: " + key.getCode());
-            }
+            programLogger.log(Level.INFO, "[DEBUG] KeyInput: " + key.getCode());
             if (gameState == null || gameState.getCurrentState() == GameState.STATE.MAIN_MENU) {
                 if (key.getCode() == KeyCode.ESCAPE) {
                     primaryStage.close();
@@ -564,19 +596,17 @@ public class Run extends Application {
                 if (key.getCode() == KeyCode.ESCAPE) {
                     gameState.setState(GameState.STATE.GAME);
                 } else if (key.getCode() == KeyCode.A) {
-                    if (DEBUG_OUTPUT) {
-                        System.out.println("Name: " + gameState.getAttacker().getName());
-                        System.out.println("IsAttacking: " + gameState.getAttacker().IsAttacking());
-                        System.out.println("isBattleTurn: " + gameState.getAttacker().isBattleTurn());
-                        System.out.println("CompletedCycles: " + gameState.getAttacker().getCharClass().getCompletedCycles());
-                    }
+                    programLogger.log(Level.INFO, "Name: " + gameState.getAttacker().getName() + "\n" +
+                            "IsAttacking: " + gameState.getAttacker().IsAttacking() + "\n" +
+                            "isBattleTurn: " + gameState.getAttacker().isBattleTurn() + "\n" +
+                            "CompletedCycles: " + gameState.getAttacker().getCharClass().getCompletedCycles()
+                    );
                 } else if (key.getCode() == KeyCode.D) {
-                    if (DEBUG_OUTPUT) {
-                        System.out.println("Name: " + gameState.getDefender().getName());
-                        System.out.println("IsAttacking: " + gameState.getDefender().IsAttacking());
-                        System.out.println("isBattleTurn: " + gameState.getDefender().isBattleTurn());
-                        System.out.println("CompletedCycles: " + gameState.getDefender().getCharClass().getCompletedCycles());
-                    }
+                    programLogger.log(Level.INFO, "Name: " + gameState.getDefender().getName() + "\n" +
+                            "IsAttacking: " + gameState.getDefender().IsAttacking() + "\n" +
+                            "isBattleTurn: " + gameState.getDefender().isBattleTurn() + "\n" +
+                            "CompletedCycles: " + gameState.getDefender().getCharClass().getCompletedCycles()
+                    );
                 }
             } else if(gameState.getCurrentState() == GameState.STATE.LEVEL_SELECTION) {
                 if(key.getCode() == KeyCode.ENTER) {
@@ -592,33 +622,25 @@ public class Run extends Application {
         canvas.addEventHandler(MouseEvent.MOUSE_CLICKED, (mouseEvent) -> {
             int mouseX = (int) mouseEvent.getX();
             int mouseY = (int) mouseEvent.getY();
-            if(DEBUG_OUTPUT) {
-                System.out.println("Mouse Event: (" + mouseX + ", " + mouseY + ")");
-            }
-            if(gameState != null && devMenu != null && devMenu.EDIT_MODE && gameState.getCurrentState() == GameState.STATE.GAME) {
+            programLogger.log(Level.INFO, "Mouse Event: (" + mouseX + ", " + mouseY + ")");
+            if(gameState != null && devMenu != null && devMenu.EDIT_MODE &&
+                    gameState.getCurrentState() == GameState.STATE.GAME) {
                 int tileX = mouseX / gameState.getCurrentMap().getTileSize();
                 int tileY = mouseY / gameState.getCurrentMap().getTileSize();
-                if(DEBUG_OUTPUT) {
-                    System.out.println("x,y: " + tileX + " " + tileY);
-                }
+                programLogger.log(Level.INFO, "x,y: " + tileX + " " + tileY);
                 if (DRAG_LOC[0] == -1) {
                     if (mouseEvent.getButton() == MouseButton.PRIMARY) {
                         MapTile[][] tempMapTiles = gameState.getCurrentMap().getMapTiles();
-                        if(DEBUG_OUTPUT) {
-                            System.out.println("TILEID: " + tempMapTiles[tileY][tileX].getTileID());
-                        }
+                        programLogger.log(Level.INFO, "TILEID: " + tempMapTiles[tileY][tileX].getTileID());
                         tempMapTiles[tileY][tileX].setTileID(devMenu.SELECTED_TILE_ID);
                         tempMapTiles[tileY][tileX].setTileSet(devMenu.SELECTED_TILE_SET_ID);
                         gameState.getCurrentMap().setMapTiles(tempMapTiles);
-                        if(DEBUG_OUTPUT) {
-                            System.out.println(tempMapTiles[tileY][tileX].getTileID());
-                        }
                     } else if (mouseEvent.getButton() == MouseButton.SECONDARY) {
                         MapTile[][] tempMapTiles = gameState.getCurrentMap().getMapTiles();
-                        if(DEBUG_OUTPUT) {
-                            System.out.println("TILEID: " + tempMapTiles[tileY][tileX].getTileID());
-                        }
-                        tempMapTiles[tileY][tileX].setTileID(gameState.getCurrentMap().getTileSet(devMenu.SELECTED_TILE_SET_ID).getTiles().length - 1);
+                        programLogger.log(Level.INFO, "TILEID: " + tempMapTiles[tileY][tileX].getTileID());
+                        tempMapTiles[tileY][tileX].setTileID(gameState.getCurrentMap().getTileSet(
+                                devMenu.SELECTED_TILE_SET_ID).getTiles().length - 1
+                        );
                         tempMapTiles[tileY][tileX].setTileSet(devMenu.SELECTED_TILE_SET_ID);
                         gameState.getCurrentMap().setMapTiles(tempMapTiles);
                     }
@@ -644,7 +666,7 @@ public class Run extends Application {
                                     gameState.getCurrentMap().setMapTiles(tempMap);
                                 }
                             }
-                        } else if (releasedX <= DRAG_LOC[0] && releasedY <= DRAG_LOC[1]) {
+                        } else if (releasedX <= DRAG_LOC[0]) {
                             for (int y = releasedY; y < DRAG_LOC[1] + 1; y++) {
                                 for (int x = releasedX; x < DRAG_LOC[0] + 1; x++) {
                                     MapTile[][] tempMap = gameState.getCurrentMap().getMapTiles();
@@ -670,28 +692,36 @@ public class Run extends Application {
                             for (int y = DRAG_LOC[1]; y < releasedY + 1; y++) {
                                 for (int x = releasedX; x < DRAG_LOC[0] + 1; x++) {
                                     MapTile[][] tempMap = gameState.getCurrentMap().getMapTiles();
-                                    tempMap[y][x].setTileID(gameState.getCurrentMap().getTileSet(devMenu.SELECTED_TILE_SET_ID).getTotalTiles() - 1);
+                                    tempMap[y][x].setTileID(gameState.getCurrentMap().getTileSet(
+                                            devMenu.SELECTED_TILE_SET_ID).getTotalTiles() - 1
+                                    );
                                 }
                             }
                         } else if (releasedY <= DRAG_LOC[1] && !(releasedX <= DRAG_LOC[0])) {
                             for (int y = releasedY; y < DRAG_LOC[1] + 1; y++) {
                                 for (int x = DRAG_LOC[0]; x < releasedX + 1; x++) {
                                     MapTile[][] tempMap = gameState.getCurrentMap().getMapTiles();
-                                    tempMap[y][x].setTileID(gameState.getCurrentMap().getTileSet(devMenu.SELECTED_TILE_SET_ID).getTotalTiles() - 1);
+                                    tempMap[y][x].setTileID(gameState.getCurrentMap().getTileSet(
+                                            devMenu.SELECTED_TILE_SET_ID).getTotalTiles() - 1
+                                    );
                                 }
                             }
-                        } else if (releasedX <= DRAG_LOC[0] && releasedY <= DRAG_LOC[1]) {
+                        } else if (releasedX <= DRAG_LOC[0]) {
                             for (int y = releasedY; y < DRAG_LOC[1] + 1; y++) {
                                 for (int x = releasedX; x < DRAG_LOC[0] + 1; x++) {
                                     MapTile[][] tempMap = gameState.getCurrentMap().getMapTiles();
-                                    tempMap[y][x].setTileID(gameState.getCurrentMap().getTileSet(devMenu.SELECTED_TILE_SET_ID).getTotalTiles() - 1);
+                                    tempMap[y][x].setTileID(gameState.getCurrentMap().getTileSet(
+                                            devMenu.SELECTED_TILE_SET_ID).getTotalTiles() - 1
+                                    );
                                 }
                             }
                         } else {
                             for (int y = DRAG_LOC[1]; y < releasedY + 1; y++) {
                                 for (int x = DRAG_LOC[0]; x < releasedX + 1; x++) {
                                     MapTile[][] tempMap = gameState.getCurrentMap().getMapTiles();
-                                    tempMap[y][x].setTileID(gameState.getCurrentMap().getTileSet(devMenu.SELECTED_TILE_SET_ID).getTotalTiles() - 1);
+                                    tempMap[y][x].setTileID(gameState.getCurrentMap().getTileSet(
+                                            devMenu.SELECTED_TILE_SET_ID).getTotalTiles() - 1
+                                    );
                                 }
                             }
                         }
@@ -717,18 +747,19 @@ public class Run extends Application {
                         int charY = ((Character) e).getY();
                         if(charX == tileXY[0] && charY == tileXY[1]) {
                             lastSelectedCharUID = e.getUID();
-                            if(DEBUG_OUTPUT) {
-                                System.out.println("You've clicked a Character");
-                                System.out.println("getName returns: " + ((Character) e).getName());
-                                System.out.println("isMoveTurn returns: " + ((Character) e).isMoveTurn());
-                                System.out.println("isAlive returns: " + ((Character) e).isAlive());
-                                System.out.println("getHp returns: " + ((Character)e).getHp());
-                                System.out.println("getAttack returns: " + ((Character)e).getAttack());
-                                System.out.println("getCritical returns: " + ((Character)e).getCritical());
-                                System.out.println("getDefense returns: " + ((Character)e).getDefense());
-                                System.out.println("getCharClass.getLevel returns: " + ((Character) e).getCharClass().getLevel());
-                                System.out.println("getCharClass.getCurrentXP returns: " + ((Character) e).getCharClass().getCurrentXP());
-                            }
+                            programLogger.log(Level.INFO, "A Character was Clicked\n" +
+                                    "getName returns: " + ((Character) e).getName() + "\n" +
+                                    "isMoveTurn returns: " + ((Character) e).isMoveTurn() + "\n" +
+                                    "isAlive returns: " + ((Character) e).isAlive() + "\n" +
+                                    "getHp returns: " + ((Character)e).getHp() + "\n" +
+                                    "getAttack returns: " + ((Character)e).getAttack() + "\n" +
+                                    "getCritical returns: " + ((Character)e).getCritical() + "\n" +
+                                    "getDefense returns: " + ((Character)e).getDefense() + "\n" +
+                                    "getCharClass.getLevel returns: " +
+                                    ((Character) e).getCharClass().getLevel() + "\n" +
+                                    "getCharClass.getCurrentXP returns: " +
+                                    ((Character) e).getCharClass().getCurrentXP()
+                            );
                         }
                     }
                 }
@@ -739,9 +770,7 @@ public class Run extends Application {
                 final int defendH = SCREEN_MAP_HEIGHT>>2;
                 if(mouseX >= defendX && mouseX <= defendX + defendW) {
                     if(mouseY >= defendY && mouseY <= defendY + defendH) {
-                        if(DEBUG_OUTPUT) {
-                            System.out.println("Defend Button Clicked");
-                        }
+                        programLogger.log(Level.INFO, "Defend Button was Clicked");
                     }
                 }
                 final int attackX = SCREEN_WIDTH>>4;
@@ -753,9 +782,7 @@ public class Run extends Application {
                         if(gameState.getPlayerEntity().isBattleTurn()) {
                             gameState.getPlayerEntity().setIsAttacking(true);
                         }
-                        if(DEBUG_OUTPUT) {
-                            System.out.println("Attack Button Clicked");
-                        }
+                        programLogger.log(Level.INFO, "Attack Button was Clicked");
                     }
                 }
             } else if(gameState.getCurrentState() == GameState.STATE.LEVEL_SELECTION) {
@@ -807,32 +834,6 @@ public class Run extends Application {
     }
 
     /**
-     * Returns the filenames from a directory as a string array where
-     * each index is a name of a file including extensions
-     * @param path the target directory path
-     * @return a string array where each index is the name of a file in the directory at path
-     */
-    private static String[] getFileNamesFromDirectory(String path) {
-        File[] files;
-        String[] fileNames = new String[0];
-        try {
-            files = new File(path).listFiles();
-            if(files != null) {
-                fileNames = new String[files.length];
-                for(int i=0; i<files.length; i++) {
-                    if(files[i].isFile()) {
-                        fileNames[i] = files[i].getName();
-                    }
-                }
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return fileNames;
-    }
-
-    /**
      * Return the int array [width, height] in tiles of the current map area
      * @return the int array [width, height] in tiles of the current map area
      */
@@ -853,9 +854,7 @@ public class Run extends Application {
      * Returns the current game state.
      * @return the current game state
      */
-    public GameState getGameState() {
-        return gameState;
-    }
+    public GameState getGameState() { return gameState; }
 
     /**
      * Returns the last selected characters unique id.
@@ -864,7 +863,7 @@ public class Run extends Application {
     public int getLastSelectChar () { return lastSelectedCharUID;}
 
     /**
-     * The entry point for the program. We determine where /GameData/ parent folder is here.
+     * The entry point for the program. We determine where /GameData/ folder is here.
      * @param args command line options - unused.
      */
     public static void main(String[] args) {
@@ -874,6 +873,8 @@ public class Run extends Application {
         } else {
             GAME_DATA_PATH = Paths.get("").toAbsolutePath().toString() + "/GameData";
         }
+        programLogger.setLevel(Level.INFO);
+        programLogger.log(Level.INFO, "GameData folder found at: " + GAME_DATA_PATH);
         launch(args);
     }
 

@@ -2,7 +2,7 @@ package org.dionthorn;
 
 /**
  * The MagicClass defines the 'Mage' or 'Magic' character class type
- * it will provide the needed default information as well as Animation frames and spritesheet paths
+ * it will provide the needed default information as well as Animation frames and sprite sheet paths
  */
 public class MagicClass extends CharacterClass {
 

@@ -2,7 +2,7 @@ package org.dionthorn;
 
 /**
  * The MartialClass defines the 'Fighter' or 'Martial' character class type
- * it will provide the needed default information as well as Animation frames and spritesheet paths
+ * it will provide the needed default information as well as Animation frames and sprite sheet paths
  */
 public class MartialClass extends CharacterClass {
 

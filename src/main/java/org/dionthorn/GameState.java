@@ -1,6 +1,7 @@
 package org.dionthorn;
 
 import java.util.ArrayList;
+import java.util.logging.Level;
 
 /**
  * The GameState class will be responsible for the master references to game objects via its .entities list
@@ -44,9 +45,7 @@ public class GameState {
      * @param defender the defending character
      */
     public void startBattle(Character attacker, Character defender) {
-        if(Run.DEBUG_OUTPUT) {
-            System.out.println("Battle Started");
-        }
+        Run.programLogger.log(Level.INFO, "Battle Started");
         this.currentState = STATE.BATTLE;
         this.attacker = attacker;
         this.defender = defender;
@@ -92,29 +91,29 @@ public class GameState {
 
     /**
      * Returns the GameState map ArrayList.
-     * @return the gamestate map array list
+     * @return the game state map array list
      */
     public ArrayList<Map> getMaps() { return maps; }
 
     /**
      * Returns the GameState entities ArrayList.
-     * @return the gamestate entities array list
+     * @return the game state entities array list
      */
     public ArrayList<Entity> getEntities() { return entities; }
 
     /**
      * Returns the GameState current map object.
-     * @return the gamestate current map
+     * @return the game state current map
      */
     public Map getCurrentMap() { return currentMap; }
 
     /**
      * Will set the GameState currentMap to the provided newMap
-     * @param newMap set the gamestate current map to this new map
+     * @param newMap set the game state current map to this new map
      */
     public void setCurrentMap(Map newMap) {
         currentMap = newMap;
-        String[] data = Map.getFileLines(currentMap.getMetaPATH());
+        String[] data = FileOps.getFileLines(currentMap.getMetaPATH());
         String[] enemies = new String[0];
         for(String line: data) {
             if(line.contains("ENEMIES")) {
@@ -152,7 +151,9 @@ public class GameState {
                     tempClass = new MartialClass();
                 }
                 assert tempClass != null;
-                NonPlayerCharacter tempChar = new NonPlayerCharacter(currentMap, tempClass.getDefaultSpriteAlly(), name, x, y, tempClass);
+                NonPlayerCharacter tempChar = new NonPlayerCharacter(currentMap,
+                        tempClass.getDefaultSpriteAlly(), name, x, y, tempClass
+                );
                 entities.add(tempChar);
                 playerTeam.add(tempChar);
             }
@@ -169,7 +170,9 @@ public class GameState {
                     tempClass = new MartialClass();
                 }
                 assert tempClass != null;
-                NonPlayerCharacter tempChar = new NonPlayerCharacter(currentMap, tempClass.getDefaultSpriteEnemy(), name, x, y, tempClass);
+                NonPlayerCharacter tempChar = new NonPlayerCharacter(currentMap,
+                        tempClass.getDefaultSpriteEnemy(), name, x, y, tempClass
+                );
                 entities.add(tempChar);
                 enemyTeam.add(tempChar);
             }
@@ -182,13 +185,13 @@ public class GameState {
 
     /**
      * Returns the currentState of the GameState.
-     * @return the current state of the gamestate
+     * @return the current state of the game state
      */
     public STATE getCurrentState() { return currentState; }
 
     /**
      * Will set the currentState of the GameState to the provided newState
-     * @param newState the target new state to place the gamestate into
+     * @param newState the target new state to place the game state into
      */
     public void setState(STATE newState) { currentState = newState; }
 

@@ -49,9 +49,7 @@ public abstract class PhysicalEntity extends Entity {
      * Returns this entities x location.
      * @return returns this entities x location
      */
-    protected int getX() {
-        return x;
-    }
+    protected int getX() { return x; }
 
     /**
      * Returns this entities y location.
@@ -63,25 +61,19 @@ public abstract class PhysicalEntity extends Entity {
      * Assigns this entity a new x location.
      * @param newX Assigns this entity a new x location
      */
-    protected void setX(int newX) {
-        x = newX;
-    }
+    protected void setX(int newX) { x = newX; }
 
     /**
      * Assigns this entity a new y location.
      * @param newY Assigns this entity a new y location
      */
-    protected void setY(int newY) {
-        y = newY;
-    }
+    protected void setY(int newY) { y = newY; }
 
     /**
      * Returns the Map associated with this entity.
      * @return the map associated with this entity
      */
-    protected Map getCurrentMap() {
-        return currentMap;
-    }
+    protected Map getCurrentMap() { return currentMap; }
 
     /**
      * Changes the associated Map of this entity.

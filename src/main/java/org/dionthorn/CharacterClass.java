@@ -74,7 +74,7 @@ public abstract class CharacterClass {
 
     /**
      * Returns the attack increase amount during level ups for this class.
-     * @returnthe attack increase amount during level ups for this class
+     * @return the attack increase amount during level ups for this class
      */
     protected int getPerLevelAttack() { return perLevelAttack; }
 
@@ -134,17 +134,13 @@ public abstract class CharacterClass {
      * Returns the string of the path to the default sprite for an ally of this class.
      * @return the string of the path to the default sprite for an ally of this class
      */
-    protected String getDefaultSpriteAlly() {
-        return defaultSpriteAlly;
-    }
+    protected String getDefaultSpriteAlly() { return defaultSpriteAlly; }
 
     /**
      * Returns the string of the path to the default sprite for an enemy of this class.
      * @return the string of the path to the default sprite for an enemy of this class
      */
-    protected String getDefaultSpriteEnemy() {
-        return defaultSpriteEnemy;
-    }
+    protected String getDefaultSpriteEnemy() { return defaultSpriteEnemy; }
 
 }
 

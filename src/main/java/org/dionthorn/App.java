@@ -7,8 +7,6 @@ package org.dionthorn;
  */
 public class App {
 
-    public static void main(String[] args) {
-            Run.main(args);
-    }
+    public static void main(String[] args) { Run.main(args); }
 
 }

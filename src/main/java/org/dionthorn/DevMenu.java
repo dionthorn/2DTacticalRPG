@@ -19,6 +19,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import java.util.ArrayList;
+import java.util.logging.Level;
 
 /**
  * DevMenu Class will be a secondary window that can be used for development related functions
@@ -123,9 +124,7 @@ public class DevMenu extends Stage {
         Button devLevelUp = new Button("Level Up");
         GridPane.setConstraints(devLevelUp, 1, 12);
         devLevelUp.setOnAction(event -> {
-            if(Run.DEBUG_OUTPUT) {
-                System.out.println(app.getLastSelectChar());
-            }
+            Run.programLogger.log(Level.INFO, String.valueOf(app.getLastSelectChar()));
             if (app.getLastSelectChar() != -1) {
                 ((Character) app.getGameState().getEntities().get(app.getLastSelectChar())).levelUp();
             }
@@ -166,7 +165,8 @@ public class DevMenu extends Stage {
             for(Entity e: app.getGameState().getEntities()) {
                 if(e instanceof Character) {
                     Character temp = (Character) e;
-                    Text tempText = new Text(String.format("[%d] %s (%d, %d) HP:%.2f/%.2f Atk/Def:%.1f/%.1f Critical: %.2f",
+                    Text tempText = new Text(String.format(
+                            "[%d] %s (%d, %d) HP:%.2f/%.2f Atk/Def:%.1f/%.1f Critical: %.2f",
                             e.getUID(), temp.getName(),
                             temp.getX(), temp.getY(),
                             temp.getHp(), temp.getMaxHP(),
@@ -193,7 +193,9 @@ public class DevMenu extends Stage {
         Button updateState = new Button("!Update State! CAN BREAK ENGINE");
         GridPane.setConstraints(updateState, 1, 18);
         updateState.setOnAction(event -> {
-            if(stateList.getSelectionModel().getSelectedItem() != null && !stateList.getSelectionModel().getSelectedItem().equals("")) {
+            if(stateList.getSelectionModel().getSelectedItem() != null &&
+                    !stateList.getSelectionModel().getSelectedItem().equals("")
+            ) {
                 String temp = stateList.getSelectionModel().getSelectedItem();
                 for(GameState.STATE state: GameState.STATE.values()) {
                     if(state.name().equals(temp)) {
@@ -216,8 +218,6 @@ public class DevMenu extends Stage {
         devRootScene.addEventHandler(KeyEvent.KEY_PRESSED, (key) -> {
             if(key.getCode() == KeyCode.S) {
                 app.getGameState().getCurrentMap().saveData();
-            } else if(key.getCode() == KeyCode.L) {
-                // Need to work on loading (maybe an actual splash screen with menu or something)
             }
         });
     }
@@ -242,20 +242,18 @@ public class DevMenu extends Stage {
             int xCord = (int) x;
             int yCord = (int) y;
             yCord -= heightDiff;
-            if(Run.DEBUG_OUTPUT) {
-                System.out.println(String.format("Ix=%d, Iy=%d", xCord, yCord));
-            }
+            Run.programLogger.log(Level.INFO, String.format("Ix=%d, Iy=%d", xCord, yCord));
             int tileX = xCord / app.getGameState().getCurrentMap().getTileSize();
             int tileY = yCord / app.getGameState().getCurrentMap().getTileSize();
-            if(Run.DEBUG_OUTPUT) {
-                System.out.println(String.format("Tx=%d, Ty=%d", tileX, tileY));
-            }
+            Run.programLogger.log(Level.INFO, String.format("Tx=%d, Ty=%d", tileX, tileY));
             int maxX = (int) view.getImage().getWidth() / app.getGameState().getCurrentMap().getTileSize();
             if(tileY > 0) {
                 tileY = tileY * maxX;
             }
             int tileIDToChange = tileX + tileY;
-            WritableImage toCheck = new WritableImage(app.getGameState().getCurrentMap().getTileSize(), app.getGameState().getCurrentMap().getTileSize());
+            WritableImage toCheck = new WritableImage(app.getGameState().getCurrentMap().getTileSize(),
+                    app.getGameState().getCurrentMap().getTileSize()
+            );
             PixelReader pr = tileSetView.getImage().getPixelReader();
             int yOffset = (tileY / maxX) * app.getGameState().getCurrentMap().getTileSize();
             int xOffset = tileX * app.getGameState().getCurrentMap().getTileSize();
@@ -264,11 +262,15 @@ public class DevMenu extends Stage {
                     toCheck.getPixelWriter().setColor(xR, yR, pr.getColor(xR+xOffset, yR+yOffset));
                 }
             }
-            if(TileSet.areImagesSame(app.getGameState().getCurrentMap().getTileSet(SELECTED_TILE_SET_ID).getBlank(), toCheck)) {
-                SELECTED_TILE_ID = app.getGameState().getCurrentMap().getTileSet(SELECTED_TILE_SET_ID).getTotalTiles() - 1;
+            if(TileSet.areImagesSame(
+                    app.getGameState().getCurrentMap().getTileSet(SELECTED_TILE_SET_ID).getBlank(), toCheck)
+            ) {
+                SELECTED_TILE_ID = app.getGameState().getCurrentMap().getTileSet(
+                        SELECTED_TILE_SET_ID).getTotalTiles() - 1;
             } else {
                 int blankOffset = 0;
-                int[] removedIDs = app.getGameState().getCurrentMap().getTileSet(SELECTED_TILE_SET_ID).getRemovedTileID();
+                int[] removedIDs = app.getGameState().getCurrentMap().getTileSet(
+                        SELECTED_TILE_SET_ID).getRemovedTileID();
                 for(int id: removedIDs) {
                     if(tileIDToChange >= id) {
                         blankOffset++;
@@ -331,15 +333,14 @@ public class DevMenu extends Stage {
      * Will safely increase the selected tile id flag
      */
     private void tileMaxCheck() {
-        if(SELECTED_TILE_ID + 1 >= app.getGameState().getCurrentMap().getTileSet(SELECTED_TILE_SET_ID).getTotalTiles()) {
-            System.err.println("TileID cannot exceed TileSet maximum");
+        if(SELECTED_TILE_ID + 1 >= app.getGameState().getCurrentMap().getTileSet(SELECTED_TILE_SET_ID).getTotalTiles()
+        ) {
+            Run.programLogger.log(Level.WARNING, "TileID cannot exceed TileSet maximum");
         } else {
             SELECTED_TILE_ID++;
             devTileID.setText(String.format("TileID: %s", SELECTED_TILE_ID));
         }
-        if(Run.DEBUG_OUTPUT) {
-            System.out.println(String.format("SELECTED_TILE_ID: %d", SELECTED_TILE_ID));
-        }
+        Run.programLogger.log(Level.INFO, String.format("SELECTED_TILE_ID: %d", SELECTED_TILE_ID));
     }
 
     /**
@@ -347,14 +348,12 @@ public class DevMenu extends Stage {
      */
     private void tileMinCheck() {
         if(SELECTED_TILE_ID - 1 < 0) {
-            System.err.println("TileID cannot exceed map minimum");
+            Run.programLogger.log(Level.INFO, "TileID cannot exceed map minimum");
         } else {
             SELECTED_TILE_ID--;
             devTileID.setText(String.format("TileID: %s", SELECTED_TILE_ID));
         }
-        if(Run.DEBUG_OUTPUT) {
-            System.out.println(String.format("SELECTED_TILE_ID: %d", SELECTED_TILE_ID));
-        }
+        Run.programLogger.log(Level.INFO, String.format("SELECTED_TILE_ID: %d", SELECTED_TILE_ID));
     }
 
     /**
@@ -362,11 +361,14 @@ public class DevMenu extends Stage {
      */
     private void tileSetMaxCheck() {
         if(SELECTED_TILE_SET_ID + 1 >= app.getGameState().getCurrentMap().getTileSets().length) {
-            System.err.println("TileSetID cannot exceed map maximum");
+            Run.programLogger.log(Level.INFO, "TileSetID cannot exceed map maximum");
         } else {
             SELECTED_TILE_SET_ID++;
-            if(SELECTED_TILE_ID >= app.getGameState().getCurrentMap().getTileSet(SELECTED_TILE_SET_ID).getTotalTiles()) {
-                SELECTED_TILE_ID = app.getGameState().getCurrentMap().getTileSet(SELECTED_TILE_SET_ID).getTotalTiles() - 1;
+            if(SELECTED_TILE_ID >= app.getGameState().getCurrentMap().getTileSet(
+                    SELECTED_TILE_SET_ID).getTotalTiles()
+            ) {
+                SELECTED_TILE_ID = app.getGameState().getCurrentMap().getTileSet(
+                        SELECTED_TILE_SET_ID).getTotalTiles() - 1;
                 devTileID.setText(String.format("TileID: %s", SELECTED_TILE_ID));
             }
             devTileSetID.setText(String.format("TileSet ID: %s", SELECTED_TILE_SET_ID));
@@ -378,11 +380,14 @@ public class DevMenu extends Stage {
      */
     private void tileSetMinCheck() {
         if(SELECTED_TILE_SET_ID - 1 < 0) {
-            System.err.println("TileSetID cannot exceed map minimum");
+            Run.programLogger.log(Level.INFO, "TileSetID cannot exceed map minimum");
         } else {
             SELECTED_TILE_SET_ID--;
-            if(SELECTED_TILE_ID >= app.getGameState().getCurrentMap().getTileSet(SELECTED_TILE_SET_ID).getTotalTiles()) {
-                SELECTED_TILE_ID = app.getGameState().getCurrentMap().getTileSet(SELECTED_TILE_SET_ID).getTotalTiles() - 1;
+            if(SELECTED_TILE_ID >= app.getGameState().getCurrentMap().getTileSet(
+                    SELECTED_TILE_SET_ID).getTotalTiles()
+            ) {
+                SELECTED_TILE_ID = app.getGameState().getCurrentMap().getTileSet(
+                        SELECTED_TILE_SET_ID).getTotalTiles() - 1;
                 devTileID.setText(String.format("TileID: %s", SELECTED_TILE_ID));
             }
             devTileSetID.setText(String.format("TileSet ID: %s", SELECTED_TILE_SET_ID));
@@ -402,7 +407,9 @@ public class DevMenu extends Stage {
             devMapID.setText(String.format("Map ID: %s", SELECTED_MAP_ID));
             devMapPath.setText(String.format("File Name: %s", app.getGameState().getCurrentMap().getPATH()));
         } catch (Exception e) {
-            System.err.println(String.format("Map %d Not Available Creating Random New Map", SELECTED_MAP_ID + 1));
+            Run.programLogger.log(Level.INFO,
+                    String.format("Map %d Not Available Creating Random New Map", SELECTED_MAP_ID + 1)
+            );
             app.getGameState().getMaps().add(new Map(app.getGameState().getCurrentMap().getTileSetPaths()));
             app.getGameState().setCurrentMap(app.getGameState().getMaps().get(SELECTED_MAP_ID + 1));
             app.getGameState().getPlayerEntity().setCurrentMap(app.getGameState().getCurrentMap(), 0, 0);
@@ -419,7 +426,7 @@ public class DevMenu extends Stage {
      */
     private void mapIDMinCheck() {
         if(SELECTED_MAP_ID - 1 < 0) {
-            System.err.println("Map ID cannot be less than 0");
+            Run.programLogger.log(Level.INFO, "Map ID cannot be less than 0");
         } else {
             try {
                 app.getGameState().setCurrentMap(app.getGameState().getMaps().get(SELECTED_MAP_ID - 1));
@@ -428,7 +435,7 @@ public class DevMenu extends Stage {
                 devMapID.setText(String.format("Map ID: %s", SELECTED_MAP_ID));
                 devMapPath.setText(String.format("File Name: %s", app.getGameState().getCurrentMap().getPATH()));
             } catch (Exception e) {
-                System.err.println(String.format("Map %d Not Available", SELECTED_MAP_ID - 1));
+                Run.programLogger.log(Level.INFO, String.format("Map %d Not Available", SELECTED_MAP_ID - 1));
             }
         }
     }

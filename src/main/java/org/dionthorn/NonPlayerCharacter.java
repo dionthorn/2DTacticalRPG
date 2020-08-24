@@ -2,6 +2,8 @@ package org.dionthorn;
 
 import javafx.scene.canvas.GraphicsContext;
 
+import java.util.logging.Level;
+
 /**
  * The NPC class creates Character objects but adds the needed AI logic for NPCs
  */
@@ -190,9 +192,7 @@ public class NonPlayerCharacter extends Character {
                     moveRandom(gameState);
                 }
             } else if(collisionCounter >= 10) {
-                if(Run.DEBUG_OUTPUT) {
-                    System.out.println("No AI movement solution found over 10 random tries");
-                }
+                Run.programLogger.log(Level.WARNING, "No AI movement solution found over 10 random tries");
                 collisionCounter = 0;
             }
             if(gameState.getPlayerTeam().contains(this)) {

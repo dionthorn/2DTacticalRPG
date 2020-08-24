@@ -8,20 +8,23 @@ import javafx.scene.paint.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.logging.Level;
 
 /**
- * A TileSet is a .png file saved on Disk that can be split into 32*32 pixel tiles
- *     A TileID is the occurrence of the tile in the sheet going from left to right, from the top to bottom
- *     [ 0, 1, 2,
- *       3, 4, 5,
- *       6, 7, 8 ]
- *     A TileSet can also be a sprite sheet of 32*32 pixel character images
- *     The LAST image of a tileSet must be a 'blank' tile
- *     If the entire tileset isn't composed of unique images all other unused space must be the same image as the 'blank' tile
- *     All tiles matching the 'blank' tile will be automatically trimmed to save space in the Image[]
- *     All tileSets should be found in GameData/Art
+ * A TileSet is a .png file saved on Disk that can be split into 32*32 pixel tiles.
+ * A TileID is the occurrence of the tile in the sheet going from left to right, from the top to bottom:
+ * [ 0, 1, 2,
+ *   3, 4, 5,
+ *   6, 7, 8 ]
+ * A TileSet can also be a sprite sheet of 32*32 pixel character images.
+ * The LAST image of a tileSet must be a 'blank' tile.
+ * If the entire tileset isn't composed of unique images,
+ * all other unused space must be the same image as the 'blank' tile.
+ * All tiles matching the 'blank' tile will be automatically trimmed to save space in the Image[].
+ * All tileSets should be found in GameData/Art.
  */
 public class TileSet {
+
     private static ArrayList<TileSet> tileSetCache = new ArrayList<>();
     private String tileSetPath;
     private Image tileSetSrc;
@@ -29,6 +32,7 @@ public class TileSet {
     private Image blank;
     private int totalTiles;
     private ArrayList<Integer> removedTileIDList = new ArrayList<>();
+
     /**
      * Constructor creates the TileSet object from a path to a .png file and the size of the squares to cut.
      * @param path the relative String that points to the desired .png file on disk
@@ -49,14 +53,16 @@ public class TileSet {
             tileSetSrc = tileSetCache.get(sameIndex).getTileSetSrc();
             tiles = tileSetCache.get(sameIndex).getTiles();
             blank = tileSetCache.get(sameIndex).getBlank();
-            Integer[] boxedArray = Arrays.stream(tileSetCache.get(sameIndex).getRemovedTileID()).boxed().toArray(Integer[]::new);
+            Integer[] boxedArray = Arrays.stream(
+                    tileSetCache.get(sameIndex).getRemovedTileID()
+            ).boxed().toArray(Integer[]::new);
             Collections.addAll(removedTileIDList, boxedArray);
             totalTiles = tileSetCache.get(sameIndex).getTotalTiles();
         } else {
             tileSetSrc = new Image("file:"+ Run.GAME_DATA_PATH + "/Art/" + path);
             tiles = makeTiles(tileSetSrc, TILE_SIZE);
             if (tiles.length == 0) {
-                System.err.println("NO TILES DETECTED");
+                Run.programLogger.log(Level.SEVERE, "NO TILES DETECTED");
             } else {
                 blank = tiles[tiles.length - 1];
                 int sizeOriginal = tiles.length;
@@ -68,9 +74,7 @@ public class TileSet {
                 tiles = removeSameElements(tiles, blank);
                 int removedTilesCount = sizeOriginal - tiles.length;
                 totalTiles = tiles.length;
-                if(Run.DEBUG_OUTPUT) {
-                    System.out.println(String.format("Tiles Removed: %d", removedTilesCount));
-                }
+                Run.programLogger.log(Level.INFO, String.format("Tiles Removed: %d", removedTilesCount));
             }
             TileSet.tileSetCache.add(this);
             tileSetCache.trimToSize();
@@ -136,7 +140,7 @@ public class TileSet {
      * of length TILE_SIZE.
      * @param tileSet the full size image of the tileset
      * @param TILE_SIZE the size of the squares that the image will be cut into
-     * @return
+     * @return an image array of all the tiles in the provided tileset where each tile is of size tile_size squared
      */
     private static Image[] makeTiles(Image tileSet, int TILE_SIZE) {
         int srcW = (int) tileSet.getWidth();

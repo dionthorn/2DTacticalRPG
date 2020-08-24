@@ -2,6 +2,8 @@ package org.dionthorn;
 
 import javafx.scene.image.Image;
 
+import java.util.logging.Level;
+
 /**
  * The Character Class will handle all information regarding animated 'Character's in the game.
  */
@@ -49,11 +51,11 @@ public abstract class Character extends PhysicalEntity implements Drawable, Upda
     }
 
     /**
-     * Will check if this character will collide with an ally using gamestate and the x,y of the location to test.
+     * Will check if this character will collide with an ally using game state and the x,y of the location to test.
      * Will return false if no ally character is found at x,y otherwise true
      * Will also return true if a tile of type Impassable
      * If an ally isn't found there we will apply fire damage if the tile is of type fire.
-     * @param gameState the current gamestate this character is associated to
+     * @param gameState the current game state this character is associated to
      * @param x the x location to check for an ally
      * @param y the y location to check for an ally
      * @return returns true if an ally or impassable tile is occupying x,y and false otherwise.
@@ -64,16 +66,18 @@ public abstract class Character extends PhysicalEntity implements Drawable, Upda
             for(Entity e: gameState.getPlayerTeam()) {
                 int targetX = ((PhysicalEntity) e).getX();
                 int targetY = ((PhysicalEntity) e).getY();
-                if(targetX == x && targetY == y) {
+                if (targetX == x && targetY == y) {
                     hit = true;
+                    break;
                 }
             }
         } else if(gameState.getEnemyTeam().contains(this)) {
             for(Entity e: gameState.getEnemyTeam()) {
                 int targetX = ((PhysicalEntity) e).getX();
                 int targetY = ((PhysicalEntity) e).getY();
-                if(targetX == x && targetY == y) {
+                if (targetX == x && targetY == y) {
                     hit = true;
+                    break;
                 }
             }
         }
@@ -87,9 +91,9 @@ public abstract class Character extends PhysicalEntity implements Drawable, Upda
     }
 
     /**
-     * Will check if this character will collide with an enemy using gamestate and the x,y of the location to test.
+     * Will check if this character will collide with an enemy using game state and the x,y of the location to test.
      * Will return null if no character is found at x,y
-     * @param gameState the current gamestate this character is associated to
+     * @param gameState the current game state this character is associated to
      * @param x the x location to check for an enemy
      * @param y the y location to check for an enemy
      * @return the Character that was collided with, will return null if x,y is not occupied
@@ -132,28 +136,23 @@ public abstract class Character extends PhysicalEntity implements Drawable, Upda
         int attackRoll = d100.roll();
         if(attackRoll <= 70) {
             double reduction = attack;
-            if(Run.DEBUG_OUTPUT) {
-                System.out.println("[" + getUID() + "] " + getName());
-                System.out.println("Rolled: " + attackRoll);
-            }
+            Run.programLogger.log(Level.INFO, "[" + getUID() + "] " + getName() + "\n" +
+                    "Rolled: " + attackRoll
+            );
             if(attackRoll <= 30) {
                 reduction = critical;
-                if(Run.DEBUG_OUTPUT) {
-                    System.out.println("Critical!");
-                }
+                Run.programLogger.log(Level.INFO, "Critical Hit!");
             }
             reduction -= enemy.getDefense() * 0.10;
             enemy.setHp(enemy.getHp() - reduction);
-            if(Run.DEBUG_OUTPUT) {
-                System.out.println("Attack damage: " + reduction);
-                System.out.println("Enemy HP: " + enemy.getHp());
-            }
+            Run.programLogger.log(Level.INFO, "Attack damage: " + reduction + "\n" +
+                    "Enemy HP: " + enemy.getHp()
+            );
         } else {
-            if(Run.DEBUG_OUTPUT) {
-                System.out.println("[" + getUID() + "] " + getName());
-                System.out.println("Missed!");
-                System.out.println("Rolled: " + attackRoll);
-            }
+            Run.programLogger.log(Level.INFO, "[" + getUID() + "] " + getName() + "\n" +
+                    "Missed!" + "\n" +
+                    "Rolled: " + attackRoll
+            );
         }
     }
 
@@ -293,9 +292,7 @@ public abstract class Character extends PhysicalEntity implements Drawable, Upda
      * Changes the currentSprite tile for animation.
      * @param tileID the id of the sprite for animation purposes
      */
-    protected void setCurrentSprite(int tileID) {
-        currentSprite = spriteSheet.getTile(tileID);
-    }
+    protected void setCurrentSprite(int tileID) { currentSprite = spriteSheet.getTile(tileID); }
 
     /**
      * Returns this characters CharacterClass.
