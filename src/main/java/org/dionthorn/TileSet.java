@@ -74,7 +74,7 @@ public class TileSet {
                 tiles = removeSameElements(tiles, blank);
                 int removedTilesCount = sizeOriginal - tiles.length;
                 totalTiles = tiles.length;
-                Run.programLogger.log(Level.INFO, String.format("Tiles Removed: %d", removedTilesCount));
+                Run.programLogger.log(Level.INFO, String.format("Tiles Removed From %s: %d", path, removedTilesCount));
             }
             TileSet.tileSetCache.add(this);
             tileSetCache.trimToSize();

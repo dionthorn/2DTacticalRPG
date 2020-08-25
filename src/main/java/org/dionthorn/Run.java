@@ -66,7 +66,7 @@ public class Run extends Application {
             devMenu.getDevMenu().getChildren().add(devMenu.getTileSetView());
             GridPane.setConstraints(devMenu.getTileSetView(),
                     0, 2,
-                    6, 6
+                    8, 8
             );
         }
         if (gameState == null || gameState.getCurrentState() == GameState.STATE.MAIN_MENU) {

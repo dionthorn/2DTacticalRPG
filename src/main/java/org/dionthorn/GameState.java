@@ -113,7 +113,14 @@ public class GameState {
      */
     public void setCurrentMap(Map newMap) {
         currentMap = newMap;
-        String[] data = FileOps.getFileLines(currentMap.getMetaPATH());
+        String[] data;
+        System.out.println(newMap.getPATH());
+        if(newMap.getPATH().contains("RANDOM")) {
+            newMap.saveData();
+            data = FileOps.getFileLines(currentMap.getMetaPATH());
+        } else {
+            data = FileOps.getFileLines(currentMap.getMetaPATH());
+        }
         String[] enemies = new String[0];
         for(String line: data) {
             if(line.contains("ENEMIES")) {

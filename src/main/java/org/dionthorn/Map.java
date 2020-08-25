@@ -120,7 +120,7 @@ public class Map {
     public Map(String[] tilePaths) {
         GEN_COUNT++;
         Random rand = new Random();
-        PATH = String.format("src/main/java/resources/GameData/Maps/RANDOM%d.dat", GEN_COUNT);
+        PATH = String.format(Run.GAME_DATA_PATH + "/Maps/RANDOM%d.dat", GEN_COUNT);
         int[] mapArea = Run.getMapDimensions();
         mapWidth = mapArea[0];
         mapHeight = mapArea[1];
@@ -134,6 +134,15 @@ public class Map {
                 mapTiles[y][x] =  new MapTile(setID, rand.nextInt(tileSets.get(setID).getTiles().length - 1));
             }
         }
+        for(int i=0; i< MapTile.TileType.values().length; i++) {
+            mapDataTileMetaIDs.add(new ArrayList<>());
+        }
+        mapDataTileMetaIDs.get(MapTile.TileType.FIRE.ordinal()).add(0);
+        mapDataTileMetaIDs.get(MapTile.TileType.IMPASSABLE.ordinal()).add(0);
+        metaAllies = "AO1,5,18,martial/:ALLIES";
+        metaEnemies = "MO2,20,19,magic/:ENEMIES";
+        metaStartLoc = "5,17,:STARTLOC";
+        metaPATH = PATH.split("\\.")[0] + ".meta";
     }
 
     /**
@@ -186,7 +195,7 @@ public class Map {
         dataAsString[1] += ":IMPASSABLE";
         dataAsString[2] = metaEnemies;
         dataAsString[3] = metaAllies;
-        dataAsString[4] += metaStartLoc;
+        dataAsString[4] = metaStartLoc;
         FileOps.writeFileLines(metaPATH, dataAsString);
     }
     // Getters and Setters

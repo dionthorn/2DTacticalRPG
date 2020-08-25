@@ -255,10 +255,10 @@ public class DevMenu extends Stage {
             int xCord = (int) x;
             int yCord = (int) y;
             yCord -= heightDiff;
-            Run.programLogger.log(Level.INFO, String.format("Ix=%d, Iy=%d", xCord, yCord));
+            // Run.programLogger.log(Level.INFO, String.format("Ix=%d, Iy=%d", xCord, yCord));
             int tileX = xCord / app.getGameState().getCurrentMap().getTileSize();
             int tileY = yCord / app.getGameState().getCurrentMap().getTileSize();
-            Run.programLogger.log(Level.INFO, String.format("Tx=%d, Ty=%d", tileX, tileY));
+            // Run.programLogger.log(Level.INFO, String.format("Tx=%d, Ty=%d", tileX, tileY));
             int maxX = (int) view.getImage().getWidth() / app.getGameState().getCurrentMap().getTileSize();
             if(tileY > 0) {
                 tileY = tileY * maxX;
@@ -315,8 +315,8 @@ public class DevMenu extends Stage {
     }
 
     /**
-     * tag the selected tile id as an fire tile in its meta data
-     * this allows quick tileset meta data generation with a graphical ui
+     * tag the selected tile id as a fire tile in its meta data
+     * this allows quick tileset meta data generation with a graphical ui.
      */
     public void setFire() {
         if(!isFire.isSelected()) {
@@ -334,11 +334,7 @@ public class DevMenu extends Stage {
      * this allows quick tileset meta data generation with a graphical ui
      */
     public void setImpassable() {
-        if(!isImpassable.isSelected()) {
-            app.getGameState().getCurrentMap().setMapImpassableTileIDs(SELECTED_TILE_ID, true);
-        } else {
-            app.getGameState().getCurrentMap().setMapImpassableTileIDs(SELECTED_TILE_ID, false);
-        }
+        app.getGameState().getCurrentMap().setMapImpassableTileIDs(SELECTED_TILE_ID, !isImpassable.isSelected());
         tileMetaCheck();
     }
 
@@ -419,6 +415,7 @@ public class DevMenu extends Stage {
             SELECTED_MAP_ID++;
             devMapID.setText(String.format("Map ID: %s", SELECTED_MAP_ID));
             devMapPath.setText(String.format("File Name: %s", app.getGameState().getCurrentMap().getPATH()));
+            tileMetaCheck();
         } catch (Exception e) {
             Run.programLogger.log(Level.INFO,
                     String.format("Map %d Not Available Creating Random New Map", SELECTED_MAP_ID + 1)
@@ -431,6 +428,7 @@ public class DevMenu extends Stage {
             devMapPath.setText(String.format("File Name: %s", app.getGameState().getCurrentMap().getPATH()));
             mapList.getItems().add(app.getGameState().getCurrentMap().getPATH());
             mapList.getSelectionModel().select(SELECTED_MAP_ID);
+            tileMetaCheck();
         }
     }
 
@@ -447,6 +445,7 @@ public class DevMenu extends Stage {
                 SELECTED_MAP_ID--;
                 devMapID.setText(String.format("Map ID: %s", SELECTED_MAP_ID));
                 devMapPath.setText(String.format("File Name: %s", app.getGameState().getCurrentMap().getPATH()));
+                tileMetaCheck();
             } catch (Exception e) {
                 Run.programLogger.log(Level.INFO, String.format("Map %d Not Available", SELECTED_MAP_ID - 1));
             }
@@ -495,8 +494,8 @@ public class DevMenu extends Stage {
     }
 
     /**
-     * Returns the root grind pane object.
-     * @return the root grind pane object
+     * Returns the root grid pane object.
+     * @return the root grid pane object
      */
     public GridPane getDevMenu() { return devMenu; }
 
@@ -508,7 +507,7 @@ public class DevMenu extends Stage {
 
     /**
      * Sets the tileSetView for rendering the tileset original.
-     * @param tileSetView the full tile set to be rendered on the devmenu
+     * @param tileSetView the full tile set to be rendered on the dev menu
      */
     public void setTileSetView(ImageView tileSetView) { this.tileSetView = tileSetView; }
 
