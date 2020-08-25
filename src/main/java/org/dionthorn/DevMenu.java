@@ -115,12 +115,13 @@ public class DevMenu extends Stage {
         Button saveButton = new Button("Save Map");
         GridPane.setConstraints(saveButton, 2, 10, 3, 1);
         saveButton.setOnAction(event -> app.getGameState().getCurrentMap().saveData());
-        GridPane.setConstraints(mapList, 0, 11, 2, 1);
+        GridPane.setConstraints(mapList, 0, 11, 32, 1);
         Button loadMap = new Button("Load Map");
         GridPane.setConstraints(loadMap, 2, 11, 3, 1);
         loadMap.setOnAction(event -> {
             for(Map toLoad: app.getGameState().getMaps()) {
-                if(mapList.getSelectionModel().getSelectedItem().equals(toLoad.getPATH())) {
+                String fullPath = Run.GAME_DATA_PATH + "/Maps/" + mapList.getSelectionModel().getSelectedItem();
+                if(fullPath.equals(toLoad.getPATH())) {
                     app.getGameState().setCurrentMap(toLoad);
                     Player temp = app.getGameState().getPlayerEntity();
                     temp.setCurrentMap(app.getGameState().getCurrentMap(), 0, 0);
@@ -409,12 +410,16 @@ public class DevMenu extends Stage {
      * randomly generated map based off the currently loaded tilesets
      */
     private void mapIDMaxCheck() {
+        String[] folders;
+        String shortPath;
         try {
             app.getGameState().setCurrentMap(app.getGameState().getMaps().get(SELECTED_MAP_ID + 1));
             app.getGameState().getPlayerEntity().setCurrentMap(app.getGameState().getCurrentMap(), 0, 0);
             SELECTED_MAP_ID++;
             devMapID.setText(String.format("Map ID: %s", SELECTED_MAP_ID));
-            devMapPath.setText(String.format("File Name: %s", app.getGameState().getCurrentMap().getPATH()));
+            folders = app.getGameState().getCurrentMap().getPATH().split("\\\\");
+            shortPath = folders[folders.length - 1];
+            devMapPath.setText(String.format("File Name: %s", shortPath));
             tileMetaCheck();
         } catch (Exception e) {
             Run.programLogger.log(Level.INFO,
@@ -425,8 +430,10 @@ public class DevMenu extends Stage {
             app.getGameState().getPlayerEntity().setCurrentMap(app.getGameState().getCurrentMap(), 0, 0);
             SELECTED_MAP_ID++;
             devMapID.setText(String.format("Map ID: %s", SELECTED_MAP_ID));
-            devMapPath.setText(String.format("File Name: %s", app.getGameState().getCurrentMap().getPATH()));
-            mapList.getItems().add(app.getGameState().getCurrentMap().getPATH());
+            folders = app.getGameState().getCurrentMap().getPATH().split("\\\\");
+            shortPath = folders[folders.length - 1];
+            devMapPath.setText(String.format("File Name: %s", shortPath));
+            mapList.getItems().add(shortPath);
             mapList.getSelectionModel().select(SELECTED_MAP_ID);
             tileMetaCheck();
         }
@@ -436,6 +443,8 @@ public class DevMenu extends Stage {
      * Will safely decrease the selected map id flag
      */
     private void mapIDMinCheck() {
+        String[] folders;
+        String shortPath;
         if(SELECTED_MAP_ID - 1 < 0) {
             Run.programLogger.log(Level.INFO, "Map ID cannot be less than 0");
         } else {
@@ -444,7 +453,9 @@ public class DevMenu extends Stage {
                 app.getGameState().getPlayerEntity().setCurrentMap(app.getGameState().getCurrentMap(), 0, 0);
                 SELECTED_MAP_ID--;
                 devMapID.setText(String.format("Map ID: %s", SELECTED_MAP_ID));
-                devMapPath.setText(String.format("File Name: %s", app.getGameState().getCurrentMap().getPATH()));
+                folders = app.getGameState().getCurrentMap().getPATH().split("\\\\");
+                shortPath = folders[folders.length - 1];
+                devMapPath.setText(String.format("File Name: %s", shortPath));
                 tileMetaCheck();
             } catch (Exception e) {
                 Run.programLogger.log(Level.INFO, String.format("Map %d Not Available", SELECTED_MAP_ID - 1));

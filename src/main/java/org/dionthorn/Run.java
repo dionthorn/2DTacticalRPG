@@ -66,7 +66,7 @@ public class Run extends Application {
             devMenu.getDevMenu().getChildren().add(devMenu.getTileSetView());
             GridPane.setConstraints(devMenu.getTileSetView(),
                     0, 2,
-                    8, 8
+                    32, 1
             );
         }
         if (gameState == null || gameState.getCurrentState() == GameState.STATE.MAIN_MENU) {
@@ -518,11 +518,15 @@ public class Run extends Application {
                     gameState = null;
                 }
                 if(key.getCode() == KeyCode.BACK_QUOTE) {
+                    String[] folders = getGameState().getCurrentMap().getPATH().split("\\\\");
+                    String shortPath = folders[folders.length - 1];
                     if(devMenu == null) {
                         devMenu = new DevMenu(this);
-                        devMenu.getDevMapPath().setText(String.format("%s", gameState.getCurrentMap().getPATH()));
+                        devMenu.getDevMapPath().setText(String.format("%s", shortPath));
                         for(Map toLoad: gameState.getMaps()) {
-                            devMenu.getMapList().getItems().add(toLoad.getPATH());
+                            folders = toLoad.getPATH().split("\\\\");
+                            shortPath = folders[folders.length - 1];
+                            devMenu.getMapList().getItems().add(shortPath);
                         }
                         devMenu.getMapList().getSelectionModel().select(0);
                     } else {
