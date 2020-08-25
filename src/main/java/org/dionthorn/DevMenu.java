@@ -4,10 +4,13 @@ import javafx.geometry.Bounds;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.SnapshotParameters;
+import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelReader;
 import javafx.scene.image.WritableImage;
@@ -15,11 +18,17 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
+import javax.imageio.ImageIO;
+import javafx.embed.swing.SwingFXUtils;
 
 /**
  * DevMenu Class will be a secondary window that can be used for development related functions
@@ -124,10 +133,14 @@ public class DevMenu extends Stage {
         Button devLevelUp = new Button("Level Up");
         GridPane.setConstraints(devLevelUp, 1, 12);
         devLevelUp.setOnAction(event -> {
-            Run.programLogger.log(Level.INFO, String.valueOf(app.getLastSelectChar()));
             if (app.getLastSelectChar() != -1) {
                 ((Character) app.getGameState().getEntities().get(app.getLastSelectChar())).levelUp();
             }
+        });
+        Button devMakeIcon = new Button("Make Icon");
+        GridPane.setConstraints(devMakeIcon, 2, 12);
+        devMakeIcon.setOnAction(event -> {
+            makeIcon();
         });
         Button memData = new Button("Update resource usage data");
         GridPane.setConstraints(memData, 0, 13);
@@ -205,7 +218,7 @@ public class DevMenu extends Stage {
             }
         });
         devMenu.getChildren().addAll(devTileID, increaseTileID, decreaseTileID, editMode,
-                isFire, isImpassable, devUpdate, devLevelUp,
+                isFire, isImpassable, devUpdate, devLevelUp, devMakeIcon,
                 devTileSetID, increaseTileSetID, decreaseTileSetID,
                 devMapID, increaseMapID, decreaseMapID,
                 devMapPath, saveButton,
@@ -436,6 +449,47 @@ public class DevMenu extends Stage {
                 devMapPath.setText(String.format("File Name: %s", app.getGameState().getCurrentMap().getPATH()));
             } catch (Exception e) {
                 Run.programLogger.log(Level.INFO, String.format("Map %d Not Available", SELECTED_MAP_ID - 1));
+            }
+        }
+    }
+
+    /**
+     * Will generate a .png of a 200x200 pixel 'icon' of the map for use on the level_selection screen.
+     * if no icon is found then it will just render the name of the .dat file
+     * will first check to see if an icon exists, if it does you must rename it from the .dat file name
+     * icon names will always be {mapName}_Icon.png located in the /GameData/Art folder
+     */
+    public void makeIcon() {
+        String[] mapsFolder = app.getGameState().getCurrentMap().getPATH().split("\\\\");
+        String targetName = mapsFolder[mapsFolder.length - 1].split("\\.")[0] + "_Icon.png";
+        String[] artFiles = FileOps.getFileNamesFromDirectory(Run.GAME_DATA_PATH + "/Art");
+        boolean found = false;
+        for(String name: artFiles) {
+            if(name != null && name.equals(targetName)) {
+                found = true;
+                break;
+            }
+        }
+        if(found) {
+            Run.programLogger.log(Level.INFO, "Icon for this map already exists.");
+        } else {
+            Canvas toSaveCanvas = app.getCanvas();
+            SnapshotParameters params = new SnapshotParameters();
+            params.setFill(Color.TRANSPARENT);
+            Image toSaveImage = toSaveCanvas.snapshot(params, null);
+            ImageView temp = new ImageView(toSaveImage);
+            temp.setFitWidth(200);
+            temp.setFitHeight(200);
+            toSaveImage = temp.snapshot(null, null);
+            try {
+                ImageIO.write(SwingFXUtils.fromFXImage(toSaveImage, null), "png",
+                        new File(Run.GAME_DATA_PATH + "/Art/" + targetName)
+                );
+                Run.programLogger.log(Level.INFO,
+                        "The new map icon can be found at: " + Run.GAME_DATA_PATH + "/Art/" + targetName
+                );
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }

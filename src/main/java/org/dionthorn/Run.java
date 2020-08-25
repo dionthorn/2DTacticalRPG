@@ -382,7 +382,13 @@ public class Run extends Application {
                 String[] path = m.getPATH().split("/");
                 int index;
                 index = Math.max((path.length - 1), 0);
-                gc.fillText(path[index], squareXY[count][0]+10, squareXY[count][1]+10);
+                String iconName = path[index].split("\\\\")[1].split("\\.")[0] + "_Icon.png";
+                if(FileOps.doesFileExist(GAME_DATA_PATH + "/Art/" + iconName)) {
+                    gameState.getMaps().get(count).setIcon(new Image("file:" + GAME_DATA_PATH + "/Art/" + iconName));
+                    gc.drawImage(gameState.getMaps().get(count).getIcon(), squareXY[count][0], squareXY[count][1]);
+                } else {
+                    gc.fillText(path[index], squareXY[count][0]+10, squareXY[count][1]+10);
+                }
                 count++;
             }
             gc.drawImage(paperBg, 0, SCREEN_MAP_HEIGHT);
@@ -501,7 +507,7 @@ public class Run extends Application {
         gc = canvas.getGraphicsContext2D();
         rootGroup.getChildren().add(canvas);
         rootScene.addEventHandler(KeyEvent.KEY_PRESSED, (key) -> {
-            programLogger.log(Level.INFO, "[DEBUG] KeyInput: " + key.getCode());
+            // programLogger.log(Level.INFO, "[DEBUG] KeyInput: " + key.getCode());
             if (gameState == null || gameState.getCurrentState() == GameState.STATE.MAIN_MENU) {
                 if (key.getCode() == KeyCode.ESCAPE) {
                     primaryStage.close();
@@ -861,6 +867,8 @@ public class Run extends Application {
      * @return the last selected characters unique id
      */
     public int getLastSelectChar () { return lastSelectedCharUID;}
+
+    public Canvas getCanvas() { return gc.getCanvas(); }
 
     /**
      * The entry point for the program. We determine where /GameData/ folder is here.

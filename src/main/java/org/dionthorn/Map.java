@@ -21,6 +21,7 @@ public class Map {
     private int mapHeight;
     private ArrayList<ArrayList<Integer>> mapDataTileMetaIDs = new ArrayList<>();
     private ArrayList<TileSet> tileSets = new ArrayList<>();
+    private Image icon;
 
     /**
      * Default Map Constructor will take a .dat file path and generate based on that,
@@ -355,6 +356,20 @@ public class Map {
      * @return a string that represents the players start location for this map
      */
     public String getMetaStartLoc() { return metaStartLoc; }
+
+    /**
+     * Returns the associated icon image if one exists in the /art folder
+     * @return the associated icon image if one exists in the /art folder
+     */
+    public Image getIcon() { return icon; }
+
+    /**
+     * Assigns the maps icon
+     * @param newIcon will assign the maps icon
+     */
+    public void setIcon(Image newIcon) {
+        icon = newIcon;
+    }
 
 }
 

@@ -3,6 +3,8 @@ module MavenTactical {
     requires javafx.graphics;
     requires javafx.base;
     requires java.logging;
+    requires java.desktop;
+    requires javafx.swing;
 
     exports org.dionthorn to javafx.graphics;
 }
