@@ -121,10 +121,13 @@ public abstract class Character extends PhysicalEntity implements Drawable, Upda
             }
         }
         if(hit) {
-            return (Character) gameState.getEntities().get(targetUID);
-        } else {
-            return null;
+            for(Entity e: gameState.getEntities()) {
+                if(e.getUID() == targetUID) {
+                    return (Character) e;
+                }
+            }
         }
+        return null;
     }
 
     /**
