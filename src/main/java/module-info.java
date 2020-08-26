@@ -7,4 +7,5 @@ module MavenTactical {
     requires javafx.swing;
 
     exports org.dionthorn to javafx.graphics;
+    exports org.dionthorn.JavaFXShellExample to javafx.graphics;
 }
