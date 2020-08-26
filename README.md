@@ -8,7 +8,7 @@ All github listed dependencies are related to maven plugins used to generate the
 I've added a Wiki to this Github Repo if you have any questions on how the system works please see https://github.com/dionthorn/2DTacticalRPG/wiki
 
 To test go to the latest release and download the TacticalRPG.zip, extract where you wish, go into the folder and into /bin and run App.bat
-https://github.com/dionthorn/2DTacticalRPG/releases/tag/v0.2.1-alpha - under 'assets' get the .zip file.
+https://github.com/dionthorn/2DTacticalRPG/releases - choose the latest release and under 'assets' get the TacticalRPG{version}.zip file.
 
 If you get the latest version of IntellijIDEA community edition for free and create a new Maven project and setup the openjfx archetype: https://openjfx.io/openjfx-docs/#IDE-Intellij
 Then you can go to the project folder in your /IdeaProjects/yourProject folder and copy the pom.xml, src, and MavenTactical.iml (rename this to yourProject.iml)
