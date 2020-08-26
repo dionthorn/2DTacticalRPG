@@ -3,6 +3,7 @@
 Compiled with OpenJDK 13 and OpenJFX 13.
 I use OpenJDK from https://adoptopenjdk.net/ 13 but 14 should compile fine as far as I'm aware.
 I use OpenJFX from https://openjfx.io/ same applies as above.
+All github listed dependencies are related to maven plugins used to generate the jlink image and handle compiling etc.
 
 To test go to the latest release and download the TacticalRPG.zip, extract where you wish, go into the folder and into /bin and run App.bat
 https://github.com/dionthorn/2DTacticalRPG/releases/tag/v0.2.1-alpha - under 'assets' get the .zip file.
