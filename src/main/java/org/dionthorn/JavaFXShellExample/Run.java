@@ -6,6 +6,9 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
@@ -41,6 +44,21 @@ public class Run extends Application {
         Canvas canvas = new Canvas(SCREEN_WIDTH, SCREEN_HEIGHT);
         gc = canvas.getGraphicsContext2D();
         rootGroup.getChildren().add(canvas);
+
+        // Add User Input Handling here
+        rootScene.addEventHandler(KeyEvent.KEY_PRESSED, (key) -> {
+            System.out.println("Key Pressed: " + key.getCode());
+            if (key.getCode() == KeyCode.ESCAPE) {
+                primaryStage.close();
+                System.exit(0);
+            }
+        });
+
+        canvas.addEventHandler(MouseEvent.MOUSE_CLICKED, (mouseEvent) -> {
+            int mouseX = (int) mouseEvent.getX();
+            int mouseY = (int) mouseEvent.getY();
+            System.out.printf("Mouse Clicked At: (%d, %d)%n", mouseX, mouseY);
+        });
 
         // Setup animator
         primaryStage.setScene(rootScene);
