@@ -81,6 +81,16 @@ public abstract class Character extends PhysicalEntity implements Drawable, Upda
                 }
             }
         }
+        if(x < 0) {
+            x = 0;
+        } else if(x >= gameState.getCurrentMap().getMapWidth()) {
+            x = gameState.getCurrentMap().getMapWidth() - 1;
+        }
+        if(y < 0) {
+            y = 0;
+        } else if(y >= gameState.getCurrentMap().getMapHeight()) {
+            y = gameState.getCurrentMap().getMapHeight() - 1;
+        }
         if(gameState.getCurrentMap().getTileType((int) x, (int) y) == MapTile.TileType.IMPASSABLE) {
             hit = true;
         }

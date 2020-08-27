@@ -114,12 +114,32 @@ public class GameState {
     public void setCurrentMap(Map newMap) {
         currentMap = newMap;
         String[] data;
-        System.out.println(newMap.getPATH());
         if(newMap.getPATH().contains("RANDOM")) {
             newMap.saveData();
-            data = FileOps.getFileLines(currentMap.getMetaPATH());
-        } else {
-            data = FileOps.getFileLines(currentMap.getMetaPATH());
+        }
+        data = FileOps.getFileLines(currentMap.getMetaPATH());
+        ArrayList<ArrayList<Integer>> mapDataTileMetaIDs = new ArrayList<>();
+        for(int i=0; i< MapTile.TileType.values().length; i++) {
+            mapDataTileMetaIDs.add(new ArrayList<>());
+        }
+        for(String line: data) {
+            if(line.contains("FIRE")) {
+                String[] tileIdsFire = line.split(":")[0].split(",");
+                for (String s : tileIdsFire) {
+                    if (!s.equals("")) {
+                        int fireTag = Integer.parseInt(s);
+                        mapDataTileMetaIDs.get(MapTile.TileType.FIRE.ordinal()).add(fireTag);
+                    }
+                }
+            } else if(line.contains("IMPASSABLE")) {
+                String[] tileIdsImpassable = line.split(":")[0].split(",");
+                for (String s : tileIdsImpassable) {
+                    if (!s.equals("")) {
+                        int impassableTag = Integer.parseInt(s);
+                        mapDataTileMetaIDs.get(MapTile.TileType.IMPASSABLE.ordinal()).add(impassableTag);
+                    }
+                }
+            }
         }
         String[] enemies = new String[0];
         for(String line: data) {

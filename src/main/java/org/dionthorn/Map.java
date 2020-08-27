@@ -47,7 +47,7 @@ public class Map {
                     }
                 }
             } else if(line.contains("IMPASSABLE")) {
-                String[] tileIdsImpassable = tileMetaData[1].split(":")[0].split(",");
+                String[] tileIdsImpassable = line.split(":")[0].split(",");
                 for (String s : tileIdsImpassable) {
                     if (!s.equals("")) {
                         int tempInt = Integer.parseInt(s);
@@ -380,5 +380,20 @@ public class Map {
         icon = newIcon;
     }
 
+    /**
+     * Assigns new mapDataTileMetaIDs useful when switching through maps
+     * @param mapDataTileMetaIDs will assign new data for tile type meta data
+     */
+    public void setMapDataTileMetaIDs(java.util.ArrayList<java.util.ArrayList<Integer>> mapDataTileMetaIDs) {
+        this.mapDataTileMetaIDs = mapDataTileMetaIDs;
+    }
+
+    /**
+     * Returns the current data for tile type meta data
+     * @return current data for tile type meta data
+     */
+    public ArrayList<ArrayList<Integer>> getMapDataTileMetaIDs() {
+        return mapDataTileMetaIDs;
+    }
 }
 
