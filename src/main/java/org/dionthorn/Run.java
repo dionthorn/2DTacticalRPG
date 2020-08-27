@@ -7,13 +7,8 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.*;
-import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import java.io.File;
 import java.nio.file.Paths;
@@ -29,12 +24,12 @@ public class Run extends Application {
     private final String PROGRAM_VERSION = "v0.2.1a";
     public static Logger programLogger = Logger.getLogger("programLogger");
     public static String GAME_DATA_PATH = "";
-    private static final int SCREEN_WIDTH = 1024;
-    private static final int SCREEN_HEIGHT = 1024;
-    private static final int SCREEN_MAP_HEIGHT = 768;
-    private static final int TILE_SIZE = 32;
+    public static final int SCREEN_WIDTH = 1024;
+    public static final int SCREEN_HEIGHT = 1024;
+    public static final int SCREEN_MAP_HEIGHT = 768;
+    public static final int TILE_SIZE = 32;
+    public static int[] menuNewGameBounds;
     private int[] DRAG_LOC = {-1, -1};
-    private int[] menuNewGameBounds;
     private int lastSelectedCharUID;
     private long FPS = TimeUnit.SECONDS.toNanos(1 / 30);
     private long startTime = System.nanoTime();
@@ -53,360 +48,9 @@ public class Run extends Application {
      * will check gameState and decide what to render from that.
      */
     private void render() {
-        if (gameState != null && devMenu != null) {
-            Image selectedTileImg = gameState.getCurrentMap().getTile(devMenu.SELECTED_TILE_SET_ID,
-                    devMenu.SELECTED_TILE_ID
-            );
-            ImageView selectedTileImgView = new ImageView(selectedTileImg);
-            devMenu.getDevMenu().getChildren().add(selectedTileImgView);
-            GridPane.setConstraints(selectedTileImgView, 4, 0);
-            devMenu.getDevMenu().getChildren().remove(devMenu.getTileSetView());
-            Image tileSet = gameState.getCurrentMap().getTileSet(devMenu.SELECTED_TILE_SET_ID).getTileSetSrc();
-            devMenu.setTileSetView(new ImageView(tileSet));
-            devMenu.getDevMenu().getChildren().add(devMenu.getTileSetView());
-            GridPane.setConstraints(devMenu.getTileSetView(),
-                    0, 2,
-                    32, 1
-            );
-        }
-        if (gameState == null || gameState.getCurrentState() == GameState.STATE.MAIN_MENU) {
-            gc.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-            gc.drawImage(mainMenuBg, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-            gc.setTextAlign(TextAlignment.LEFT);
-            Font menuTitleFont = new Font("Arial", 32);
-            gc.setFont(menuTitleFont);
-            gc.setFill(Color.WHITE);
-            String title = "Game Project";
-            Text menuTitle = new Text(title);
-            menuTitle.setFont(menuTitleFont);
-            gc.fillText(title, (SCREEN_WIDTH >> 1) - (menuTitle.getLayoutBounds().getWidth() / 2),
-                    SCREEN_HEIGHT >> 4
-            );
-            Font menuOptionsFont = new Font("Arial", 28);
-            gc.setFont(menuOptionsFont);
-            String newGameString = "Play";
-            Text newGameText = new Text(newGameString);
-            newGameText.setFont(menuOptionsFont);
-            menuNewGameBounds = new int[4];
-            menuNewGameBounds[0] = (int) ((SCREEN_WIDTH >> 1) - (newGameText.getLayoutBounds().getWidth() / 2));
-            menuNewGameBounds[1] = (SCREEN_HEIGHT >> 4) * 4;
-            menuNewGameBounds[2] = (int) newGameText.getLayoutBounds().getWidth();
-            menuNewGameBounds[3] = (int) newGameText.getLayoutBounds().getHeight();
-            gc.fillText(newGameString, menuNewGameBounds[0], menuNewGameBounds[1]);
-        } else if (gameState != null && gameState.getCurrentState() == GameState.STATE.GAME) {
-            gc.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT); // Clear canvas
-            MapTile[][] mapTiles = gameState.getCurrentMap().getMapTiles();
-            for (int y = 0; y < mapTiles.length; y++) {
-                for (int x = 0; x < mapTiles[0].length; x++) {
-                    gc.drawImage(gameState.getCurrentMap().getTile(mapTiles[y][x].getTileSet(),
-                            mapTiles[y][x].getTileID()),
-                            x * gameState.getCurrentMap().getTileSize(),
-                            y * gameState.getCurrentMap().getTileSize()
-                    );
-                }
-            }
-            gc.drawImage(paperBg, 0, gameState.getCurrentMap().getMapHeight() * TILE_SIZE);
-            for (Entity e : gameState.getEntities()) {
-                if (e instanceof Drawable) {
-                    if (((PhysicalEntity) e).getCurrentMap().equals(gameState.getCurrentMap())) {
-                        if (e instanceof Character) {
-                            if (!((Character) e).isAlive()) {
-                                ((Character) e).setCurrentSprite(((Character) e).getCharClass().getDeadTileID());
-                            }
-                        }
-                        ((Drawable) e).draw(gc);
-                        if (e instanceof Character) {
-                            double x, y, maxHP, pixelPerHP, currentHP, currentHPDisplayed, YaxisMod;
-                            x = ((Character) e).getX();
-                            y = ((Character) e).getY();
-                            maxHP = ((Character) e).getMaxHP();
-                            pixelPerHP = maxHP / TILE_SIZE;
-                            currentHP = ((Character) e).getHp();
-                            currentHPDisplayed = currentHP / pixelPerHP;
-                            YaxisMod = (y * TILE_SIZE) + ((maxHP - currentHP) / pixelPerHP);
-                            gc.setFill(Color.RED);
-                            gc.setStroke(Color.BLACK);
-                            if (gameState.getPlayerTeam().contains(e)) {
-                                gc.fillRect(x * TILE_SIZE, y * TILE_SIZE, 3, 32);
-                                gc.setFill(Color.GREEN);
-                                gc.setStroke(Color.BLACK);
-                                if (currentHPDisplayed < 0) {
-                                    currentHPDisplayed = 0;
-                                }
-                                gc.fillRect(x * TILE_SIZE, YaxisMod, 3, currentHPDisplayed);
-                            } else if (gameState.getEnemyTeam().contains(e)) {
-                                gc.fillRect((x * TILE_SIZE) + 29, y * TILE_SIZE, 3, 32);
-                                gc.setFill(Color.GREEN);
-                                gc.setStroke(Color.BLACK);
-                                if (currentHPDisplayed < 0) {
-                                    currentHPDisplayed = 0;
-                                }
-                                gc.fillRect((x * TILE_SIZE) + 29, YaxisMod, 3, currentHPDisplayed);
-                            }
-                        }
-                    }
-                }
-            }
-            if (!gameState.getNextTurn()) {
-                String name = "";
-                Entity target = null;
-                for (Entity e : gameState.getEnemyTeam()) {
-                    if (((Character) e).isMoveTurn()) {
-                        name = ((Character) e).getName();
-                        target = e;
-                    }
-                }
-                for (Entity e : gameState.getPlayerTeam()) {
-                    if (((Character) e).isMoveTurn()) {
-                        name = ((Character) e).getName();
-                        target = e;
-                    }
-                }
-                if (!name.equals("")) {
-                    if (name.equals(gameState.getPlayerEntity().getName())) {
-                        gc.setStroke(Color.WHITE);
-                        gc.setFill(Color.BLACK);
-                        if (gameState.getPlayerEntity().isAlive()) {
-                            gc.setTextAlign(TextAlignment.LEFT);
-                            gc.fillText("Please Take Your Turn", 10, SCREEN_HEIGHT - 20);
-                        } else {
-                            gameState.setState(GameState.STATE.GAME_OVER);
-                        }
-                    } else {
-                        if (((Character) target).isAlive()) {
-                            gc.setStroke(Color.WHITE);
-                            gc.setFill(Color.BLACK);
-                            gc.setTextAlign(TextAlignment.LEFT);
-                            gc.fillText(name + " Please Press Spacebar To Advance Their Turn",
-                                    10, SCREEN_HEIGHT - 20);
-                        } else {
-                            if (!gameState.getNextTurn() && !gameState.getPlayerEntity().isMoveTurn()) {
-                                gameState.setNextTurn(true);
-                            }
-                        }
-                    }
-                }
-            }
-        } else if (gameState != null && gameState.getCurrentState() == GameState.STATE.BATTLE) {
-            gc.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-            gc.setFill(Color.rgb(43, 107, 140));
-            gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_MAP_HEIGHT);
-            gc.drawImage(paperBg, 0, SCREEN_MAP_HEIGHT);
-            gc.setFill(Color.GREY);
-            int stageX, stageY, stageW, stageH;
-            gc.fillRect(stageX = SCREEN_WIDTH >> 5, stageY = SCREEN_MAP_HEIGHT >> 5,
-                    stageW = (SCREEN_WIDTH - (SCREEN_WIDTH >> 4)),
-                    stageH = (SCREEN_MAP_HEIGHT >> 1) + (SCREEN_MAP_HEIGHT >> 3)
-            );
-            Character ally = gameState.getAttacker();
-            Character enemy = gameState.getDefender();
-            for (Entity c : gameState.getEnemyTeam()) {
-                if (c == gameState.getAttacker()) {
-                    ally = gameState.getDefender();
-                    enemy = gameState.getAttacker();
-                    break;
-                }
-            }
-            int allyX, allyY, spriteSize = stageW >> 2;
-            gc.drawImage(ally.currentSprite,
-                    allyX = stageX + (stageW >> 3),
-                    allyY = stageY + (stageH >> 2) + (stageH >> 4),
-                    spriteSize, spriteSize
-            );
-            gc.setFill(Color.RED);
-            gc.setStroke(Color.BLACK);
-            double maxHP = ally.getMaxHP();
-            double pixelPerHP = maxHP / (stageW >> 2);
-            double currentHP = ally.getHp();
-            double currentHPDisplayed = currentHP / pixelPerHP;
-            int yAxisMod = stageY + (stageH >> 2) + (stageH >> 4) - 30;
-            gc.fillRect(stageW / 6, yAxisMod, stageW >> 2, 10);
-            gc.setFill(Color.GREEN);
-            gc.fillRect(stageW / 6, yAxisMod, currentHPDisplayed, 10);
-            gc.setFill(Color.BLACK);
-            gc.setTextAlign(TextAlignment.LEFT);
-            String heightTest = String.format("Name: %s", ally.getName());
-            double textHeight = new Text(heightTest).getBoundsInLocal().getHeight() + 5;
-            gc.fillText(heightTest, 50, SCREEN_MAP_HEIGHT + textHeight + 5);
-            gc.fillText(String.format("HP: %.0f / %.0f", ally.getHp(), ally.getMaxHP()),
-                    50, SCREEN_MAP_HEIGHT + textHeight * 3
-            );
-            int enemyX, enemyY;
-            gc.drawImage(enemy.currentSprite,
-                    enemyX = stageX + stageW - (stageW >> 3) - (stageW >> 2),
-                    enemyY = stageY + (stageH >> 2) + (stageH >> 4),
-                    stageW >> 2, stageW >> 2
-            );
-            gc.setFill(Color.RED);
-            gc.setStroke(Color.BLACK);
-            maxHP = enemy.getMaxHP();
-            pixelPerHP = maxHP / (stageW >> 2);
-            currentHP = enemy.getHp();
-            currentHPDisplayed = currentHP / pixelPerHP;
-            gc.fillRect(enemyX, yAxisMod, stageW >> 2, 10);
-            gc.setFill(Color.GREEN);
-            gc.fillRect(enemyX, yAxisMod, currentHPDisplayed, 10);
-            gc.setFill(Color.BLACK);
-            gc.fillText(String.format("Name: %s", enemy.getName()), (SCREEN_WIDTH >> 1) + 50,
-                    SCREEN_MAP_HEIGHT + textHeight + 5
-            );
-            gc.fillText(String.format("HP: %.0f / %.0f", enemy.getHp(), enemy.getMaxHP()),
-                    (SCREEN_WIDTH >> 1) + 50, SCREEN_MAP_HEIGHT + textHeight * 3
-            );
-            gc.setStroke(Color.BLACK);
-            gc.setLineWidth(5);
-            gc.strokeRect(SCREEN_WIDTH >> 5, SCREEN_MAP_HEIGHT >> 5,
-                    (SCREEN_WIDTH - (SCREEN_WIDTH >> 4)), (SCREEN_MAP_HEIGHT >> 1) + (SCREEN_MAP_HEIGHT >> 3)
-            );
-            gc.setFill(Color.GREY);
-            gc.setLineWidth(2);
-            final int y1 = (SCREEN_MAP_HEIGHT >> 1) + (SCREEN_MAP_HEIGHT >> 3) + (SCREEN_MAP_HEIGHT >> 4);
-            gc.fillRect(SCREEN_WIDTH >> 4, y1,
-                    (SCREEN_WIDTH >> 2) + (SCREEN_WIDTH >> 3), SCREEN_MAP_HEIGHT >> 2
-            );
-            gc.strokeRect(SCREEN_WIDTH >> 4, y1,
-                    (SCREEN_WIDTH >> 2) + (SCREEN_WIDTH >> 3), SCREEN_MAP_HEIGHT >> 2
-            );
-            gc.setTextAlign(TextAlignment.CENTER);
-            final int y2 = (SCREEN_MAP_HEIGHT >> 1) + (SCREEN_MAP_HEIGHT >> 2) + (SCREEN_MAP_HEIGHT >> 4);
-            gc.strokeText("ATTACK", SCREEN_WIDTH >> 2, y2);
-            gc.fillRect((SCREEN_WIDTH >> 1) + (SCREEN_WIDTH >> 4), y1,
-                    (SCREEN_WIDTH >> 2) + (SCREEN_WIDTH >> 3), SCREEN_MAP_HEIGHT >> 2
-            );
-            gc.strokeRect((SCREEN_WIDTH >> 1) + (SCREEN_WIDTH >> 4), y1,
-                    (SCREEN_WIDTH >> 2) + (SCREEN_WIDTH >> 3), SCREEN_MAP_HEIGHT >> 2
-            );
-            gc.strokeText("DEFEND", SCREEN_WIDTH - (SCREEN_WIDTH >> 2), y2);
-            battleFrameCounter++;
-            if (ally.isBattleTurn()) {
-                if (gameState.getPlayerEntity().equals(ally)) {
-                    if (ally.IsAttacking()) {
-                        if (ally.getCharClass().getCompletedCycles() > 2) {
-                            ally.setIsAttacking(false);
-                            ally.setBattleTurn(false);
-                            enemy.setBattleTurn(true);
-                            ally.attack(enemy);
-                            ally.getCharClass().setCompletedCycles(0);
-                            if (!enemy.isAlive()) {
-                                boolean didLevel = ally.getCharClass().addXP(
-                                        1000 * enemy.getCharClass().getLevel()
-                                );
-                                if (didLevel) {
-                                    ally.levelUp();
-                                }
-                                gameState.setState(GameState.STATE.GAME);
-                            }
-                        }
-                        ally.attackAnimation(battleFrameCounter);
-                    }
-                } else {
-                    if (ally.IsAttacking()) {
-                        if (ally.getCharClass().getCompletedCycles() > 2) {
-                            ally.setIsAttacking(false);
-                            ally.setBattleTurn(false);
-                            enemy.setBattleTurn(true);
-                            ally.attack(enemy);
-                            ally.getCharClass().setCompletedCycles(0);
-                            if (!enemy.isAlive()) {
-                                boolean didLevel = ally.getCharClass().addXP(
-                                        1000 * enemy.getCharClass().getLevel()
-                                );
-                                if (didLevel) {
-                                    ally.levelUp();
-                                }
-                                gameState.setState(GameState.STATE.GAME);
-                            }
-                        }
-                        ally.attackAnimation(battleFrameCounter);
-                    } else {
-                        ally.setIsAttacking(true);
-                    }
-                }
-                gc.drawImage(ally.getCurrentSprite(), allyX, allyY, spriteSize, spriteSize);
-                gc.drawImage(enemy.getCurrentSprite(), enemyX, enemyY, spriteSize, spriteSize);
-            } else if (enemy.isBattleTurn()) {
-                if (enemy.IsAttacking()) {
-                    if (enemy.getCharClass().getCompletedCycles() > 2) {
-                        enemy.setIsAttacking(false);
-                        enemy.setBattleTurn(false);
-                        ally.setBattleTurn(true);
-                        enemy.attack(ally);
-                        enemy.getCharClass().setCompletedCycles(0);
-                        if (!ally.isAlive()) {
-                            if (ally.equals(gameState.getPlayerEntity())) {
-                                gameState.setState(GameState.STATE.GAME_OVER);
-                            } else {
-                                boolean didLevel = enemy.getCharClass().addXP(
-                                        1000 * ally.getCharClass().getLevel()
-                                );
-                                if (didLevel) {
-                                    enemy.levelUp();
-                                }
-                                gameState.setState(GameState.STATE.GAME);
-                            }
-                        }
-                    }
-                    enemy.attackAnimation(battleFrameCounter);
-                } else {
-                    enemy.setIsAttacking(true);
-                }
-                gc.drawImage(ally.getCurrentSprite(), allyX, allyY, spriteSize, spriteSize);
-                gc.drawImage(enemy.getCurrentSprite(), enemyX, enemyY, spriteSize, spriteSize);
-            }
-            if (battleFrameCounter == 30) {
-                battleFrameCounter = 0;
-            }
-        } else if(gameState != null && gameState.getCurrentState() == GameState.STATE.LEVEL_SELECTION) {
-            gc.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-            gc.drawImage(mainMenuBg, 0, 0, SCREEN_WIDTH, SCREEN_MAP_HEIGHT);
-            gc.setFill(Color.rgb(43, 107, 140));
-            int squareSize = 200;
-            int[][] squareXY = {
-                    {(SCREEN_WIDTH>>4),         SCREEN_HEIGHT>>5},
-                    {(SCREEN_WIDTH>>4) * 6,     SCREEN_HEIGHT>>5},
-                    {(SCREEN_WIDTH>>4) * 11,    SCREEN_HEIGHT>>5},
-                    {(SCREEN_WIDTH>>4),         (SCREEN_HEIGHT>>5) * 9},
-                    {(SCREEN_WIDTH>>4) * 6,     (SCREEN_HEIGHT>>5) * 9},
-                    {(SCREEN_WIDTH>>4) * 11,    (SCREEN_HEIGHT>>5) * 9},
-                    {(SCREEN_WIDTH>>4),         (SCREEN_HEIGHT>>5) * 17},
-                    {(SCREEN_WIDTH>>4) * 6,     (SCREEN_HEIGHT>>5) * 17},
-                    {(SCREEN_WIDTH>>4) * 11,    (SCREEN_HEIGHT>>5) * 17}
-            };
-            for(int[] xy: squareXY) {
-                gc.fillRect(xy[0], xy[1], squareSize, squareSize);
-            }
-            int count = 0;
-            gc.setFill(Color.BLACK);
-            gc.setFont(new Font(12));
-            for(Map m: gameState.getMaps()) {
-                String[] path = m.getPATH().split("/");
-                int index;
-                index = Math.max((path.length - 1), 0);
-                String iconName = path[index].split("\\\\")[1].split("\\.")[0] + "_Icon.png";
-                if(FileOps.doesFileExist(GAME_DATA_PATH + "/Art/" + iconName)) {
-                    gameState.getMaps().get(count).setIcon(new Image("file:" + GAME_DATA_PATH + "/Art/" + iconName));
-                    gc.drawImage(gameState.getMaps().get(count).getIcon(), squareXY[count][0], squareXY[count][1]);
-                } else {
-                    gc.fillText(path[index], squareXY[count][0]+10, squareXY[count][1]+10);
-                }
-                count++;
-            }
-            gc.drawImage(paperBg, 0, SCREEN_MAP_HEIGHT);
-            gc.setFont(new Font("Arial", 32));
-            String[] path = gameState.getCurrentMap().getPATH().split("/");
-            gc.fillText(path[path.length - 1], SCREEN_WIDTH>>4, SCREEN_MAP_HEIGHT + (SCREEN_MAP_HEIGHT>>4));
-            gc.fillText("Press Enter to Load The Selected Map", SCREEN_WIDTH>>4,
-                    SCREEN_MAP_HEIGHT + (SCREEN_MAP_HEIGHT>>2)
-            );
-        } else if(gameState != null && gameState.getCurrentState() == GameState.STATE.GAME_OVER) {
-            gc.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-            gc.drawImage(mainMenuBg, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-            gc.setFill(Color.WHITE);
-            gc.setTextAlign(TextAlignment.CENTER);
-            Text gameOver = new Text("GAME OVER!");
-            gc.fillText(gameOver.getText(), SCREEN_WIDTH >> 1, 40);
-            gc.fillText("Press ESC to exit to Main Menu!", SCREEN_WIDTH >> 1, 100);
-        }
+
+        Render.render(this, devMenu, gc, mainMenuBg, paperBg);
+
     }
 
     /**
@@ -873,6 +517,14 @@ public class Run extends Application {
     public int getLastSelectChar () { return lastSelectedCharUID;}
 
     public Canvas getCanvas() { return gc.getCanvas(); }
+
+    public int getBattleFrameCounter() {
+        return this.battleFrameCounter;
+    }
+
+    public void setBattleFrameCounter(int value) {
+        battleFrameCounter = value;
+    }
 
     /**
      * The entry point for the program. We determine where /GameData/ folder is here.
