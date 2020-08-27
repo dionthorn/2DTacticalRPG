@@ -6,7 +6,6 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.Image;
 import javafx.scene.input.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -17,28 +16,24 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Run will handle the core engine of the game including the JavaFX Application, rendering, updating, etc.
+ * Run will handle the core engine of the game including the JavaFX Application, Setting up Input Handling,
+ * updating entities and making calls to Render as well as using gameState States to change the render conditions, etc.
+ * All of .render() has been moved to a static Render.render() a some class variables have been put there
  */
 public class Run extends Application {
 
-    private final String PROGRAM_VERSION = "v0.2.1a";
+    public static final String PROGRAM_VERSION = "v0.2.1a";
     public static Logger programLogger = Logger.getLogger("programLogger");
     public static String GAME_DATA_PATH = "";
     public static final int SCREEN_WIDTH = 1024;
     public static final int SCREEN_HEIGHT = 1024;
     public static final int SCREEN_MAP_HEIGHT = 768;
     public static final int TILE_SIZE = 32;
-    public static int[] menuNewGameBounds;
-    private int[] DRAG_LOC = {-1, -1};
+    private final int[] DRAG_LOC = {-1, -1};
+    private final long FPS = TimeUnit.SECONDS.toNanos(1 / 30);
     private int lastSelectedCharUID;
-    private long FPS = TimeUnit.SECONDS.toNanos(1 / 30);
     private long startTime = System.nanoTime();
     private long currentTime;
-    private Image mainMenuBg = new Image("file:" + GAME_DATA_PATH + "/Art/main_menu.png");
-    private Image paperBg = new Image("file:" + GAME_DATA_PATH + "/Art/paper.png",
-            SCREEN_WIDTH, SCREEN_HEIGHT-SCREEN_MAP_HEIGHT, false, false
-    );
-    private int battleFrameCounter = 0;
     private GraphicsContext gc;
     private GameState gameState;
     private DevMenu devMenu;
@@ -49,7 +44,7 @@ public class Run extends Application {
      */
     private void render() {
 
-        Render.render(this, devMenu, gc, mainMenuBg, paperBg);
+        Render.render(this, devMenu, gc);
 
     }
 
@@ -150,6 +145,7 @@ public class Run extends Application {
         Canvas canvas = new Canvas(SCREEN_WIDTH, SCREEN_HEIGHT);
         gc = canvas.getGraphicsContext2D();
         rootGroup.getChildren().add(canvas);
+        // Keyboard handling
         rootScene.addEventHandler(KeyEvent.KEY_PRESSED, (key) -> {
             // programLogger.log(Level.INFO, "[DEBUG] KeyInput: " + key.getCode());
             if (gameState == null || gameState.getCurrentState() == GameState.STATE.MAIN_MENU) {
@@ -273,6 +269,7 @@ public class Run extends Application {
                 }
             }
         });
+        // Mouse left click handling
         canvas.addEventHandler(MouseEvent.MOUSE_CLICKED, (mouseEvent) -> {
             int mouseX = (int) mouseEvent.getX();
             int mouseY = (int) mouseEvent.getY();
@@ -384,10 +381,10 @@ public class Run extends Application {
                     DRAG_LOC[1] = -1;
                 }
             } else if(gameState == null || gameState.getCurrentState() == GameState.STATE.MAIN_MENU) {
-                int xLoc = menuNewGameBounds[0];
-                int yLoc = menuNewGameBounds[1];
-                int xWidth = menuNewGameBounds[2];
-                int yHeight = menuNewGameBounds[3];
+                int xLoc = Render.menuNewGameBounds[0];
+                int yLoc = Render.menuNewGameBounds[1];
+                int xWidth = Render.menuNewGameBounds[2];
+                int yHeight = Render.menuNewGameBounds[3];
                 if(mouseX >= xLoc && mouseX <= xWidth + xLoc) {
                     if(mouseY <= yLoc && mouseY >= yLoc - yHeight) {
                         newGame();
@@ -465,12 +462,14 @@ public class Run extends Application {
                 }
             }
         });
+        // Mouse drag click handling
         canvas.addEventHandler(MouseDragEvent.DRAG_DETECTED, (mouseEvent) -> {
-            if(gameState != null && devMenu.EDIT_MODE && gameState.getCurrentState() == GameState.STATE.GAME) {
+            if(gameState != null && devMenu != null && devMenu.EDIT_MODE && gameState.getCurrentState() == GameState.STATE.GAME) {
                 DRAG_LOC[0] = (int) mouseEvent.getSceneX() / gameState.getCurrentMap().getTileSize();
                 DRAG_LOC[1] = (int) mouseEvent.getSceneY() / gameState.getCurrentMap().getTileSize();
             }
         });
+        // Staging and animator setup
         primaryStage.setScene(rootScene);
         primaryStage.show();
         AnimationTimer animator = new AnimationTimer() {
@@ -487,6 +486,7 @@ public class Run extends Application {
         animator.start();
     }
 
+    // Getters and Setters
     /**
      * Return the int array [width, height] in tiles of the current map area
      * @return the int array [width, height] in tiles of the current map area
@@ -497,12 +497,6 @@ public class Run extends Application {
         result[1] = SCREEN_MAP_HEIGHT/TILE_SIZE;
         return result;
     }
-
-    /**
-     * Returns the program version string.
-     * @return the program version string
-     */
-    public String getProgramVersion() { return PROGRAM_VERSION; }
 
     /**
      * Returns the current game state.
@@ -516,15 +510,11 @@ public class Run extends Application {
      */
     public int getLastSelectChar () { return lastSelectedCharUID;}
 
+    /**
+     * Returns the Canvas object that the GraphicsContext is using
+     * @return the Canvas object that the graphics context is using
+     */
     public Canvas getCanvas() { return gc.getCanvas(); }
-
-    public int getBattleFrameCounter() {
-        return this.battleFrameCounter;
-    }
-
-    public void setBattleFrameCounter(int value) {
-        battleFrameCounter = value;
-    }
 
     /**
      * The entry point for the program. We determine where /GameData/ folder is here.
@@ -538,6 +528,7 @@ public class Run extends Application {
             GAME_DATA_PATH = Paths.get("").toAbsolutePath().toString() + "/GameData";
         }
         programLogger.setLevel(Level.INFO);
+
         programLogger.log(Level.INFO, "GameData folder found at: " + GAME_DATA_PATH);
         launch(args);
     }

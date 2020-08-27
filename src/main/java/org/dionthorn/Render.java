@@ -11,9 +11,15 @@ import javafx.scene.text.TextAlignment;
 
 public class Render {
 
-    private int battleFrameCounter = 0;
+    private static final Image mainMenuBg = new Image("file:" + Run.GAME_DATA_PATH + "/Art/main_menu.png");
+    private static final Image paperBg = new Image("file:" + Run.GAME_DATA_PATH + "/Art/paper.png",
+            Run.SCREEN_WIDTH, Run.SCREEN_HEIGHT-Run.SCREEN_MAP_HEIGHT, false, false
+    );
+    private static int battleFrameCounter = 0;
 
-    public static void render(Run app, DevMenu devMenu, GraphicsContext gc, Image mainMenuBg, Image paperBg) {
+    public static int[] menuNewGameBounds;
+
+    public static void render(Run app, DevMenu devMenu, GraphicsContext gc) {
 
         if (app.getGameState() != null && devMenu != null) {
             Image selectedTileImg = app.getGameState().getCurrentMap().getTile(devMenu.SELECTED_TILE_SET_ID,
@@ -49,12 +55,12 @@ public class Render {
             String newGameString = "Play";
             Text newGameText = new Text(newGameString);
             newGameText.setFont(menuOptionsFont);
-            Run.menuNewGameBounds = new int[4];
-            Run.menuNewGameBounds[0] = (int) ((Run.SCREEN_WIDTH >> 1) - (newGameText.getLayoutBounds().getWidth() / 2));
-            Run.menuNewGameBounds[1] = (Run.SCREEN_HEIGHT >> 4) * 4;
-            Run.menuNewGameBounds[2] = (int) newGameText.getLayoutBounds().getWidth();
-            Run.menuNewGameBounds[3] = (int) newGameText.getLayoutBounds().getHeight();
-            gc.fillText(newGameString, Run.menuNewGameBounds[0], Run.menuNewGameBounds[1]);
+            menuNewGameBounds = new int[4];
+            menuNewGameBounds[0] = (int) ((Run.SCREEN_WIDTH >> 1) - (newGameText.getLayoutBounds().getWidth() / 2));
+            menuNewGameBounds[1] = (Run.SCREEN_HEIGHT >> 4) * 4;
+            menuNewGameBounds[2] = (int) newGameText.getLayoutBounds().getWidth();
+            menuNewGameBounds[3] = (int) newGameText.getLayoutBounds().getHeight();
+            gc.fillText(newGameString, menuNewGameBounds[0], menuNewGameBounds[1]);
         } else if (app.getGameState() != null && app.getGameState().getCurrentState() == GameState.STATE.GAME) {
             gc.clearRect(0, 0, Run.SCREEN_WIDTH, Run.SCREEN_HEIGHT); // Clear canvas
             MapTile[][] mapTiles = app.getGameState().getCurrentMap().getMapTiles();
@@ -239,7 +245,7 @@ public class Render {
                     (Run.SCREEN_WIDTH >> 2) + (Run.SCREEN_WIDTH >> 3), Run.SCREEN_MAP_HEIGHT >> 2
             );
             gc.strokeText("DEFEND", Run.SCREEN_WIDTH - (Run.SCREEN_WIDTH >> 2), y2);
-            app.setBattleFrameCounter(app.getBattleFrameCounter() + 1);
+            battleFrameCounter++;
             if (ally.isBattleTurn()) {
                 if (app.getGameState().getPlayerEntity().equals(ally)) {
                     if (ally.IsAttacking()) {
@@ -259,7 +265,7 @@ public class Render {
                                 app.getGameState().setState(GameState.STATE.GAME);
                             }
                         }
-                        ally.attackAnimation(app.getBattleFrameCounter());
+                        ally.attackAnimation(battleFrameCounter);
                     }
                 } else {
                     if (ally.IsAttacking()) {
@@ -279,7 +285,7 @@ public class Render {
                                 app.getGameState().setState(GameState.STATE.GAME);
                             }
                         }
-                        ally.attackAnimation(app.getBattleFrameCounter());
+                        ally.attackAnimation(battleFrameCounter);
                     } else {
                         ally.setIsAttacking(true);
                     }
@@ -308,15 +314,15 @@ public class Render {
                             }
                         }
                     }
-                    enemy.attackAnimation(app.getBattleFrameCounter());
+                    enemy.attackAnimation(battleFrameCounter);
                 } else {
                     enemy.setIsAttacking(true);
                 }
                 gc.drawImage(ally.getCurrentSprite(), allyX, allyY, spriteSize, spriteSize);
                 gc.drawImage(enemy.getCurrentSprite(), enemyX, enemyY, spriteSize, spriteSize);
             }
-            if (app.getBattleFrameCounter() == 30) {
-                app.setBattleFrameCounter(0);
+            if (battleFrameCounter == 30) {
+                battleFrameCounter = 0;
             }
         } else if(app.getGameState() != null && app.getGameState().getCurrentState() == GameState.STATE.LEVEL_SELECTION) {
             gc.clearRect(0, 0, Run.SCREEN_WIDTH, Run.SCREEN_HEIGHT);

@@ -22,7 +22,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,21 +35,23 @@ import javafx.embed.swing.SwingFXUtils;
  */
 public class DevMenu extends Stage {
 
-    private Run app;
+    private final Run app;
     public int SELECTED_TILE_ID = 0;
     public int SELECTED_TILE_SET_ID = 0;
     public int SELECTED_MAP_ID = 0;
     public boolean EDIT_MODE;
-    private GridPane devMenu;
-    private Text devTileID, devTileSetID, devMapID, devMapPath;
+    private final GridPane devMenu;
+    private final Text devTileID, devTileSetID, devMapID, devMapPath;
     private ScrollPane charInfoPane;
-    private CheckBox isFire;
-    private CheckBox isImpassable;
+    private final CheckBox isFire;
+    private final CheckBox isImpassable;
     private ImageView tileSetView;
-    private ComboBox<String> mapList = new ComboBox<>();
-    private ComboBox<String> stateList = new ComboBox<>();
+    private final ComboBox<String> mapList = new ComboBox<>();
+    private final ComboBox<String> stateList = new ComboBox<>();
     private ArrayList<Text> charInfo, memInfo;
-    private Font arial = new Font("Arial", 10);
+    private final Font arial = new Font("Arial", 10);
+    private String[] folders;
+    private String shortPath;
 
     /**
      * Default DevMenu Constructor will generate the devMenu
@@ -58,7 +59,7 @@ public class DevMenu extends Stage {
      */
     public DevMenu(Run app) {
         this.app = app;
-        this.setTitle(String.format("DEVMENU %s", app.getProgramVersion()));
+        this.setTitle(String.format("DEVMENU %s", Run.PROGRAM_VERSION));
         this.setX(0);
         this.setY(0);
         Group devRoot = new Group();
@@ -140,9 +141,7 @@ public class DevMenu extends Stage {
         });
         Button devMakeIcon = new Button("Make Icon");
         GridPane.setConstraints(devMakeIcon, 2, 12);
-        devMakeIcon.setOnAction(event -> {
-            makeIcon();
-        });
+        devMakeIcon.setOnAction(event -> makeIcon());
         Button memData = new Button("Update resource usage data");
         GridPane.setConstraints(memData, 0, 13);
         memData.setOnAction(event -> {
@@ -410,8 +409,6 @@ public class DevMenu extends Stage {
      * randomly generated map based off the currently loaded tilesets
      */
     private void mapIDMaxCheck() {
-        String[] folders;
-        String shortPath;
         try {
             app.getGameState().setCurrentMap(app.getGameState().getMaps().get(SELECTED_MAP_ID + 1));
             app.getGameState().getPlayerEntity().setCurrentMap(app.getGameState().getCurrentMap(), 0, 0);
@@ -443,8 +440,6 @@ public class DevMenu extends Stage {
      * Will safely decrease the selected map id flag
      */
     private void mapIDMinCheck() {
-        String[] folders;
-        String shortPath;
         if(SELECTED_MAP_ID - 1 < 0) {
             Run.programLogger.log(Level.INFO, "Map ID cannot be less than 0");
         } else {

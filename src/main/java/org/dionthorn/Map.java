@@ -10,8 +10,8 @@ import java.util.Random;
 public class Map {
 
     private static int GEN_COUNT = 0;
-    private String PATH;
-    private String metaPATH;
+    private final String PATH;
+    private final String metaPATH;
     private String metaEnemies;
     private String metaAllies;
     private String metaStartLoc;
@@ -33,11 +33,48 @@ public class Map {
         PATH = datPath;
         String[] tempStr = datPath.split("\\.");
         metaPATH = tempStr[0] + ".meta";
+        loadMapData(PATH, metaPATH);
+    }
+
+    /**
+     * Random Map Constructor, will generate a new map based on the provided tileset paths
+     * @param tilePaths the target paths to use for the new random map generation
+     */
+    public Map(String[] tilePaths) {
+        GEN_COUNT++;
+        Random rand = new Random();
+        PATH = String.format(Run.GAME_DATA_PATH + "/Maps/RANDOM%d.dat", GEN_COUNT);
+        int[] mapArea = Run.getMapDimensions();
+        mapWidth = mapArea[0];
+        mapHeight = mapArea[1];
+        for(String path: tilePaths) {
+            tileSets.add(new TileSet(path, TILE_SIZE));
+        }
+        mapTiles = new MapTile[mapHeight][mapWidth];
+        for(int y=0; y<mapHeight; y++) {
+            for(int x=0; x<mapWidth; x++) {
+                int setID = rand.nextInt(tilePaths.length);
+                mapTiles[y][x] =  new MapTile(setID, rand.nextInt(tileSets.get(setID).getTiles().length - 1));
+            }
+        }
+        for(int i=0; i< MapTile.TileType.values().length; i++) {
+            mapDataTileMetaIDs.add(new ArrayList<>());
+        }
+        mapDataTileMetaIDs.get(MapTile.TileType.FIRE.ordinal()).add(0);
+        mapDataTileMetaIDs.get(MapTile.TileType.IMPASSABLE.ordinal()).add(0);
+        metaAllies = "AO1,5,18,martial/:ALLIES";
+        metaEnemies = "MO2,20,19,magic/:ENEMIES";
+        metaStartLoc = "5,17,:STARTLOC";
+        metaPATH = PATH.split("\\.")[0] + ".meta";
+    }
+
+    public void loadMapData(String datPath, String metaPath) {
         String[] tileMetaData = FileOps.getFileLines(metaPATH);
         for(int i=0; i< MapTile.TileType.values().length; i++) {
             mapDataTileMetaIDs.add(new ArrayList<>());
         }
         for(String line: tileMetaData) {
+            System.out.println(line);
             if(line.contains("FIRE")) {
                 String[] tileIdsFire = line.split(":")[0].split(",");
                 for (String s : tileIdsFire) {
@@ -114,38 +151,6 @@ public class Map {
     }
 
     /**
-     * Random Map Constructor, will generate a new map based on the provided tileset paths
-     * @param tilePaths the target paths to use for the new random map generation
-     */
-    public Map(String[] tilePaths) {
-        GEN_COUNT++;
-        Random rand = new Random();
-        PATH = String.format(Run.GAME_DATA_PATH + "/Maps/RANDOM%d.dat", GEN_COUNT);
-        int[] mapArea = Run.getMapDimensions();
-        mapWidth = mapArea[0];
-        mapHeight = mapArea[1];
-        for(String path: tilePaths) {
-            tileSets.add(new TileSet(path, TILE_SIZE));
-        }
-        mapTiles = new MapTile[mapHeight][mapWidth];
-        for(int y=0; y<mapHeight; y++) {
-            for(int x=0; x<mapWidth; x++) {
-                int setID = rand.nextInt(tilePaths.length);
-                mapTiles[y][x] =  new MapTile(setID, rand.nextInt(tileSets.get(setID).getTiles().length - 1));
-            }
-        }
-        for(int i=0; i< MapTile.TileType.values().length; i++) {
-            mapDataTileMetaIDs.add(new ArrayList<>());
-        }
-        mapDataTileMetaIDs.get(MapTile.TileType.FIRE.ordinal()).add(0);
-        mapDataTileMetaIDs.get(MapTile.TileType.IMPASSABLE.ordinal()).add(0);
-        metaAllies = "AO1,5,18,martial/:ALLIES";
-        metaEnemies = "MO2,20,19,magic/:ENEMIES";
-        metaStartLoc = "5,17,:STARTLOC";
-        metaPATH = PATH.split("\\.")[0] + ".meta";
-    }
-
-    /**
      * Will generate both a name.meta + name.dat file inside /GameData/Maps
      * this will overwrite any files of the same name.
      * This should be the inverse of the deserial process used by the Map(.dat) constructor.
@@ -158,6 +163,7 @@ public class Map {
      * where type is the meta tag such as 5,7,:STARTLOC where :STARTLOC is the meta tag.
      */
     public void saveData() {
+        // Write .dat File
         String[] dataAsString = new String[mapHeight + 1];
         StringBuilder formattedPaths = new StringBuilder();
         for(String path: getTileSetPaths()) {
@@ -182,6 +188,7 @@ public class Map {
             }
         }
         FileOps.writeFileLines(PATH, dataAsString);
+        // Write .meta File
         dataAsString = new String[5];
         dataAsString[0] = "";
         for(int i=0; i<mapDataTileMetaIDs.get(MapTile.TileType.FIRE.ordinal()).size(); i++) {
@@ -388,12 +395,5 @@ public class Map {
         this.mapDataTileMetaIDs = mapDataTileMetaIDs;
     }
 
-    /**
-     * Returns the current data for tile type meta data
-     * @return current data for tile type meta data
-     */
-    public ArrayList<ArrayList<Integer>> getMapDataTileMetaIDs() {
-        return mapDataTileMetaIDs;
-    }
 }
 

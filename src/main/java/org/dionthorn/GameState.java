@@ -13,14 +13,14 @@ public class GameState {
     enum STATE {MAIN_MENU, BATTLE, GAME, GAME_OVER, LEVEL_SELECTION, CHARACTER_STATUS, CHARACTER_CREATION}
 
     private STATE currentState;
-    private ArrayList<Map> maps;
-    private ArrayList<Entity> entities;
     private Map currentMap;
-    private ArrayList<Entity> playerTeam;
-    private ArrayList<Entity> enemyTeam;
-    private boolean nextTurn;
+    private final ArrayList<Map> maps;
+    private final ArrayList<Entity> entities;
+    private final ArrayList<Entity> playerTeam;
+    private final ArrayList<Entity> enemyTeam;
     private Character attacker;
     private Character defender;
+    private boolean nextTurn;
 
     /**
      * Default GameState Constructor will generate the base state need for the game to initiate.
@@ -113,58 +113,30 @@ public class GameState {
      */
     public void setCurrentMap(Map newMap) {
         currentMap = newMap;
-        String[] data;
+        // Check if map is a randomly generated one, this means it's in memory with no associated .meta file
+        // so we must write a .meta and .dat file to disk via the maps .saveData() function.
+        // only perform this if the map doesn't already exist on disk
         if(newMap.getPATH().contains("RANDOM")) {
-            newMap.saveData();
-        }
-        data = FileOps.getFileLines(currentMap.getMetaPATH());
-        ArrayList<ArrayList<Integer>> mapDataTileMetaIDs = new ArrayList<>();
-        for(int i=0; i< MapTile.TileType.values().length; i++) {
-            mapDataTileMetaIDs.add(new ArrayList<>());
-        }
-        for(String line: data) {
-            if(line.contains("FIRE")) {
-                String[] tileIdsFire = line.split(":")[0].split(",");
-                for (String s : tileIdsFire) {
-                    if (!s.equals("")) {
-                        int fireTag = Integer.parseInt(s);
-                        mapDataTileMetaIDs.get(MapTile.TileType.FIRE.ordinal()).add(fireTag);
-                    }
-                }
-            } else if(line.contains("IMPASSABLE")) {
-                String[] tileIdsImpassable = line.split(":")[0].split(",");
-                for (String s : tileIdsImpassable) {
-                    if (!s.equals("")) {
-                        int impassableTag = Integer.parseInt(s);
-                        mapDataTileMetaIDs.get(MapTile.TileType.IMPASSABLE.ordinal()).add(impassableTag);
-                    }
-                }
+            if(!FileOps.doesFileExist(newMap.getPATH())) {
+                newMap.saveData();
             }
         }
-        String[] enemies = new String[0];
-        for(String line: data) {
-            if(line.contains("ENEMIES")) {
-                enemies = line.split(":")[0].split("/");
-            }
-        }
-        String[] allies = new String[0];
-        for(String line: data) {
-            if(line.contains("ALLIES")) {
-                allies = line.split(":")[0].split("/");
-            }
-        }
-        String[] loc = new String[2];
-        for(String line: data) {
-            if(line.contains("STARTLOC")) {
-                loc = line.split(":")[0].split(",");
-            }
-        }
+        // Otherwise we clear the current gameState for related map handling but we preserve the current Player object
         playerTeam.clear();
         enemyTeam.clear();
         Entity tempPlayer = getPlayerEntity();
         entities.clear();
         entities.add(tempPlayer);
         playerTeam.add(getPlayerEntity());
+        // Make sure we have correct .dat and .meta data for this new map,
+        // this performs the same initial setup as the Default Constructor
+        newMap.loadMapData(newMap.getPATH(), newMap.getMetaPATH());
+        // Now we need to use the maps meta data to setup teams
+        String[] startLoc = getCurrentMap().getMetaStartLoc().split(":")[0].split(",");
+        getPlayerEntity().setCurrentMap(getCurrentMap(), Integer.parseInt(startLoc[0]), Integer.parseInt(startLoc[1]));
+        // now setup allies and enemies
+        String[] allies = getCurrentMap().getMetaAllies().split(":")[0].split("/");
+        String[] enemies = getCurrentMap().getMetaEnemies().split(":")[0].split("/");
         CharacterClass tempClass = null;
         for(String ally: allies) {
             if(!ally.equals("")) {
@@ -178,11 +150,11 @@ public class GameState {
                     tempClass = new MartialClass();
                 }
                 assert tempClass != null;
-                NonPlayerCharacter tempChar = new NonPlayerCharacter(currentMap,
+                NonPlayerCharacter tempChar = new NonPlayerCharacter(getCurrentMap(),
                         tempClass.getDefaultSpriteAlly(), name, x, y, tempClass
                 );
-                entities.add(tempChar);
-                playerTeam.add(tempChar);
+                getEntities().add(tempChar);
+                getPlayerTeam().add(tempChar);
             }
         }
         for(String enemy: enemies) {
@@ -197,14 +169,13 @@ public class GameState {
                     tempClass = new MartialClass();
                 }
                 assert tempClass != null;
-                NonPlayerCharacter tempChar = new NonPlayerCharacter(currentMap,
+                NonPlayerCharacter tempChar = new NonPlayerCharacter(getCurrentMap(),
                         tempClass.getDefaultSpriteEnemy(), name, x, y, tempClass
                 );
-                entities.add(tempChar);
-                enemyTeam.add(tempChar);
+                getEntities().add(tempChar);
+                getEnemyTeam().add(tempChar);
             }
         }
-        getPlayerEntity().setCurrentMap(currentMap, Integer.parseInt(loc[0]), Integer.parseInt(loc[1]));
         playerTeam.trimToSize();
         enemyTeam.trimToSize();
         entities.trimToSize();
