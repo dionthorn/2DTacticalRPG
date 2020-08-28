@@ -33,7 +33,7 @@ public class Map {
         PATH = datPath;
         String[] tempStr = datPath.split("\\.");
         metaPATH = tempStr[0] + ".meta";
-        loadMapData(PATH, metaPATH);
+        loadMapData();
     }
 
     /**
@@ -68,13 +68,12 @@ public class Map {
         metaPATH = PATH.split("\\.")[0] + ".meta";
     }
 
-    public void loadMapData(String datPath, String metaPath) {
+    public void loadMapData() {
         String[] tileMetaData = FileOps.getFileLines(metaPATH);
         for(int i=0; i< MapTile.TileType.values().length; i++) {
             mapDataTileMetaIDs.add(new ArrayList<>());
         }
         for(String line: tileMetaData) {
-            System.out.println(line);
             if(line.contains("FIRE")) {
                 String[] tileIdsFire = line.split(":")[0].split(",");
                 for (String s : tileIdsFire) {

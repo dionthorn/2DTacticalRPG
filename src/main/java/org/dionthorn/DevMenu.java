@@ -411,7 +411,6 @@ public class DevMenu extends Stage {
     private void mapIDMaxCheck() {
         try {
             app.getGameState().setCurrentMap(app.getGameState().getMaps().get(SELECTED_MAP_ID + 1));
-            app.getGameState().getPlayerEntity().setCurrentMap(app.getGameState().getCurrentMap(), 0, 0);
             SELECTED_MAP_ID++;
             devMapID.setText(String.format("Map ID: %s", SELECTED_MAP_ID));
             folders = app.getGameState().getCurrentMap().getPATH().split("\\\\");
@@ -424,7 +423,6 @@ public class DevMenu extends Stage {
             );
             app.getGameState().getMaps().add(new Map(app.getGameState().getCurrentMap().getTileSetPaths()));
             app.getGameState().setCurrentMap(app.getGameState().getMaps().get(SELECTED_MAP_ID + 1));
-            app.getGameState().getPlayerEntity().setCurrentMap(app.getGameState().getCurrentMap(), 0, 0);
             SELECTED_MAP_ID++;
             devMapID.setText(String.format("Map ID: %s", SELECTED_MAP_ID));
             folders = app.getGameState().getCurrentMap().getPATH().split("\\\\");
@@ -445,7 +443,6 @@ public class DevMenu extends Stage {
         } else {
             try {
                 app.getGameState().setCurrentMap(app.getGameState().getMaps().get(SELECTED_MAP_ID - 1));
-                app.getGameState().getPlayerEntity().setCurrentMap(app.getGameState().getCurrentMap(), 0, 0);
                 SELECTED_MAP_ID--;
                 devMapID.setText(String.format("Map ID: %s", SELECTED_MAP_ID));
                 folders = app.getGameState().getCurrentMap().getPATH().split("\\\\");
@@ -467,7 +464,7 @@ public class DevMenu extends Stage {
     public void makeIcon() {
         String[] mapsFolder = app.getGameState().getCurrentMap().getPATH().split("\\\\");
         String targetName = mapsFolder[mapsFolder.length - 1].split("\\.")[0] + "_Icon.png";
-        String[] artFiles = FileOps.getFileNamesFromDirectory(Run.GAME_DATA_PATH + "/Art");
+        String[] artFiles = FileOps.getFileNamesFromDirectory(Run.GAME_ART_PATH);
         boolean found = false;
         for(String name: artFiles) {
             if(name != null && name.equals(targetName)) {
@@ -488,10 +485,10 @@ public class DevMenu extends Stage {
             toSaveImage = temp.snapshot(null, null);
             try {
                 ImageIO.write(SwingFXUtils.fromFXImage(toSaveImage, null), "png",
-                        new File(Run.GAME_DATA_PATH + "/Art/" + targetName)
+                        new File(Run.GAME_ART_PATH + targetName)
                 );
                 Run.programLogger.log(Level.INFO,
-                        "The new map icon can be found at: " + Run.GAME_DATA_PATH + "/Art/" + targetName
+                        "The new map icon can be found at: " + Run.GAME_ART_PATH + targetName
                 );
             } catch (IOException e) {
                 e.printStackTrace();

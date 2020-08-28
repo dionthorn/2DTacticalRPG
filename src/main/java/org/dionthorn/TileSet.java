@@ -5,6 +5,8 @@ import javafx.scene.image.PixelReader;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -25,13 +27,13 @@ import java.util.logging.Level;
  */
 public class TileSet {
 
-    private static ArrayList<TileSet> tileSetCache = new ArrayList<>();
-    private String tileSetPath;
-    private Image tileSetSrc;
+    private static final ArrayList<TileSet> tileSetCache = new ArrayList<>();
+    private final String tileSetPath;
+    private final Image tileSetSrc;
     private Image[] tiles;
     private Image blank;
     private int totalTiles;
-    private ArrayList<Integer> removedTileIDList = new ArrayList<>();
+    private final ArrayList<Integer> removedTileIDList = new ArrayList<>();
 
     /**
      * Constructor creates the TileSet object from a path to a .png file and the size of the squares to cut.
@@ -59,7 +61,7 @@ public class TileSet {
             Collections.addAll(removedTileIDList, boxedArray);
             totalTiles = tileSetCache.get(sameIndex).getTotalTiles();
         } else {
-            tileSetSrc = new Image("file:"+ Run.GAME_DATA_PATH + "/Art/" + path);
+            tileSetSrc = new Image("file:" + Run.GAME_ART_PATH + File.separator + path);
             tiles = makeTiles(tileSetSrc, TILE_SIZE);
             if (tiles.length == 0) {
                 Run.programLogger.log(Level.SEVERE, "NO TILES DETECTED");

@@ -130,7 +130,7 @@ public class GameState {
         playerTeam.add(getPlayerEntity());
         // Make sure we have correct .dat and .meta data for this new map,
         // this performs the same initial setup as the Default Constructor
-        newMap.loadMapData(newMap.getPATH(), newMap.getMetaPATH());
+        newMap.loadMapData();
         // Now we need to use the maps meta data to setup teams
         String[] startLoc = getCurrentMap().getMetaStartLoc().split(":")[0].split(",");
         getPlayerEntity().setCurrentMap(getCurrentMap(), Integer.parseInt(startLoc[0]), Integer.parseInt(startLoc[1]));

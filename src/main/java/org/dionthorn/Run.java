@@ -25,6 +25,8 @@ public class Run extends Application {
     public static final String PROGRAM_VERSION = "v0.2.1a";
     public static Logger programLogger = Logger.getLogger("programLogger");
     public static String GAME_DATA_PATH = "";
+    public static String GAME_ART_PATH = "";
+    public static String GAME_MAP_PATH = "";
     public static final int SCREEN_WIDTH = 1024;
     public static final int SCREEN_HEIGHT = 1024;
     public static final int SCREEN_MAP_HEIGHT = 768;
@@ -67,12 +69,12 @@ public class Run extends Application {
      * Sets up the gameState for a new game environment.
      */
     private void newGame() {
-        for(String path: FileOps.getFileNamesFromDirectory(GAME_DATA_PATH + "/Maps/")) {
+        for(String path: FileOps.getFileNamesFromDirectory(GAME_MAP_PATH + File.separator)) {
             if(!path.equals("config.dat") && !path.equals(".gitattributes") && !path.contains("meta")) {
                 if(gameState != null) {
-                    gameState.getMaps().add(new Map(GAME_DATA_PATH + "/Maps" + File.separator + path));
+                    gameState.getMaps().add(new Map(GAME_MAP_PATH + File.separator + path));
                 } else {
-                    gameState = new GameState(new Map(GAME_DATA_PATH + "/Maps" + File.separator + path));
+                    gameState = new GameState(new Map(GAME_MAP_PATH + File.separator + path));
                 }
             }
         }
@@ -523,13 +525,16 @@ public class Run extends Application {
     public static void main(String[] args) {
         String[] classPath = System.getProperty("java.class.path").split(";");
         if(!classPath[0].equals("")) {
-            GAME_DATA_PATH = classPath[0] + "/GameData";
+            GAME_DATA_PATH = classPath[0] + File.separator + "GameData";
         } else {
-            GAME_DATA_PATH = Paths.get("").toAbsolutePath().toString() + "/GameData";
+            GAME_DATA_PATH = Paths.get("").toAbsolutePath().toString() + File.separator + "GameData";
         }
+        GAME_ART_PATH = GAME_DATA_PATH + File.separator + "Art";
+        GAME_MAP_PATH = GAME_DATA_PATH + File.separator + "Maps";
         programLogger.setLevel(Level.INFO);
-
         programLogger.log(Level.INFO, "GameData folder found at: " + GAME_DATA_PATH);
+        programLogger.log(Level.INFO, "GameData/Art folder found at: " + GAME_ART_PATH);
+        programLogger.log(Level.INFO, "GameData/Maps folder found at: " + GAME_MAP_PATH);
         launch(args);
     }
 

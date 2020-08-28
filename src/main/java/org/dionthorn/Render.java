@@ -9,14 +9,15 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 
+import java.io.File;
+
 public class Render {
 
-    private static final Image mainMenuBg = new Image("file:" + Run.GAME_DATA_PATH + "/Art/main_menu.png");
-    private static final Image paperBg = new Image("file:" + Run.GAME_DATA_PATH + "/Art/paper.png",
+    private static final Image mainMenuBg = new Image("file:" + Run.GAME_ART_PATH + File.separator + "main_menu.png");
+    private static final Image paperBg = new Image("file:" + Run.GAME_ART_PATH + File.separator + "paper.png",
             Run.SCREEN_WIDTH, Run.SCREEN_HEIGHT-Run.SCREEN_MAP_HEIGHT, false, false
     );
     private static int battleFrameCounter = 0;
-
     public static int[] menuNewGameBounds;
 
     public static void render(Run app, DevMenu devMenu, GraphicsContext gc) {
@@ -347,12 +348,12 @@ public class Render {
             gc.setFill(Color.BLACK);
             gc.setFont(new Font(12));
             for(Map m: app.getGameState().getMaps()) {
-                String[] path = m.getPATH().split("/");
+                String[] path = m.getPATH().split("\\\\");
                 int index;
                 index = Math.max((path.length - 1), 0);
-                String iconName = path[index].split("\\\\")[1].split("\\.")[0] + "_Icon.png";
-                if(FileOps.doesFileExist(Run.GAME_DATA_PATH + "/Art/" + iconName)) {
-                    app.getGameState().getMaps().get(count).setIcon(new Image("file:" + Run.GAME_DATA_PATH + "/Art/" + iconName));
+                String iconName = path[index].split("\\.")[0] + "_Icon.png";
+                if(FileOps.doesFileExist(Run.GAME_ART_PATH + File.separator + iconName)) {
+                    app.getGameState().getMaps().get(count).setIcon(new Image("file:" + Run.GAME_ART_PATH + File.separator + iconName));
                     gc.drawImage(app.getGameState().getMaps().get(count).getIcon(), squareXY[count][0], squareXY[count][1]);
                 } else {
                     gc.fillText(path[index], squareXY[count][0]+10, squareXY[count][1]+10);
