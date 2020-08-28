@@ -35,5 +35,5 @@ public class Light {
     public void setLastMoved(int lastMoved) {
         this.lastMoved = lastMoved;
     }
-    
+
 }

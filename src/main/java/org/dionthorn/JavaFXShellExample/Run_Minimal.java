@@ -11,10 +11,10 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import java.util.Random;
+
 import java.util.concurrent.TimeUnit;
 
-public class Run extends Application {
+public class Run_Minimal extends Application {
 
     private final String PROGRAM_VERSION = "v1.0";
     private static final int SCREEN_WIDTH = 1024;
@@ -24,37 +24,12 @@ public class Run extends Application {
     private long currentTime;
     private GraphicsContext gc;
 
-    // This isn't needed for minimal run environment
-    private Random rand = new Random();
-    private int maxLights = 20;
-    private Light[] lights = new Light[maxLights];
-    //
-
     public void render() {
-        // This isn't needed for minimal run environment
-        gc.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-        for(Light light: lights) {
-            if(light != null) {
-                gc.setFill(Color.WHITE);
-                gc.fillRect(light.getX(), light.getY(), 5, 5);
-            }
-        }
-        //
+
     }
 
     public void update() {
-        // This isn't needed for minimal run environment
-        int timeCap = 10;
-        for(Light light: lights) {
-            if(light != null && light.getLastMoved() <= timeCap) {
-                light.setLastMoved(light.getLastMoved() + 1);
-            } else if(light != null) {
-                light.setX(rand.nextInt(SCREEN_WIDTH - Light.LIGHT_SIZE));
-                light.setY(rand.nextInt(SCREEN_HEIGHT - Light.LIGHT_SIZE));
-                light.setLastMoved(0);
-            }
-        }
-        //
+
     }
 
     @Override
@@ -82,15 +57,6 @@ public class Run extends Application {
             int mouseX = (int) mouseEvent.getX();
             int mouseY = (int) mouseEvent.getY();
             System.out.printf("Mouse Clicked At: (%d, %d)%n", mouseX, mouseY);
-
-            // This isn't needed for minimal run environment
-            for(int i=0; i<lights.length; i++) {
-                if(lights[i] == null) {
-                    lights[i] = new Light(mouseX, mouseY);
-                    break;
-                }
-            }
-            //
         });
 
         // Setup animator
@@ -108,7 +74,6 @@ public class Run extends Application {
             }
         };
         animator.start();
-
     }
 
     public static void main(String[] args) {
