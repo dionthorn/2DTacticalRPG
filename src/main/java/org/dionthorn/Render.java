@@ -322,7 +322,7 @@ public class Render {
                 gc.drawImage(ally.getCurrentSprite(), allyX, allyY, spriteSize, spriteSize);
                 gc.drawImage(enemy.getCurrentSprite(), enemyX, enemyY, spriteSize, spriteSize);
             }
-            if (battleFrameCounter == 10) {
+            if (battleFrameCounter >= CharacterClass.animationLength) {
                 battleFrameCounter = 0;
             }
         } else if(app.getGameState() != null && app.getGameState().getCurrentState() == GameState.STATE.LEVEL_SELECTION) {
@@ -362,7 +362,7 @@ public class Render {
             }
             gc.drawImage(paperBg, 0, Run.SCREEN_MAP_HEIGHT);
             gc.setFont(new Font("Arial", 32));
-            String[] path = app.getGameState().getCurrentMap().getPATH().split("/");
+            String[] path = app.getGameState().getCurrentMap().getPATH().split("\\\\");
             gc.fillText(path[path.length - 1], Run.SCREEN_WIDTH>>4, Run.SCREEN_MAP_HEIGHT + (Run.SCREEN_MAP_HEIGHT>>4));
             gc.fillText("Press Enter to Load The Selected Map", Run.SCREEN_WIDTH>>4,
                     Run.SCREEN_MAP_HEIGHT + (Run.SCREEN_MAP_HEIGHT>>2)

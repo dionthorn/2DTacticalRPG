@@ -32,7 +32,7 @@ public class Run extends Application {
     public static final int SCREEN_MAP_HEIGHT = 768;
     public static final int TILE_SIZE = 32;
     private final int[] DRAG_LOC = {-1, -1};
-    private final long FPS = TimeUnit.SECONDS.toNanos(1L) / 30;
+    private final long FPS = TimeUnit.SECONDS.toNanos(1L) / 60;
     private int lastSelectedCharUID;
     private long startTime = System.nanoTime();
     private long currentTime;

@@ -6,6 +6,8 @@ package org.dionthorn;
  */
 public abstract class CharacterClass {
 
+    protected static int animationLength = 10;
+
     protected int level;
     protected int currentXP;
     protected int perLevelHP;
@@ -93,7 +95,7 @@ public abstract class CharacterClass {
     /**
      * Returns the animation stage of the character class.
      * @param time the value of time that has passed since last call
-     * @param duration usually will be called by other method overload and default to 30
+     * @param duration usually will be called by other method overload and default to 10
      * @return the integer value for the next stage of the animation
      */
     protected int attackAnimationStage(int time, int duration) {
@@ -106,7 +108,7 @@ public abstract class CharacterClass {
             spriteChange = 0;
         }
         if(spriteChange == attackAnimationSequence.length - 1) {
-            completedCycles++;
+            setCompletedCycles(completedCycles + 1);
         }
         return attackAnimationSequence[spriteChange];
     }
@@ -116,7 +118,7 @@ public abstract class CharacterClass {
      * @param time the value of time that has passed since last call
      * @return the integer value for the next stage of animation
      */
-    protected int attackAnimationStage(int time) { return attackAnimationStage(time, 10); }
+    protected int attackAnimationStage(int time) { return attackAnimationStage(time, animationLength); }
 
     /**
      * Returns the completed cycles flag for this character class
