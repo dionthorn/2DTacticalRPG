@@ -322,7 +322,7 @@ public class Render {
                 gc.drawImage(ally.getCurrentSprite(), allyX, allyY, spriteSize, spriteSize);
                 gc.drawImage(enemy.getCurrentSprite(), enemyX, enemyY, spriteSize, spriteSize);
             }
-            if (battleFrameCounter == 30) {
+            if (battleFrameCounter == 10) {
                 battleFrameCounter = 0;
             }
         } else if(app.getGameState() != null && app.getGameState().getCurrentState() == GameState.STATE.LEVEL_SELECTION) {

@@ -116,7 +116,7 @@ public abstract class CharacterClass {
      * @param time the value of time that has passed since last call
      * @return the integer value for the next stage of animation
      */
-    protected int attackAnimationStage(int time) { return attackAnimationStage(time, 30); }
+    protected int attackAnimationStage(int time) { return attackAnimationStage(time, 10); }
 
     /**
      * Returns the completed cycles flag for this character class
