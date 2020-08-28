@@ -11,7 +11,7 @@ To test on windows (look into running jlink images with linux if your on linux) 
 Then choose the latest release and under 'assets' get the TacticalRPG{version}.zip file, then extract where you wish, go into the folder and into /bin then run App.bat
 
 If you get the latest version of IntellijIDEA community edition for free and create a new Maven project and setup the openjfx archetype: https://openjfx.io/openjfx-docs/#IDE-Intellij
-Then you can go to the project folder in your /IdeaProjects/yourProject folder and copy the pom.xml, src, and MavenTactical.iml (rename this to yourProject.iml)
+Then you can go to the project folder in your /IdeaProjects/yourProject folder and copy the pom.xml, src, and MavenTactical.iml (rename this to yourProject.iml) It appears it will only compile using the maven compile then maven javafx:run goals as that points it to the target/classes folder for loading images behaviour.
 
 Controls: 
 	WASD to move character, move into an enemy to start a battle.
