@@ -14,7 +14,7 @@ If you get the latest version of IntellijIDEA community edition for free and cre
 Then you can go to the project folder in your /IdeaProjects/yourProject folder and copy the pom.xml, src, and MavenTactical.iml (rename this to yourProject.iml) It appears it will only compile using the maven compile then maven javafx:run goals as that points it to the target/classes folder for loading images behaviour.
 
 Controls: 
-	WASD to move character, move into an enemy to start a battle.
+	Arrow Keys to move character, move into an enemy to start a battle.
 	Space bar to advance player turn or NPC turn, you will be prompted in the bottom part of the game screen.
 	For DevMenu -> use Tilde when a map is being rendered (not in the Main_Menu/Game_Over states)
 DevMenu: 
