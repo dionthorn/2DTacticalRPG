@@ -7,9 +7,9 @@ import java.util.Random;
  */
 public class Dice {
 
-    private Random rand = new Random();
-    private int faces;
-    private int amount;
+    private final Random rand = new Random();
+    private final int faces;
+    private final int amount;
 
     /**
      * Default Dice Constructor gives 1 'die' with faces being the size of the die values

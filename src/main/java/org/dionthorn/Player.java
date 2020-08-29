@@ -34,4 +34,5 @@ public class Player extends Character {
     public void update(GameState gameState) {
         // Does nothing for now
     }
+
 }

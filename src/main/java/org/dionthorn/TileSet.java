@@ -5,7 +5,6 @@ import javafx.scene.image.PixelReader;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,6 +33,8 @@ public class TileSet {
     private Image blank;
     private int totalTiles;
     private final ArrayList<Integer> removedTileIDList = new ArrayList<>();
+    private ArrayList<Integer> metaFire = new ArrayList<>();
+    private ArrayList<Integer> metaImpassable = new ArrayList<>();
 
     /**
      * Constructor creates the TileSet object from a path to a .png file and the size of the squares to cut.
@@ -135,6 +136,68 @@ public class TileSet {
      * @return the image of the 'blank' tile in the tileset
      */
     public Image getBlank() { return blank; }
+
+    public ArrayList<Integer> getMetaFire() {
+        return metaFire;
+    }
+
+    public ArrayList<Integer> getMetaImpassable() {
+        return metaImpassable;
+    }
+
+    public void setMetaFireID(int tileID, boolean remove) {
+        boolean found = false;
+        if(!remove) {
+            for(int i: metaFire) {
+                if(i == tileID) {
+                    found = true;
+                    break;
+                }
+            }
+            if(!found) {
+                metaFire.add(tileID);
+            }
+        } else {
+            int target = 0;
+            for(int index=0; index<metaFire.size(); index++) {
+                if(metaFire.get(index) == tileID) {
+                    found = true;
+                    target = index;
+                    break;
+                }
+            }
+            if(found) {
+                metaFire.remove(target);
+            }
+        }
+    }
+
+    public void setMetaImpassableID(int tileID, boolean remove) {
+        boolean found = false;
+        if(!remove) {
+            for(int i: metaImpassable) {
+                if(i == tileID) {
+                    found = true;
+                    break;
+                }
+            }
+            if(!found) {
+                metaImpassable.add(tileID);
+            }
+        } else {
+            int target = 0;
+            for(int index=0; index<metaImpassable.size(); index++) {
+                if(metaFire.get(index) == tileID) {
+                    found = true;
+                    target = index;
+                    break;
+                }
+            }
+            if(found) {
+                metaImpassable.remove(target);
+            }
+        }
+    }
 
     // Static Methods
     /**

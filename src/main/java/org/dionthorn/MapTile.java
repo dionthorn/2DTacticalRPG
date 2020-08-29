@@ -28,14 +28,10 @@ public class MapTile {
     }
 
     /**
-     * Tags this MapTile as being of the type Fire
+     * Tags this MapTile as being of the type newType
+     * @param newType tags this tile as being of the type provided by newType
      */
-    public void tagFire() { type = TileType.FIRE;}
-
-    /**
-     * Tags this MapTile as being of the type Impassable
-     */
-    public void tagImpassable() { type = TileType.IMPASSABLE;}
+    public void tagTileType(TileType newType) { type = newType; }
 
     /**
      * Returns the integer index of this MapTiles associated tileSet

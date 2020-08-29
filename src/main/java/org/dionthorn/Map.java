@@ -19,8 +19,7 @@ public class Map {
     private MapTile[][] mapTiles;
     private int mapWidth;
     private int mapHeight;
-    private ArrayList<ArrayList<Integer>> mapDataTileMetaIDs = new ArrayList<>();
-    private ArrayList<TileSet> tileSets = new ArrayList<>();
+    private final ArrayList<TileSet> tileSets = new ArrayList<>();
     private Image icon;
 
     /**
@@ -57,11 +56,7 @@ public class Map {
                 mapTiles[y][x] =  new MapTile(setID, rand.nextInt(tileSets.get(setID).getTiles().length - 1));
             }
         }
-        for(int i=0; i< MapTile.TileType.values().length; i++) {
-            mapDataTileMetaIDs.add(new ArrayList<>());
-        }
-        mapDataTileMetaIDs.get(MapTile.TileType.FIRE.ordinal()).add(0);
-        mapDataTileMetaIDs.get(MapTile.TileType.IMPASSABLE.ordinal()).add(0);
+        // TileTypes are set in MapTile use .getType or .tagTileType(TileType) methods. Already has .DEFAULT type
         metaAllies = "AO1,5,18,martial/:ALLIES";
         metaEnemies = "MO2,20,19,magic/:ENEMIES";
         metaStartLoc = "5,17,:STARTLOC";
@@ -69,35 +64,7 @@ public class Map {
     }
 
     public void loadMapData() {
-        String[] tileMetaData = FileOps.getFileLines(metaPATH);
-        for(int i=0; i< MapTile.TileType.values().length; i++) {
-            mapDataTileMetaIDs.add(new ArrayList<>());
-        }
-        for(String line: tileMetaData) {
-            if(line.contains("FIRE")) {
-                String[] tileIdsFire = line.split(":")[0].split(",");
-                for (String s : tileIdsFire) {
-                    if (!s.equals("")) {
-                        int tempInt = Integer.parseInt(s);
-                        mapDataTileMetaIDs.get(MapTile.TileType.FIRE.ordinal()).add(tempInt);
-                    }
-                }
-            } else if(line.contains("IMPASSABLE")) {
-                String[] tileIdsImpassable = line.split(":")[0].split(",");
-                for (String s : tileIdsImpassable) {
-                    if (!s.equals("")) {
-                        int tempInt = Integer.parseInt(s);
-                        mapDataTileMetaIDs.get(MapTile.TileType.IMPASSABLE.ordinal()).add(tempInt);
-                    }
-                }
-            } else if(line.contains("ENEMIES")) {
-                metaEnemies = line;
-            } else if(line.contains("ALLIES")) {
-                metaAllies = line;
-            } else if(line.contains("STARTLOC")) {
-                metaStartLoc = line;
-            }
-        }
+        // load .dat information
         boolean first = true;
         String[] data = FileOps.getFileLines(PATH);
         int xCount = 0;
@@ -123,28 +90,57 @@ public class Map {
                     mapTiles[yCount][xCount] = new MapTile(Integer.parseInt(finalSplit[0]),
                             Integer.parseInt(finalSplit[1])
                     );
-                    boolean cont = true;
-                    for(int x = 0; x <mapDataTileMetaIDs.get(MapTile.TileType.FIRE.ordinal()).size(); x++) {
-                        if(mapTiles[yCount][xCount].getTileID() == mapDataTileMetaIDs.get(
-                                MapTile.TileType.FIRE.ordinal()).get(x)
-                        ) {
-                            mapTiles[yCount][xCount].tagFire();
-                            cont = false;
-                        }
-                    }
-                    if(cont) {
-                        for(int x = 0; x <mapDataTileMetaIDs.get(MapTile.TileType.IMPASSABLE.ordinal()).size(); x++) {
-                            if(mapTiles[yCount][xCount].getTileID()==mapDataTileMetaIDs.get(
-                                    MapTile.TileType.IMPASSABLE.ordinal()).get(x)
-                            ) {
-                                mapTiles[yCount][xCount].tagImpassable();
-                            }
-                        }
-                    }
                     xCount++;
                 }
                 xCount = 0;
                 yCount++;
+            }
+        }
+        // load .meta information
+        String[] tileMetaData = FileOps.getFileLines(metaPATH);
+        int tileID;
+        int tileSetID;
+        for(String line: tileMetaData) {
+            if(line.contains("FIRE")) {
+                String[] tileFire = line.split(":")[0].split(",");
+                for(String tag: tileFire) {
+                    if(!tag.equals("")) {
+                        String[] tempHolder = tag.split("/");
+                        tileSetID = Integer.parseInt(tempHolder[0]);
+                        tileID = Integer.parseInt(tempHolder[1]);
+                        getTileSet(tileSetID).setMetaFireID(tileID, false);
+                        for(MapTile[] mapRow: mapTiles) {
+                            for(MapTile tile: mapRow) {
+                                if(tile.getTileID() == tileID && tile.getTileSet() == tileSetID) {
+                                    tile.tagTileType(MapTile.TileType.FIRE);
+                                }
+                            }
+                        }
+                    }
+                }
+            } else if(line.contains("IMPASSABLE")) {
+                String[] tileImpassable = line.split(":")[0].split(",");
+                for (String tag: tileImpassable) {
+                    if (!tag.equals("")) {
+                        String[] tempHolder = tag.split("/");
+                        tileSetID = Integer.parseInt(tempHolder[0]);
+                        tileID = Integer.parseInt(tempHolder[1]);
+                        getTileSet(tileSetID).setMetaImpassableID(tileID, false);
+                        for(MapTile[] mapRow: mapTiles) {
+                            for(MapTile tile: mapRow) {
+                                if(tile.getTileID() == tileID && tile.getTileSet() == tileSetID) {
+                                    tile.tagTileType(MapTile.TileType.IMPASSABLE);
+                                }
+                            }
+                        }
+                    }
+                }
+            } else if(line.contains("ENEMIES")) {
+                metaEnemies = line;
+            } else if(line.contains("ALLIES")) {
+                metaAllies = line;
+            } else if(line.contains("STARTLOC")) {
+                metaStartLoc = line;
             }
         }
     }
@@ -189,14 +185,18 @@ public class Map {
         FileOps.writeFileLines(PATH, dataAsString);
         // Write .meta File
         dataAsString = new String[5];
-        dataAsString[0] = "";
-        for(int i=0; i<mapDataTileMetaIDs.get(MapTile.TileType.FIRE.ordinal()).size(); i++) {
-            dataAsString[0] += mapDataTileMetaIDs.get(MapTile.TileType.FIRE.ordinal()).get(i) + ",";
+        dataAsString[0] = ""; // {tileSetID}/{tileID},:FIRE
+        for(int index=0; index<tileSets.size(); index++) {
+            for(int tileID: tileSets.get(index).getMetaFire()) {
+                dataAsString[0] += index + "/" + tileID + ",";
+            }
         }
         dataAsString[0] += ":FIRE";
-        dataAsString[1] = "";
-        for(int i=0; i<mapDataTileMetaIDs.get(MapTile.TileType.IMPASSABLE.ordinal()).size(); i++) {
-            dataAsString[1] += mapDataTileMetaIDs.get(MapTile.TileType.IMPASSABLE.ordinal()).get(i) + ",";
+        dataAsString[1] = ""; // :IMPASSABLE
+        for(int index=0; index<tileSets.size(); index++) {
+            for(int tileID: tileSets.get(index).getMetaImpassable()) {
+                dataAsString[1] += index + "/" + tileID + ",";
+            }
         }
         dataAsString[1] += ":IMPASSABLE";
         dataAsString[2] = metaEnemies;
@@ -301,60 +301,6 @@ public class Map {
     public MapTile.TileType getTileType(int x, int y) { return mapTiles[y][x].getType(); }
 
     /**
-     * Returns an int[] of all the tileIDs on this map that are considered Fire.
-     * @return an integer array of all the tileIDs on this map that are considered fire
-     */
-    public int[] getMapFireTileIDs() {
-        int steps = mapDataTileMetaIDs.get(MapTile.TileType.FIRE.ordinal()).size();
-        int[] result = new int[steps];
-        for(int i=0; i<steps; i++) {
-            result[i] = mapDataTileMetaIDs.get(MapTile.TileType.FIRE.ordinal()).get(i);
-        }
-        return result;
-    }
-
-    /**
-     * Returns an int[] of all the tileIDs on this map that are considered Impassable.
-     * @return an integer array of all the tileIDs on this map that are considered impassable
-     */
-    public int[] getMapImpassableTileIDs() {
-        int steps = mapDataTileMetaIDs.get(MapTile.TileType.IMPASSABLE.ordinal()).size();
-        int[] result = new int[steps];
-        for(int i=0; i<steps; i++) {
-            result[i] = mapDataTileMetaIDs.get(MapTile.TileType.IMPASSABLE.ordinal()).get(i);
-        }
-        return result;
-    }
-
-    /**
-     * Sets this maps fire tile ids or removes them
-     * @param tileID the target tileID to add or remove from the fire list
-     * @param remove true will remove the tileID from the list and false will add it
-     */
-    public void setMapFireTileIDs(int tileID, boolean remove) {
-        if(remove) {
-            int index = mapDataTileMetaIDs.get(MapTile.TileType.FIRE.ordinal()).indexOf(tileID);
-            mapDataTileMetaIDs.get(MapTile.TileType.FIRE.ordinal()).remove(index);
-        } else {
-            mapDataTileMetaIDs.get(MapTile.TileType.FIRE.ordinal()).add(tileID);
-        }
-    }
-
-    /**
-     * Sets this maps impassable tile ids or removes them.
-     * @param tileID the target tileID to add or remove from the impassable list
-     * @param remove true will remove the tileID from the list and false will add it
-     */
-    public void setMapImpassableTileIDs(int tileID, boolean remove) {
-        if(remove) {
-            int index = mapDataTileMetaIDs.get(MapTile.TileType.IMPASSABLE.ordinal()).indexOf(tileID);
-            mapDataTileMetaIDs.get(MapTile.TileType.IMPASSABLE.ordinal()).remove(index);
-        } else {
-            mapDataTileMetaIDs.get(MapTile.TileType.IMPASSABLE.ordinal()).add(tileID);
-        }
-    }
-
-    /**
      * Returns the full line of meta data for Enemies information.
      * @return a string that represents the enemies for this map
      */
@@ -382,17 +328,7 @@ public class Map {
      * Assigns the maps icon
      * @param newIcon will assign the maps icon
      */
-    public void setIcon(Image newIcon) {
-        icon = newIcon;
-    }
-
-    /**
-     * Assigns new mapDataTileMetaIDs useful when switching through maps
-     * @param mapDataTileMetaIDs will assign new data for tile type meta data
-     */
-    public void setMapDataTileMetaIDs(java.util.ArrayList<java.util.ArrayList<Integer>> mapDataTileMetaIDs) {
-        this.mapDataTileMetaIDs = mapDataTileMetaIDs;
-    }
+    public void setIcon(Image newIcon) { icon = newIcon; }
 
 }
 

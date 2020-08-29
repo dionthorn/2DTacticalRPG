@@ -45,9 +45,7 @@ public class Run extends Application {
      * will check gameState and decide what to render from that.
      */
     private void render() {
-
         Render.render(this, devMenu, gc);
-
     }
 
     /**

@@ -58,36 +58,46 @@ public class DevMenu extends Stage {
      * @param app the main game application as a reference, so we can draw and such on the map.
      */
     public DevMenu(Run app) {
+        // assign app and setup window basics
         this.app = app;
         this.setTitle(String.format("DEVMENU %s", Run.PROGRAM_VERSION));
         this.setX(0);
         this.setY(0);
+        // assign Group, Scene, and BorderPane roots nodes
         Group devRoot = new Group();
-        Scene devRootScene = new Scene(devRoot, 1024, 1024);
+        Scene devRootScene = new Scene(devRoot, Run.SCREEN_WIDTH, Run.SCREEN_HEIGHT);
         BorderPane devMainUI = new BorderPane();
         devRoot.getChildren().add(devMainUI);
+        // create the devMenu GridPane object, this will be the main UI pane for menu
         devMenu = new GridPane();
-        devMenu.setHgap(10);
+        devMenu.setHgap(10); // assign a 10 pixel gap between nodes
         devMenu.setVgap(10);
-        devMainUI.setCenter(devMenu);
-        devMenu.setOnMouseClicked(this::devMenuClicked);
+        devMainUI.setCenter(devMenu); // this is the primary node so center it
+        devMenu.setOnMouseClicked(this::devMenuClicked); // handy activation of devMenuClicked method,
+        // event -> devMenuClicked() lambda will also work here
+        // create the TileID: text object that shows the currently selected tileID
         devTileID = new Text(String.format("TileID: %s", SELECTED_TILE_ID));
         devTileID.setFont(new Font("Arial", 16));
         GridPane.setConstraints(devTileID, 0, 0);
+        // create the tileID + button
         Button increaseTileID = new Button("+");
         GridPane.setConstraints(increaseTileID, 2, 0);
         increaseTileID.setOnAction(event -> tileMaxCheck());
+        // create the tileID - button
         Button decreaseTileID = new Button("-");
         GridPane.setConstraints(decreaseTileID, 3, 0);
         decreaseTileID.setOnAction(event -> tileMinCheck());
+        // create the Edit Mode check box, this is used to paint the map during runtime for graphical map creation.
         CheckBox editMode = new CheckBox("Edit Mode");
         editMode.setSelected(false);
         EDIT_MODE = false;
         GridPane.setConstraints(editMode, 5, 0);
         editMode.setOnAction(event -> EDIT_MODE = !EDIT_MODE);
+        // create the isFire check box, this lets you know if the in-memory value of the selected tileID is of type FIRE
         isFire = new CheckBox("isFire");
         GridPane.setConstraints(isFire, 6, 0);
         isFire.setOnAction(event -> setFire());
+        // create the isImpassable check box, does the same as above but with IMPASSABLE type
         isImpassable = new CheckBox("isImpassable");
         GridPane.setConstraints(isImpassable, 7, 0);
         isImpassable.setOnAction(event -> setImpassable());
@@ -302,12 +312,12 @@ public class DevMenu extends Stage {
     public void tileMetaCheck() {
         isFire.setSelected(false);
         isImpassable.setSelected(false);
-        for(int tileID: app.getGameState().getCurrentMap().getMapFireTileIDs()) {
+        for(int tileID: app.getGameState().getCurrentMap().getTileSet(SELECTED_TILE_SET_ID).getMetaFire()) {
             if(tileID == SELECTED_TILE_ID) {
                 isFire.setSelected(true);
             }
         }
-        for(int tileID: app.getGameState().getCurrentMap().getMapImpassableTileIDs()) {
+        for(int tileID: app.getGameState().getCurrentMap().getTileSet(SELECTED_TILE_SET_ID).getMetaImpassable()) {
             if(tileID == SELECTED_TILE_ID) {
                 isImpassable.setSelected(true);
             }
@@ -320,10 +330,10 @@ public class DevMenu extends Stage {
      */
     public void setFire() {
         if(!isFire.isSelected()) {
-            app.getGameState().getCurrentMap().setMapFireTileIDs(SELECTED_TILE_ID, true);
+            app.getGameState().getCurrentMap().getTileSet(SELECTED_TILE_SET_ID).setMetaFireID(SELECTED_TILE_ID, true);
             isFire.setSelected(false);
         } else {
-            app.getGameState().getCurrentMap().setMapFireTileIDs(SELECTED_TILE_ID, false);
+            app.getGameState().getCurrentMap().getTileSet(SELECTED_TILE_SET_ID).setMetaFireID(SELECTED_TILE_ID, false);
             isFire.setSelected(true);
         }
         tileMetaCheck();
@@ -334,7 +344,7 @@ public class DevMenu extends Stage {
      * this allows quick tileset meta data generation with a graphical ui
      */
     public void setImpassable() {
-        app.getGameState().getCurrentMap().setMapImpassableTileIDs(SELECTED_TILE_ID, !isImpassable.isSelected());
+        app.getGameState().getCurrentMap().getTileSet(SELECTED_TILE_SET_ID).setMetaImpassableID(SELECTED_TILE_ID, !isImpassable.isSelected());
         tileMetaCheck();
     }
 
