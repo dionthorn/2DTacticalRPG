@@ -266,8 +266,8 @@ public class DevMenu extends Stage {
             int yCord = (int) y;
             yCord -= heightDiff;
             // Run.programLogger.log(Level.INFO, String.format("Ix=%d, Iy=%d", xCord, yCord));
-            int tileX = xCord / app.getGameState().getCurrentMap().getTileSize();
-            int tileY = yCord / app.getGameState().getCurrentMap().getTileSize();
+            int tileX = (xCord / app.getGameState().getCurrentMap().getTileSize());
+            int tileY = (yCord / app.getGameState().getCurrentMap().getTileSize());
             // Run.programLogger.log(Level.INFO, String.format("Tx=%d, Ty=%d", tileX, tileY));
             int maxX = (int) view.getImage().getWidth() / app.getGameState().getCurrentMap().getTileSize();
             if(tileY > 0) {

@@ -276,8 +276,8 @@ public class Run extends Application {
             programLogger.log(Level.INFO, "Mouse Event: (" + mouseX + ", " + mouseY + ")");
             if(gameState != null && devMenu != null && devMenu.EDIT_MODE &&
                     gameState.getCurrentState() == GameState.STATE.GAME) {
-                int tileX = mouseX / gameState.getCurrentMap().getTileSize();
-                int tileY = mouseY / gameState.getCurrentMap().getTileSize();
+                int tileX = (mouseX / gameState.getCurrentMap().getTileSize()) + Render.anchorUL[0];
+                int tileY = (mouseY / gameState.getCurrentMap().getTileSize()) + Render.anchorUL[1];
                 programLogger.log(Level.INFO, "x,y: " + tileX + " " + tileY);
                 if (DRAG_LOC[0] == -1) {
                     if (mouseEvent.getButton() == MouseButton.PRIMARY) {
@@ -297,8 +297,8 @@ public class Run extends Application {
                     }
                 } else {
                     if (mouseEvent.getButton() == MouseButton.PRIMARY) {
-                        int releasedX = (int) mouseEvent.getSceneX() / gameState.getCurrentMap().getTileSize();
-                        int releasedY = (int) mouseEvent.getSceneY() / gameState.getCurrentMap().getTileSize();
+                        int releasedX = (int) (mouseEvent.getSceneX() / gameState.getCurrentMap().getTileSize()) + Render.anchorUL[0];
+                        int releasedY = (int) (mouseEvent.getSceneY() / gameState.getCurrentMap().getTileSize()) + Render.anchorUL[1];
                         if (releasedX <= DRAG_LOC[0] && !(releasedY <= DRAG_LOC[1])) {
                             for (int y = DRAG_LOC[1]; y < releasedY + 1; y++) {
                                 for (int x = releasedX; x < DRAG_LOC[0] + 1; x++) {
@@ -337,8 +337,8 @@ public class Run extends Application {
                             }
                         }
                     } else if (mouseEvent.getButton() == MouseButton.SECONDARY) {
-                        int releasedX = (int) mouseEvent.getSceneX() / gameState.getCurrentMap().getTileSize();
-                        int releasedY = (int) mouseEvent.getSceneY() / gameState.getCurrentMap().getTileSize();
+                        int releasedX = (int) (mouseEvent.getSceneX() / gameState.getCurrentMap().getTileSize()) + Render.anchorUL[0];
+                        int releasedY = (int) (mouseEvent.getSceneY() / gameState.getCurrentMap().getTileSize()) + Render.anchorUL[1];
                         if (releasedX <= DRAG_LOC[0] && !(releasedY <= DRAG_LOC[1])) {
                             for (int y = DRAG_LOC[1]; y < releasedY + 1; y++) {
                                 for (int x = releasedX; x < DRAG_LOC[0] + 1; x++) {
@@ -465,8 +465,8 @@ public class Run extends Application {
         // Mouse drag click handling
         canvas.addEventHandler(MouseDragEvent.DRAG_DETECTED, (mouseEvent) -> {
             if(gameState != null && devMenu != null && devMenu.EDIT_MODE && gameState.getCurrentState() == GameState.STATE.GAME) {
-                DRAG_LOC[0] = (int) mouseEvent.getSceneX() / gameState.getCurrentMap().getTileSize();
-                DRAG_LOC[1] = (int) mouseEvent.getSceneY() / gameState.getCurrentMap().getTileSize();
+                DRAG_LOC[0] = (int) (mouseEvent.getSceneX() / gameState.getCurrentMap().getTileSize()) + Render.anchorUL[0];
+                DRAG_LOC[1] = (int) (mouseEvent.getSceneY() / gameState.getCurrentMap().getTileSize()) + Render.anchorUL[1];
             }
         });
         // Staging and animator setup
