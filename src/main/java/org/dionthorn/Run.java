@@ -27,9 +27,9 @@ public class Run extends Application {
     public static String GAME_DATA_PATH = "";
     public static String GAME_ART_PATH = "";
     public static String GAME_MAP_PATH = "";
-    public static final int SCREEN_WIDTH = 704;
-    public static final int SCREEN_HEIGHT = 704;
-    public static final int SCREEN_MAP_HEIGHT = 448;
+    public static int SCREEN_WIDTH = 1024;
+    public static int SCREEN_HEIGHT = 1024;
+    public static int SCREEN_MAP_HEIGHT = 768;
     public static final int TILE_SIZE = 32;
     private final int[] DRAG_LOC = {-1, -1};
     private final long FPS = TimeUnit.SECONDS.toNanos(1L) / 60;
@@ -533,6 +533,16 @@ public class Run extends Application {
         programLogger.log(Level.INFO, "GameData folder found at: " + GAME_DATA_PATH);
         programLogger.log(Level.INFO, "GameData/Art folder found at: " + GAME_ART_PATH);
         programLogger.log(Level.INFO, "GameData/Maps folder found at: " + GAME_MAP_PATH);
+        String[] startUpSettings = FileOps.getFileLines(GAME_DATA_PATH + File.separator + "config.txt");
+        for(String line: startUpSettings) {
+            if(line.contains("SCREEN_WIDTH")) {
+                SCREEN_WIDTH = Integer.parseInt(line.split("=")[1]);
+            } else if(line.contains("SCREEN_HEIGHT")) {
+                SCREEN_HEIGHT = Integer.parseInt(line.split("=")[1]);
+            } else if(line.contains("SCREEN_MAP_HEIGHT")) {
+                SCREEN_MAP_HEIGHT = Integer.parseInt(line.split("=")[1]);
+            }
+        }
         launch(args);
     }
 

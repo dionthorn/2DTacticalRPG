@@ -107,7 +107,6 @@ public class Render {
             }
             // need to determine how much to shift on top of the above shift based on difference between mapArea and currentMap
             // System.out.println("anchorXY: (" + anchorUL[0] + ", " + anchorUL[1] + ")");
-
             // Render all the correct mapTiles to the correct relative locations.
             for(int y = 0; y < mapAreaXY[1]; y++) {
                 for(int x = 0; x < mapAreaXY[0]; x++) {
@@ -135,8 +134,6 @@ public class Render {
 
                 }
             }
-
-
             // Draw UI prompt area below map area here
             gc.drawImage(paperBg, 0, Run.SCREEN_MAP_HEIGHT);
             // Draw all entities
@@ -148,7 +145,6 @@ public class Render {
                                 ((Character) e).setCurrentSprite(((Character) e).getCharClass().getDeadTileID());
                             }
                         }
-                        ((Drawable) e).draw(gc);
                         if (e instanceof Character) {
                             double x, y, maxHP, pixelPerHP, currentHP, currentHPDisplayed, YaxisMod;
                             x = ((Character) e).getX();
@@ -156,11 +152,9 @@ public class Render {
                             double relX = ((Character) e).getRealtiveX();
                             double relY = ((Character) e).getRealtiveY();
                             // check bounds of anchor map area
-                            System.out.println("Char XY: " + x + " " + y);
-                            
                             if(y < mapAreaXY[1] + anchorUL[1] && y > anchorUL[1]) {
-                                if(x > mapAreaXY[0] + anchorUL[0] && x > anchorUL[0]) {
-                                    System.out.println(relX + " " + relY);
+                                if(x < mapAreaXY[0] + anchorUL[0] && x > anchorUL[0]) {
+                                    ((Drawable) e).draw(gc);
                                     maxHP = ((Character) e).getMaxHP();
                                     pixelPerHP = maxHP / Run.TILE_SIZE;
                                     currentHP = ((Character) e).getHp();

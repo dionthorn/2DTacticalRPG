@@ -1,0 +1,4 @@
+SCREEN_WIDTH=704
+SCREEN_HEIGHT=704
+SCREEN_MAP_HEIGHT=512
+// Options are 1024x1024 with 768 map height for 1080p+ screens, or 704*704 w/ 512 map height
