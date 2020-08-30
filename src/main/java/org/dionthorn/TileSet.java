@@ -146,6 +146,7 @@ public class TileSet {
     }
 
     public void setMetaFireID(int tileID, boolean remove) {
+        metaFire.trimToSize();
         boolean found = false;
         if(!remove) {
             for(int i: metaFire) {
@@ -187,7 +188,7 @@ public class TileSet {
         } else {
             int target = 0;
             for(int index=0; index<metaImpassable.size(); index++) {
-                if(metaFire.get(index) == tileID) {
+                if(metaImpassable.get(index) == tileID) {
                     found = true;
                     target = index;
                     break;

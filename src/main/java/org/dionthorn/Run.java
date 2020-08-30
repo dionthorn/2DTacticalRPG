@@ -22,7 +22,7 @@ import java.util.logging.Logger;
  */
 public class Run extends Application {
 
-    public static final String PROGRAM_VERSION = "v0.2.1a";
+    public static final String PROGRAM_VERSION = "v0.2.2a";
     public static Logger programLogger = Logger.getLogger("programLogger");
     public static String GAME_DATA_PATH = "";
     public static String GAME_ART_PATH = "";

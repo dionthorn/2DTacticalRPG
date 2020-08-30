@@ -21,8 +21,8 @@ public class Render {
     public static int[] menuNewGameBounds;
     public static int[] anchorUL = new int[2]; // the XY of tile that would be in the upper left of view area
     private static final Font smallFont = new Font("Arial", 12);
-    private static final Font mediumFont = new Font("Arial", 22);
-    private static final Font largeFont = new Font("Arial", 28);
+    private static final Font mediumFont = new Font("Arial", 28);
+    private static final Font largeFont = new Font("Arial", 32);
 
     public static void render(Run app, DevMenu devMenu, GraphicsContext gc) {
 
@@ -449,7 +449,8 @@ public class Render {
             gc.drawImage(paperBg, 0, Run.SCREEN_MAP_HEIGHT);
             gc.setFont(smallFont);
             String[] path = app.getGameState().getCurrentMap().getPATH().split("\\\\");
-            gc.fillText(path[path.length - 1], Run.SCREEN_WIDTH>>4, Run.SCREEN_MAP_HEIGHT + (Run.SCREEN_MAP_HEIGHT>>4));
+            gc.setFont(mediumFont);
+            gc.fillText("Selected Map: " + path[path.length - 1], Run.SCREEN_WIDTH>>4, Run.SCREEN_MAP_HEIGHT + (Run.SCREEN_MAP_HEIGHT>>4));
             gc.fillText("Press Enter to Load The Selected Map", Run.SCREEN_WIDTH>>4,
                     Run.SCREEN_MAP_HEIGHT + (Run.SCREEN_MAP_HEIGHT>>2)
             );
