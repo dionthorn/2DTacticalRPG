@@ -27,7 +27,7 @@ Here is a short youtube video of the game in action: https://www.youtube.com/wat
 
 ![Alt text](/ExampleScreenShots/devMenuExample.PNG?raw=true "Dev Menu")
 
-![Alt text](/ExampleScreenShots/graphicalLevelSelection.PNG?raw=true "Dev Menu")
+![Alt text](/ExampleScreenShots/graphicalLevelSelection.PNG?raw=true "Level Selection")
 
 v0.2.1 Notes: a complete restructuring of the code base using Intellij and Maven to produce jlink images rather than .jar files. Several other code maintence events have happend as well as the addition of the Level Selection screen.
 
