@@ -23,7 +23,7 @@ public class Player extends Character {
      */
     @Override
     public void draw(GraphicsContext gc) {
-        gc.drawImage(getCurrentSprite(), getX() * tileSize, getY() * tileSize, tileSize, tileSize);
+        gc.drawImage(getCurrentSprite(), getRealtiveX() * tileSize, getRealtiveY() * tileSize, tileSize, tileSize);
     }
 
     /**

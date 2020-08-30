@@ -19,6 +19,11 @@ public class Render {
     );
     private static int battleFrameCounter = 0;
     public static int[] menuNewGameBounds;
+    public static int[] anchorUL = new int[2]; // the XY of tile that would be in the upper left of view area
+    // mapAreaTileWidth * mapAreaTileHeight is the size of the view port in tiles.
+    // we use anchorXY to tell use which tile should be the upper left to start rendering
+    // view should center on the player entity
+    // 1024 * 768 window, map area = 1024*512 = view of 32*16 tiles rather than 32*24 of the 768 view
 
     public static void render(Run app, DevMenu devMenu, GraphicsContext gc) {
 
@@ -65,16 +70,76 @@ public class Render {
         } else if (app.getGameState() != null && app.getGameState().getCurrentState() == GameState.STATE.GAME) {
             gc.clearRect(0, 0, Run.SCREEN_WIDTH, Run.SCREEN_HEIGHT); // Clear canvas
             MapTile[][] mapTiles = app.getGameState().getCurrentMap().getMapTiles();
-            for (int y = 0; y < mapTiles.length; y++) {
-                for (int x = 0; x < mapTiles[0].length; x++) {
-                    gc.drawImage(app.getGameState().getCurrentMap().getTile(mapTiles[y][x].getTileSet(),
-                            mapTiles[y][x].getTileID()),
-                            x * app.getGameState().getCurrentMap().getTileSize(),
-                            y * app.getGameState().getCurrentMap().getTileSize()
-                    );
+            // We need to make anchorXY take the player entity xy and determine where the max upper left xy is
+            // We need to draw only the tiles from anchorXY where lets say anchorXY yield (1,2) that means the viewport
+            // should render mapTiles[2][1] as the upper left and render from there to the mapArea bounds
+            // Entity is at (5,7) and (mapAreaTileWidth, mapAreaTileHeight) = (32,16).
+            // So we have an area 32 tiles wide and 16 tiles wide to render.
+            // If we center on the Player entity this gives us
+            // We also need to take into account the current Map.mapWidth and Map.mapHeight
+            // for example mapOne is 32*24 tiles
+            int[] mapAreaXY = Run.getMapAreaDimensions();
+            // System.out.println("mapAreaDimensions: (" + mapAreaXY[0] + ", " + mapAreaXY[1] + ")");
+            int[] currentMapXY = {
+                    app.getGameState().getCurrentMap().getMapWidth(),
+                    app.getGameState().getCurrentMap().getMapHeight()
+            };
+            // System.out.println("currentMapDimensions: (" + currentMapXY[0] + ", " + currentMapXY[1] + ")");
+            // now I have two square whose width and height are in [width, height] format.
+            int[] playerXY = {
+                    app.getGameState().getPlayerEntity().getX(),
+                    app.getGameState().getPlayerEntity().getY()
+            };
+            // System.out.println("player location: (" + playerXY[0] + ", " + playerXY[1] + ")");
+            anchorUL[0] = 0;
+            anchorUL[1] = 0;
+            int howFarPastMiddle = 0;
+            if(playerXY[1] > (mapAreaXY[1] / 2)) {
+                // if player is beyond half of the rendered area then we need to shift.
+                anchorUL[1] = (mapAreaXY[1] / 2);
+                howFarPastMiddle = playerXY[1] - mapAreaXY[1];
+                anchorUL[1] += howFarPastMiddle;
+            }
+            if(playerXY[0] > (mapAreaXY[0] / 2)) {
+                anchorUL[0] = (mapAreaXY[0] / 2);
+                howFarPastMiddle = playerXY[0] - mapAreaXY[0];
+                anchorUL[0] += howFarPastMiddle;
+            }
+            // need to determine how much to shift on top of the above shift based on difference between mapArea and currentMap
+            // System.out.println("anchorXY: (" + anchorUL[0] + ", " + anchorUL[1] + ")");
+
+            // Render all the correct mapTiles to the correct relative locations.
+            for(int y = 0; y < mapAreaXY[1]; y++) {
+                for(int x = 0; x < mapAreaXY[0]; x++) {
+                    int yOffset = Math.abs(anchorUL[1]);
+                    int xOffset = Math.abs(anchorUL[0]);
+                    if(y + yOffset < 0 || x + xOffset < 0) {
+                        gc.drawImage(app.getGameState().getCurrentMap().getTileSet(0).getBlank(),
+                                x * Run.TILE_SIZE,
+                                y * Run.TILE_SIZE
+                        );
+                    } else if(y + yOffset >= currentMapXY[1] || x + xOffset >= currentMapXY[0]) {
+                        gc.drawImage(app.getGameState().getCurrentMap().getTileSet(0).getBlank(),
+                                x * Run.TILE_SIZE,
+                                y * Run.TILE_SIZE
+                        );
+                    } else {
+                        gc.drawImage(app.getGameState().getCurrentMap().getTile(
+                                mapTiles[y + yOffset][x + xOffset].getTileSet(),
+                                mapTiles[y + yOffset][x + xOffset].getTileID()
+                                ),
+                                x * Run.TILE_SIZE,
+                                y * Run.TILE_SIZE
+                        );
+                    }
+
                 }
             }
-            gc.drawImage(paperBg, 0, app.getGameState().getCurrentMap().getMapHeight() * Run.TILE_SIZE);
+
+
+            // Draw UI prompt area below map area here
+            gc.drawImage(paperBg, 0, Run.SCREEN_MAP_HEIGHT);
+            // Draw all entities
             for (Entity e : app.getGameState().getEntities()) {
                 if (e instanceof Drawable) {
                     if (((PhysicalEntity) e).getCurrentMap().equals(app.getGameState().getCurrentMap())) {
@@ -88,29 +153,39 @@ public class Render {
                             double x, y, maxHP, pixelPerHP, currentHP, currentHPDisplayed, YaxisMod;
                             x = ((Character) e).getX();
                             y = ((Character) e).getY();
-                            maxHP = ((Character) e).getMaxHP();
-                            pixelPerHP = maxHP / Run.TILE_SIZE;
-                            currentHP = ((Character) e).getHp();
-                            currentHPDisplayed = currentHP / pixelPerHP;
-                            YaxisMod = (y * Run.TILE_SIZE) + ((maxHP - currentHP) / pixelPerHP);
-                            gc.setFill(Color.RED);
-                            gc.setStroke(Color.BLACK);
-                            if (app.getGameState().getPlayerTeam().contains(e)) {
-                                gc.fillRect(x * Run.TILE_SIZE, y * Run.TILE_SIZE, 3, 32);
-                                gc.setFill(Color.GREEN);
-                                gc.setStroke(Color.BLACK);
-                                if (currentHPDisplayed < 0) {
-                                    currentHPDisplayed = 0;
+                            double relX = ((Character) e).getRealtiveX();
+                            double relY = ((Character) e).getRealtiveY();
+                            // check bounds of anchor map area
+                            System.out.println("Char XY: " + x + " " + y);
+                            
+                            if(y < mapAreaXY[1] + anchorUL[1] && y > anchorUL[1]) {
+                                if(x > mapAreaXY[0] + anchorUL[0] && x > anchorUL[0]) {
+                                    System.out.println(relX + " " + relY);
+                                    maxHP = ((Character) e).getMaxHP();
+                                    pixelPerHP = maxHP / Run.TILE_SIZE;
+                                    currentHP = ((Character) e).getHp();
+                                    currentHPDisplayed = currentHP / pixelPerHP;
+                                    YaxisMod = (relY * Run.TILE_SIZE) + ((maxHP - currentHP) / pixelPerHP);
+                                    gc.setFill(Color.RED);
+                                    gc.setStroke(Color.BLACK);
+                                    if (app.getGameState().getPlayerTeam().contains(e)) {
+                                        gc.fillRect(relX * Run.TILE_SIZE, relY * Run.TILE_SIZE, 3, 32);
+                                        gc.setFill(Color.GREEN);
+                                        gc.setStroke(Color.BLACK);
+                                        if (currentHPDisplayed < 0) {
+                                            currentHPDisplayed = 0;
+                                        }
+                                        gc.fillRect(relX * Run.TILE_SIZE, YaxisMod, 3, currentHPDisplayed);
+                                    } else if (app.getGameState().getEnemyTeam().contains(e)) {
+                                        gc.fillRect((relX * Run.TILE_SIZE) + 29, relY * Run.TILE_SIZE, 3, 32);
+                                        gc.setFill(Color.GREEN);
+                                        gc.setStroke(Color.BLACK);
+                                        if (currentHPDisplayed < 0) {
+                                            currentHPDisplayed = 0;
+                                        }
+                                        gc.fillRect((relX * Run.TILE_SIZE) + 29, YaxisMod, 3, currentHPDisplayed);
+                                    }
                                 }
-                                gc.fillRect(x * Run.TILE_SIZE, YaxisMod, 3, currentHPDisplayed);
-                            } else if (app.getGameState().getEnemyTeam().contains(e)) {
-                                gc.fillRect((x * Run.TILE_SIZE) + 29, y * Run.TILE_SIZE, 3, 32);
-                                gc.setFill(Color.GREEN);
-                                gc.setStroke(Color.BLACK);
-                                if (currentHPDisplayed < 0) {
-                                    currentHPDisplayed = 0;
-                                }
-                                gc.fillRect((x * Run.TILE_SIZE) + 29, YaxisMod, 3, currentHPDisplayed);
                             }
                         }
                     }

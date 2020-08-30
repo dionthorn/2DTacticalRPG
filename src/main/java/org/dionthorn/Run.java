@@ -27,9 +27,9 @@ public class Run extends Application {
     public static String GAME_DATA_PATH = "";
     public static String GAME_ART_PATH = "";
     public static String GAME_MAP_PATH = "";
-    public static final int SCREEN_WIDTH = 1024;
-    public static final int SCREEN_HEIGHT = 1024;
-    public static final int SCREEN_MAP_HEIGHT = 768;
+    public static final int SCREEN_WIDTH = 704;
+    public static final int SCREEN_HEIGHT = 704;
+    public static final int SCREEN_MAP_HEIGHT = 448;
     public static final int TILE_SIZE = 32;
     private final int[] DRAG_LOC = {-1, -1};
     private final long FPS = TimeUnit.SECONDS.toNanos(1L) / 60;
@@ -491,7 +491,7 @@ public class Run extends Application {
      * Return the int array [width, height] in tiles of the current map area
      * @return the int array [width, height] in tiles of the current map area
      */
-    public static int[] getMapDimensions() {
+    public static int[] getMapAreaDimensions() {
         int[] result = new int[2];
         result[0] = SCREEN_WIDTH/TILE_SIZE;
         result[1] = SCREEN_MAP_HEIGHT/TILE_SIZE;

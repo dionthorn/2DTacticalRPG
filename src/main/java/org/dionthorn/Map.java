@@ -43,7 +43,7 @@ public class Map {
         GEN_COUNT++;
         Random rand = new Random();
         PATH = String.format(Run.GAME_DATA_PATH + "/Maps/RANDOM%d.dat", GEN_COUNT);
-        int[] mapArea = Run.getMapDimensions();
+        int[] mapArea = Run.getMapAreaDimensions();
         mapWidth = mapArea[0];
         mapHeight = mapArea[1];
         for(String path: tilePaths) {
