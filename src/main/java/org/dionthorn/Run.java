@@ -522,9 +522,19 @@ public class Run extends Application {
      */
     public static void main(String[] args) {
         String[] classPath = System.getProperty("java.class.path").split(";");
-        if(!classPath[0].equals("")) {
-            GAME_DATA_PATH = classPath[0] + File.separator + "GameData";
-        } else {
+        boolean found = false;
+        for(String line: classPath) {
+            if(line.contains("target" + File.separator + "classes")) {
+                GAME_DATA_PATH = line + File.separator + "GameData";
+                programLogger.log(Level.INFO, String.format("GameData found at: ", GAME_DATA_PATH));
+                found = true;
+            } else if(line.contains("TacticalRPG") && line.contains("bin")) {
+                GAME_DATA_PATH = line + File.separator + "GameData";
+                programLogger.log(Level.INFO, String.format("GameData found at: ", GAME_DATA_PATH));
+                found = true;
+            }
+        }
+        if(!found) {
             GAME_DATA_PATH = Paths.get("").toAbsolutePath().toString() + File.separator + "GameData";
         }
         GAME_ART_PATH = GAME_DATA_PATH + File.separator + "Art";
