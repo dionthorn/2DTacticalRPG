@@ -262,6 +262,7 @@ public class Map {
      * @return the string array of the relative paths to all the tilesets associated to this map
      */
     public String[] getTileSetPaths() {
+        tileSets.trimToSize();
         String[] tilePaths = new String[tileSets.size()];
         for(int step=0; step<tileSets.size(); step++) {
             tilePaths[step] = tileSets.get(step).getTileSetPath();

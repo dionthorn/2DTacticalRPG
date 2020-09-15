@@ -70,65 +70,51 @@ public class DevMenu extends Stage {
         devRoot.getChildren().add(devMainUI);
         // create the devMenu GridPane object, this will be the main UI pane for menu
         devMenu = new GridPane();
+        // devMenu.setGridLinesVisible(true); // testing purposes
         devMenu.setHgap(10); // assign a 10 pixel gap between nodes
         devMenu.setVgap(10);
         devMainUI.setCenter(devMenu); // this is the primary node so center it
         devMenu.setOnMouseClicked(this::devMenuClicked); // handy activation of devMenuClicked method,
         // event -> devMenuClicked() lambda will also work here
         // create the TileID: text object that shows the currently selected tileID
-        devTileID = new Text(String.format("TileID: %s", SELECTED_TILE_ID));
-        devTileID.setFont(new Font("Arial", 16));
-        GridPane.setConstraints(devTileID, 0, 0);
-        // create the tileID + button
-        Button increaseTileID = new Button("+");
-        GridPane.setConstraints(increaseTileID, 2, 0);
-        increaseTileID.setOnAction(event -> tileMaxCheck());
-        // create the tileID - button
-        Button decreaseTileID = new Button("-");
-        GridPane.setConstraints(decreaseTileID, 3, 0);
-        decreaseTileID.setOnAction(event -> tileMinCheck());
-        // create the Edit Mode check box, this is used to paint the map during runtime for graphical map creation.
-        CheckBox editMode = new CheckBox("Edit Mode");
-        editMode.setSelected(false);
-        EDIT_MODE = false;
-        GridPane.setConstraints(editMode, 5, 0);
-        editMode.setOnAction(event -> EDIT_MODE = !EDIT_MODE);
-        // create the isFire check box, this lets you know if the in-memory value of the selected tileID is of type FIRE
-        isFire = new CheckBox("isFire");
-        GridPane.setConstraints(isFire, 6, 0);
-        isFire.setOnAction(event -> setFire());
-        // create the isImpassable check box, does the same as above but with IMPASSABLE type
-        isImpassable = new CheckBox("isImpassable");
-        GridPane.setConstraints(isImpassable, 7, 0);
-        isImpassable.setOnAction(event -> setImpassable());
-        tileMetaCheck();
+
+        // Row 0
         devTileSetID = new Text(String.format("TileSet ID: %s", SELECTED_TILE_SET_ID));
         devTileSetID.setFont(new Font("Arial", 16));
-        GridPane.setConstraints(devTileSetID, 0, 8, 4, 1);
+        GridPane.setConstraints(devTileSetID, 0, 0);
         Button increaseTileSetID = new Button("+");
-        GridPane.setConstraints(increaseTileSetID, 2, 8);
+        GridPane.setConstraints(increaseTileSetID, 1, 0);
         increaseTileSetID.setOnAction(event -> tileSetMaxCheck());
         Button decreaseTileSetID = new Button("-");
-        GridPane.setConstraints(decreaseTileSetID, 3, 8);
+        GridPane.setConstraints(decreaseTileSetID, 2, 0);
         decreaseTileSetID.setOnAction(event -> tileSetMinCheck());
+
+        // Row 1
+
         devMapID = new Text(String.format("Map ID: %s", SELECTED_MAP_ID));
         devMapID.setFont(new Font("Arial", 16));
-        GridPane.setConstraints(devMapID, 0, 9, 3, 1);
+        GridPane.setConstraints(devMapID, 0, 1);
         Button increaseMapID = new Button("+");
-        GridPane.setConstraints(increaseMapID, 2, 9);
+        GridPane.setConstraints(increaseMapID, 1, 1);
         increaseMapID.setOnAction(event -> mapIDMaxCheck());
         Button decreaseMapID = new Button("-");
-        GridPane.setConstraints(decreaseMapID, 3, 9);
+        GridPane.setConstraints(decreaseMapID, 2, 1);
         decreaseMapID.setOnAction(event -> mapIDMinCheck());
+
+        // Row 2
+
         devMapPath = new Text("null");
         devMapPath.setFont(new Font("Arial", 10));
-        GridPane.setConstraints(devMapPath, 0, 10, 2, 1);
+        GridPane.setConstraints(devMapPath, 0, 2);
         Button saveButton = new Button("Save Map");
-        GridPane.setConstraints(saveButton, 2, 10, 3, 1);
+        GridPane.setConstraints(saveButton, 1, 2);
         saveButton.setOnAction(event -> app.getGameState().getCurrentMap().saveData());
-        GridPane.setConstraints(mapList, 0, 11, 32, 1);
+
+        // Row 3
+
+        GridPane.setConstraints(mapList, 0, 3);
         Button loadMap = new Button("Load Map");
-        GridPane.setConstraints(loadMap, 2, 11, 3, 1);
+        GridPane.setConstraints(loadMap, 1, 3);
         loadMap.setOnAction(event -> {
             for(Map toLoad: app.getGameState().getMaps()) {
                 String fullPath = Run.GAME_DATA_PATH + "/Maps/" + mapList.getSelectionModel().getSelectedItem();
@@ -139,21 +125,27 @@ public class DevMenu extends Stage {
                 }
             }
         });
+
+        // Row 4
+
         Button devUpdate = new Button("Update");
-        GridPane.setConstraints(devUpdate, 0, 12);
+        GridPane.setConstraints(devUpdate, 0, 4);
         devUpdate.setOnAction(event -> app.update());
         Button devLevelUp = new Button("Level Up");
-        GridPane.setConstraints(devLevelUp, 1, 12);
+        GridPane.setConstraints(devLevelUp, 1, 4);
         devLevelUp.setOnAction(event -> {
             if (app.getLastSelectChar() != -1) {
                 ((Character) app.getGameState().getEntities().get(app.getLastSelectChar())).levelUp();
             }
         });
         Button devMakeIcon = new Button("Make Icon");
-        GridPane.setConstraints(devMakeIcon, 2, 12);
+        GridPane.setConstraints(devMakeIcon, 2, 4);
         devMakeIcon.setOnAction(event -> makeIcon());
+
+        // Row 5
+
         Button memData = new Button("Update resource usage data");
-        GridPane.setConstraints(memData, 0, 13);
+        GridPane.setConstraints(memData, 0, 5);
         memData.setOnAction(event -> {
             if(memInfo != null) {
                 devMenu.getChildren().remove(memInfo.get(0));
@@ -168,13 +160,16 @@ public class DevMenu extends Stage {
             String run = String.format("FRE:%d Mb USE:%d Mb", freeMem, usedMem);
             memInfo.add(new Text(total));
             memInfo.add(new Text(run));
-            GridPane.setConstraints(memInfo.get(0), 0, 14, 3, 1);
+            GridPane.setConstraints(memInfo.get(0), 1, 5, 3, 1);
             devMenu.getChildren().add(memInfo.get(0));
-            GridPane.setConstraints(memInfo.get(1), 0, 15, 3, 1);
+            GridPane.setConstraints(memInfo.get(1), 3, 5, 3, 1);
             devMenu.getChildren().add(memInfo.get(1));
         });
+
+        // Row 6-7
+
         Button entityInfo = new Button("Update Entity Info");
-        GridPane.setConstraints(entityInfo, 0, 16, 3, 1);
+        GridPane.setConstraints(entityInfo, 0, 6);
         entityInfo.setOnAction(event -> {
             if(charInfo != null) {
                 for(Text t: charInfo) {
@@ -206,15 +201,18 @@ public class DevMenu extends Stage {
             }
             charInfoPane = new ScrollPane();
             charInfoPane.setContent(infoList);
-            GridPane.setConstraints(charInfoPane, 0, 17);
+            GridPane.setConstraints(charInfoPane, 0, 7, 3, 1);
             devMenu.getChildren().add(charInfoPane);
         });
+
+        // Row 8
+
         for(GameState.STATE state: GameState.STATE.values()) {
             stateList.getItems().add(state.name());
         }
-        GridPane.setConstraints(stateList, 0, 18);
+        GridPane.setConstraints(stateList, 0, 8);
         Button updateState = new Button("!Update State! CAN BREAK ENGINE");
-        GridPane.setConstraints(updateState, 1, 18);
+        GridPane.setConstraints(updateState, 1, 8, 3, 1);
         updateState.setOnAction(event -> {
             if(stateList.getSelectionModel().getSelectedItem() != null &&
                     !stateList.getSelectionModel().getSelectedItem().equals("")
@@ -227,6 +225,41 @@ public class DevMenu extends Stage {
                 }
             }
         });
+
+        // Row 9
+
+        devTileID = new Text(String.format("TileID: %s", SELECTED_TILE_ID));
+        devTileID.setFont(new Font("Arial", 16));
+        GridPane.setConstraints(devTileID, 0, 9);
+        // create the tileID + button
+        Button increaseTileID = new Button("+");
+        GridPane.setConstraints(increaseTileID, 1, 9);
+        increaseTileID.setOnAction(event -> tileMaxCheck());
+        // create the tileID - button
+        Button decreaseTileID = new Button("-");
+        GridPane.setConstraints(decreaseTileID, 2, 9);
+        decreaseTileID.setOnAction(event -> tileMinCheck());
+        // Column Index 3 is the Selected Tile image
+        // create the Edit Mode check box, this is used to paint the map during runtime for graphical map creation.
+        CheckBox editMode = new CheckBox("Edit Mode");
+        editMode.setSelected(false);
+        EDIT_MODE = false;
+        GridPane.setConstraints(editMode, 4, 9);
+        editMode.setOnAction(event -> EDIT_MODE = !EDIT_MODE);
+        // create the isFire check box, this lets you know if the in-memory value of the selected tileID is of type FIRE
+        isFire = new CheckBox("isFire");
+        GridPane.setConstraints(isFire, 5, 9);
+        isFire.setOnAction(event -> setFire());
+        // create the isImpassable check box, does the same as above but with IMPASSABLE type
+        isImpassable = new CheckBox("isImpassable");
+        GridPane.setConstraints(isImpassable, 6, 9);
+        isImpassable.setOnAction(event -> setImpassable());
+        tileMetaCheck();
+
+        // Row 10+ are the TileSet Image
+
+        // Assign all components
+
         devMenu.getChildren().addAll(devTileID, increaseTileID, decreaseTileID, editMode,
                 isFire, isImpassable, devUpdate, devLevelUp, devMakeIcon,
                 devTileSetID, increaseTileSetID, decreaseTileSetID,
@@ -238,11 +271,13 @@ public class DevMenu extends Stage {
         this.setX(0D);
         this.setScene(devRootScene);
         this.show();
+        /*
         devRootScene.addEventHandler(KeyEvent.KEY_PRESSED, (key) -> {
             if(key.getCode() == KeyCode.S) {
                 app.getGameState().getCurrentMap().saveData();
             }
         });
+         */
     }
 
     /**
@@ -252,8 +287,8 @@ public class DevMenu extends Stage {
     private void devMenuClicked(MouseEvent event) {
         Node clickedNode = event.getPickResult().getIntersectedNode();
         if(clickedNode == tileSetView) {
-            Bounds topCell = devMenu.getCellBounds(0,0);
-            double heightDiff = topCell.getHeight() + devMenu.getVgap() * 2;
+            double heightDiff = tileSetView.getBoundsInParent().getMinY();
+            System.out.println(heightDiff);
             Bounds bounds = clickedNode.getBoundsInParent();
             double x = event.getX();
             double y = event.getY();
@@ -265,10 +300,10 @@ public class DevMenu extends Stage {
             int xCord = (int) x;
             int yCord = (int) y;
             yCord -= heightDiff;
-            // Run.programLogger.log(Level.INFO, String.format("Ix=%d, Iy=%d", xCord, yCord));
+            Run.programLogger.log(Level.INFO, String.format("Ix=%d, Iy=%d", xCord, yCord));
             int tileX = (xCord / app.getGameState().getCurrentMap().getTileSize());
             int tileY = (yCord / app.getGameState().getCurrentMap().getTileSize());
-            // Run.programLogger.log(Level.INFO, String.format("Tx=%d, Ty=%d", tileX, tileY));
+            Run.programLogger.log(Level.INFO, String.format("Tx=%d, Ty=%d", tileX, tileY));
             int maxX = (int) view.getImage().getWidth() / app.getGameState().getCurrentMap().getTileSize();
             if(tileY > 0) {
                 tileY = tileY * maxX;
@@ -354,7 +389,7 @@ public class DevMenu extends Stage {
     private void tileMaxCheck() {
         if(SELECTED_TILE_ID + 1 >= app.getGameState().getCurrentMap().getTileSet(SELECTED_TILE_SET_ID).getTotalTiles()
         ) {
-            Run.programLogger.log(Level.WARNING, "TileID cannot exceed TileSet maximum");
+            Run.programLogger.log(Level.INFO, "TileID cannot exceed TileSet maximum");
         } else {
             SELECTED_TILE_ID++;
             devTileID.setText(String.format("TileID: %s", SELECTED_TILE_ID));

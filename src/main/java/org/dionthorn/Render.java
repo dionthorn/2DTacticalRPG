@@ -32,13 +32,13 @@ public class Render {
             );
             ImageView selectedTileImgView = new ImageView(selectedTileImg);
             devMenu.getDevMenu().getChildren().add(selectedTileImgView);
-            GridPane.setConstraints(selectedTileImgView, 4, 0);
+            GridPane.setConstraints(selectedTileImgView, 3, 9);
             devMenu.getDevMenu().getChildren().remove(devMenu.getTileSetView());
             Image tileSet = app.getGameState().getCurrentMap().getTileSet(devMenu.SELECTED_TILE_SET_ID).getTileSetSrc();
             devMenu.setTileSetView(new ImageView(tileSet));
             devMenu.getDevMenu().getChildren().add(devMenu.getTileSetView());
             GridPane.setConstraints(devMenu.getTileSetView(),
-                    0, 2,
+                    0, 10,
                     32, 1
             );
         }

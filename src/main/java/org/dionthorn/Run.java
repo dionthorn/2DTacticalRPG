@@ -278,17 +278,17 @@ public class Run extends Application {
                     gameState.getCurrentState() == GameState.STATE.GAME) {
                 int tileX = (mouseX / gameState.getCurrentMap().getTileSize()) + Render.anchorUL[0];
                 int tileY = (mouseY / gameState.getCurrentMap().getTileSize()) + Render.anchorUL[1];
-                programLogger.log(Level.INFO, "x,y: " + tileX + " " + tileY);
+                // programLogger.log(Level.INFO, "x,y: " + tileX + " " + tileY);
                 if (DRAG_LOC[0] == -1) {
                     if (mouseEvent.getButton() == MouseButton.PRIMARY) {
                         MapTile[][] tempMapTiles = gameState.getCurrentMap().getMapTiles();
-                        programLogger.log(Level.INFO, "TILEID: " + tempMapTiles[tileY][tileX].getTileID());
+                        // programLogger.log(Level.INFO, "TILEID: " + tempMapTiles[tileY][tileX].getTileID());
                         tempMapTiles[tileY][tileX].setTileID(devMenu.SELECTED_TILE_ID);
                         tempMapTiles[tileY][tileX].setTileSet(devMenu.SELECTED_TILE_SET_ID);
                         gameState.getCurrentMap().setMapTiles(tempMapTiles);
                     } else if (mouseEvent.getButton() == MouseButton.SECONDARY) {
                         MapTile[][] tempMapTiles = gameState.getCurrentMap().getMapTiles();
-                        programLogger.log(Level.INFO, "TILEID: " + tempMapTiles[tileY][tileX].getTileID());
+                        // programLogger.log(Level.INFO, "TILEID: " + tempMapTiles[tileY][tileX].getTileID());
                         tempMapTiles[tileY][tileX].setTileID(gameState.getCurrentMap().getTileSet(
                                 devMenu.SELECTED_TILE_SET_ID).getTiles().length - 1
                         );
@@ -526,16 +526,17 @@ public class Run extends Application {
         for(String line: classPath) {
             if(line.contains("target" + File.separator + "classes")) {
                 GAME_DATA_PATH = line + File.separator + "GameData";
-                programLogger.log(Level.INFO, String.format("GameData found at: ", GAME_DATA_PATH));
+                programLogger.log(Level.INFO, "GameData found at: " + GAME_DATA_PATH + " Via Classpath");
                 found = true;
             } else if(line.contains("TacticalRPG") && line.contains("bin")) {
                 GAME_DATA_PATH = line + File.separator + "GameData";
-                programLogger.log(Level.INFO, String.format("GameData found at: ", GAME_DATA_PATH));
+                programLogger.log(Level.INFO, "GameData found at: " + GAME_DATA_PATH + " Via Classpath");
                 found = true;
             }
         }
         if(!found) {
             GAME_DATA_PATH = Paths.get("").toAbsolutePath().toString() + File.separator + "GameData";
+            programLogger.log(Level.INFO, "GameData found at: " + GAME_DATA_PATH + " With Paths.get");
         }
         GAME_ART_PATH = GAME_DATA_PATH + File.separator + "Art";
         GAME_MAP_PATH = GAME_DATA_PATH + File.separator + "Maps";
