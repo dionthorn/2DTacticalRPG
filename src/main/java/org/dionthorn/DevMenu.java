@@ -107,14 +107,14 @@ public class DevMenu extends Stage {
         devMapPath.setFont(new Font("Arial", 10));
         GridPane.setConstraints(devMapPath, 0, 2);
         Button saveButton = new Button("Save Map");
-        GridPane.setConstraints(saveButton, 1, 2);
+        GridPane.setConstraints(saveButton, 1, 2, 2, 1);
         saveButton.setOnAction(event -> app.getGameState().getCurrentMap().saveData());
 
         // Row 3
 
         GridPane.setConstraints(mapList, 0, 3);
         Button loadMap = new Button("Load Map");
-        GridPane.setConstraints(loadMap, 1, 3);
+        GridPane.setConstraints(loadMap, 1, 3, 2, 1);
         loadMap.setOnAction(event -> {
             for(Map toLoad: app.getGameState().getMaps()) {
                 String fullPath = Run.GAME_DATA_PATH + "/Maps/" + mapList.getSelectionModel().getSelectedItem();
@@ -132,14 +132,14 @@ public class DevMenu extends Stage {
         GridPane.setConstraints(devUpdate, 0, 4);
         devUpdate.setOnAction(event -> app.update());
         Button devLevelUp = new Button("Level Up");
-        GridPane.setConstraints(devLevelUp, 1, 4);
+        GridPane.setConstraints(devLevelUp, 1, 4, 2, 1);
         devLevelUp.setOnAction(event -> {
             if (app.getLastSelectChar() != -1) {
                 ((Character) app.getGameState().getEntities().get(app.getLastSelectChar())).levelUp();
             }
         });
         Button devMakeIcon = new Button("Make Icon");
-        GridPane.setConstraints(devMakeIcon, 2, 4);
+        GridPane.setConstraints(devMakeIcon, 3, 4, 2, 1);
         devMakeIcon.setOnAction(event -> makeIcon());
 
         // Row 5
@@ -160,9 +160,9 @@ public class DevMenu extends Stage {
             String run = String.format("FRE:%d Mb USE:%d Mb", freeMem, usedMem);
             memInfo.add(new Text(total));
             memInfo.add(new Text(run));
-            GridPane.setConstraints(memInfo.get(0), 1, 5, 3, 1);
+            GridPane.setConstraints(memInfo.get(0), 1, 5, 4, 1);
             devMenu.getChildren().add(memInfo.get(0));
-            GridPane.setConstraints(memInfo.get(1), 3, 5, 3, 1);
+            GridPane.setConstraints(memInfo.get(1), 5, 5, 4, 1);
             devMenu.getChildren().add(memInfo.get(1));
         });
 
@@ -212,7 +212,7 @@ public class DevMenu extends Stage {
         }
         GridPane.setConstraints(stateList, 0, 8);
         Button updateState = new Button("!Update State! CAN BREAK ENGINE");
-        GridPane.setConstraints(updateState, 1, 8, 3, 1);
+        GridPane.setConstraints(updateState, 1, 8, 5, 1);
         updateState.setOnAction(event -> {
             if(stateList.getSelectionModel().getSelectedItem() != null &&
                     !stateList.getSelectionModel().getSelectedItem().equals("")
@@ -240,7 +240,7 @@ public class DevMenu extends Stage {
         GridPane.setConstraints(decreaseTileID, 2, 9);
         decreaseTileID.setOnAction(event -> tileMinCheck());
         // Column Index 3 is the Selected Tile image
-        // create the Edit Mode check box, this is used to paint the map during runtime for graphical map creation.
+        // create the Edit Mode check box, this is used to paint the map during runtime for graphicalf map creation.
         CheckBox editMode = new CheckBox("Edit Mode");
         editMode.setSelected(false);
         EDIT_MODE = false;
@@ -271,13 +271,7 @@ public class DevMenu extends Stage {
         this.setX(0D);
         this.setScene(devRootScene);
         this.show();
-        /*
-        devRootScene.addEventHandler(KeyEvent.KEY_PRESSED, (key) -> {
-            if(key.getCode() == KeyCode.S) {
-                app.getGameState().getCurrentMap().saveData();
-            }
-        });
-         */
+
     }
 
     /**
@@ -288,7 +282,6 @@ public class DevMenu extends Stage {
         Node clickedNode = event.getPickResult().getIntersectedNode();
         if(clickedNode == tileSetView) {
             double heightDiff = tileSetView.getBoundsInParent().getMinY();
-            System.out.println(heightDiff);
             Bounds bounds = clickedNode.getBoundsInParent();
             double x = event.getX();
             double y = event.getY();
@@ -300,10 +293,10 @@ public class DevMenu extends Stage {
             int xCord = (int) x;
             int yCord = (int) y;
             yCord -= heightDiff;
-            Run.programLogger.log(Level.INFO, String.format("Ix=%d, Iy=%d", xCord, yCord));
+            // Run.programLogger.log(Level.INFO, String.format("Ix=%d, Iy=%d", xCord, yCord));
             int tileX = (xCord / app.getGameState().getCurrentMap().getTileSize());
             int tileY = (yCord / app.getGameState().getCurrentMap().getTileSize());
-            Run.programLogger.log(Level.INFO, String.format("Tx=%d, Ty=%d", tileX, tileY));
+            // Run.programLogger.log(Level.INFO, String.format("Tx=%d, Ty=%d", tileX, tileY));
             int maxX = (int) view.getImage().getWidth() / app.getGameState().getCurrentMap().getTileSize();
             if(tileY > 0) {
                 tileY = tileY * maxX;

@@ -18,7 +18,7 @@ import java.util.logging.Logger;
 /**
  * Run will handle the core engine of the game including the JavaFX Application, Setting up Input Handling,
  * updating entities and making calls to Render as well as using gameState States to change the render conditions, etc.
- * All of .render() has been moved to a static Render.render() a some class variables have been put there
+ * All of .render() has been moved to a static Render.render() and some class variables have been put there.
  */
 public class Run extends Application {
 
@@ -44,9 +44,7 @@ public class Run extends Application {
      * Called after every update()
      * will check gameState and decide what to render from that.
      */
-    private void render() {
-        Render.render(this, devMenu, gc);
-    }
+    private void render() { Render.render(this, devMenu, gc); }
 
     /**
      * Called before every draw call

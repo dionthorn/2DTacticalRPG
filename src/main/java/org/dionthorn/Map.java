@@ -1,6 +1,8 @@
 package org.dionthorn;
 
 import javafx.scene.image.Image;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -42,7 +44,7 @@ public class Map {
     public Map(String[] tilePaths) {
         GEN_COUNT++;
         Random rand = new Random();
-        PATH = String.format(Run.GAME_DATA_PATH + "/Maps/RANDOM%d.dat", GEN_COUNT);
+        PATH = String.format(Run.GAME_DATA_PATH + File.separator + "Maps"+ File.separator + "RANDOM%d.dat", GEN_COUNT);
         int[] mapArea = Run.getMapAreaDimensions();
         mapWidth = mapArea[0];
         mapHeight = mapArea[1];
@@ -80,6 +82,7 @@ public class Map {
                 mapHeight = Integer.parseInt(splitLine[HEIGHT_DATA]);
                 mapTiles = new MapTile[mapHeight][mapWidth];
                 TILE_SIZE = Integer.parseInt(splitLine[TILE_DATA]);
+                tileSets.clear();
                 for(int step = IMG_SRC_DATA; step<splitLine.length; step++) {
                     tileSets.add(new TileSet(splitLine[step], TILE_SIZE));
                 }
@@ -162,6 +165,7 @@ public class Map {
         String[] dataAsString = new String[mapHeight + 1];
         StringBuilder formattedPaths = new StringBuilder();
         for(String path: getTileSetPaths()) {
+            System.out.println("TEST: " + path);
             formattedPaths.append(path).append(", ");
         }
         dataAsString[0] = String.format("%d, %d, %d, %s", mapWidth, mapHeight, TILE_SIZE, formattedPaths.toString());
@@ -188,14 +192,14 @@ public class Map {
         dataAsString[0] = ""; // {tileSetID}/{tileID},:FIRE
         for(int index=0; index<tileSets.size(); index++) {
             for(int tileID: tileSets.get(index).getMetaFire()) {
-                dataAsString[0] += index + "/" + tileID + ",";
+                dataAsString[0] += index + File.separator + tileID + ",";
             }
         }
         dataAsString[0] += ":FIRE";
         dataAsString[1] = ""; // :IMPASSABLE
         for(int index=0; index<tileSets.size(); index++) {
             for(int tileID: tileSets.get(index).getMetaImpassable()) {
-                dataAsString[1] += index + "/" + tileID + ",";
+                dataAsString[1] += index + File.separator + tileID + ",";
             }
         }
         dataAsString[1] += ":IMPASSABLE";

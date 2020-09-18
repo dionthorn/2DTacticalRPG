@@ -70,14 +70,6 @@ public class Render {
         } else if (app.getGameState() != null && app.getGameState().getCurrentState() == GameState.STATE.GAME) {
             gc.clearRect(0, 0, Run.SCREEN_WIDTH, Run.SCREEN_HEIGHT); // Clear canvas
             MapTile[][] mapTiles = app.getGameState().getCurrentMap().getMapTiles();
-            // We need to make anchorXY take the player entity xy and determine where the max upper left xy is
-            // We need to draw only the tiles from anchorXY where lets say anchorXY yield (1,2) that means the viewport
-            // should render mapTiles[2][1] as the upper left and render from there to the mapArea bounds
-            // Entity is at (5,7) and (mapAreaTileWidth, mapAreaTileHeight) = (32,16).
-            // So we have an area 32 tiles wide and 16 tiles wide to render.
-            // If we center on the Player entity this gives us
-            // We also need to take into account the current Map.mapWidth and Map.mapHeight
-            // for example mapOne is 32*24 tiles
             int[] mapAreaXY = Run.getMapAreaDimensions();
             // System.out.println("mapAreaDimensions: (" + mapAreaXY[0] + ", " + mapAreaXY[1] + ")");
             int[] currentMapXY = {
@@ -85,7 +77,7 @@ public class Render {
                     app.getGameState().getCurrentMap().getMapHeight()
             };
             // System.out.println("currentMapDimensions: (" + currentMapXY[0] + ", " + currentMapXY[1] + ")");
-            // now I have two square whose width and height are in [width, height] format.
+            // now I have two squares whose width and height are in [width, height] format.
             int[] playerXY = {
                     app.getGameState().getPlayerEntity().getX(),
                     app.getGameState().getPlayerEntity().getY()
@@ -105,7 +97,6 @@ public class Render {
                 howFarPastMiddle = playerXY[0] - mapAreaXY[0];
                 anchorUL[0] += howFarPastMiddle;
             }
-            // need to determine how much to shift on top of the above shift based on difference between mapArea and currentMap
             // System.out.println("anchorXY: (" + anchorUL[0] + ", " + anchorUL[1] + ")");
             // Render all the correct mapTiles to the correct relative locations.
             if(mapAreaXY[1] >= currentMapXY[1]) {
@@ -159,8 +150,8 @@ public class Render {
                             double relX = ((Character) e).getRealtiveX();
                             double relY = ((Character) e).getRealtiveY();
                             // check bounds of anchor map area
-                            if(y < mapAreaXY[1] + anchorUL[1] && y > anchorUL[1]) {
-                                if(x < mapAreaXY[0] + anchorUL[0] && x > anchorUL[0]) {
+                            if(y < mapAreaXY[1] + anchorUL[1] && y >= anchorUL[1]) {
+                                if(x < mapAreaXY[0] + anchorUL[0] && x >= anchorUL[0]) {
                                     ((Drawable) e).draw(gc);
                                     maxHP = ((Character) e).getMaxHP();
                                     pixelPerHP = maxHP / Run.TILE_SIZE;
