@@ -5,7 +5,8 @@ package org.dionthorn;
  */
 public abstract class PhysicalEntity extends Entity {
 
-    protected int x, y;
+    protected int x;
+    protected int y;
     protected Map currentMap;
 
     /**
@@ -28,20 +29,22 @@ public abstract class PhysicalEntity extends Entity {
      * @param yDir the y-wards direction 1, 0, or -1
      */
     protected void move(int xDir, int yDir) {
+        int tempX = xDir;
+        int tempY = yDir;
         if(this.x + xDir >= currentMap.getMapWidth()) {
-            xDir = 0;
+            tempX = 0;
         }
         if(this.x + xDir < 0) {
-            xDir = 0;
+            tempX = 0;
         }
         if(this.y + yDir >= currentMap.getMapHeight()) {
-            yDir = 0;
+            tempY = 0;
         }
         if(this.y + yDir < 0) {
-            yDir = 0;
+            tempY = 0;
         }
-        setX(this.x + xDir);
-        setY(this.y + yDir);
+        setX(this.x + tempX);
+        setY(this.y + tempY);
     }
 
     // Getters and Setters
@@ -57,9 +60,9 @@ public abstract class PhysicalEntity extends Entity {
      */
     protected int getY() { return y; }
 
-    protected int getRealtiveX() { return x - Render.anchorUL[0]; }
+    protected int getRealtiveX() { return x - RenderUtil.anchorUL[0]; }
 
-    protected int getRealtiveY() { return y - Render.anchorUL[1]; }
+    protected int getRealtiveY() { return y - RenderUtil.anchorUL[1]; }
 
     /**
      * Assigns this entity a new x location.

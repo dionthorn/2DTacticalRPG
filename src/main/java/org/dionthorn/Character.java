@@ -84,20 +84,22 @@ public abstract class Character extends PhysicalEntity implements Drawable, Upda
                 }
             }
         }
-        if(x < 0) {
-            x = 0;
-        } else if(x >= gameState.getCurrentMap().getMapWidth()) {
-            x = gameState.getCurrentMap().getMapWidth() - 1;
+        double tempX = x;
+        double tempY = y;
+        if(tempX < 0) {
+            tempX = 0;
+        } else if(tempX >= gameState.getCurrentMap().getMapWidth()) {
+            tempX = gameState.getCurrentMap().getMapWidth() - 1;
         }
-        if(y < 0) {
-            y = 0;
-        } else if(y >= gameState.getCurrentMap().getMapHeight()) {
-            y = gameState.getCurrentMap().getMapHeight() - 1;
+        if(tempY < 0) {
+            tempY = 0;
+        } else if(tempY >= gameState.getCurrentMap().getMapHeight()) {
+            tempY = gameState.getCurrentMap().getMapHeight() - 1;
         }
-        if(gameState.getCurrentMap().getTileType((int) x, (int) y) == MapTile.TileType.IMPASSABLE) {
+        if(gameState.getCurrentMap().getTileType((int) tempX, (int) tempY) == MapTile.TileType.IMPASSABLE) {
             hit = true;
         }
-        if(gameState.getCurrentMap().getTileType((int) x, (int) y) == MapTile.TileType.FIRE) {
+        if(gameState.getCurrentMap().getTileType((int) tempX, (int) tempY) == MapTile.TileType.FIRE) {
             (this).setHp(this.getHp()-((int)((this).getMaxHP()/10)));
         }
         return hit;
@@ -321,7 +323,7 @@ public abstract class Character extends PhysicalEntity implements Drawable, Upda
      * Returns the boolean flag isAttacking.
      * @return boolean value of whether this character is currently attacking.
      */
-    protected boolean IsAttacking() { return isAttacking; }
+    protected boolean isAttacking() { return isAttacking; }
 
     /**
      * Will set the characters isAttacking flag.

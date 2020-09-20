@@ -68,7 +68,7 @@ public class Map {
     public void loadMapData() {
         // load .dat information
         boolean first = true;
-        String[] data = FileOps.getFileLines(PATH);
+        String[] data = FileOpUtils.getFileLines(PATH);
         int xCount = 0;
         int yCount = 0;
         for(String line: data) {
@@ -100,7 +100,7 @@ public class Map {
             }
         }
         // load .meta information
-        String[] tileMetaData = FileOps.getFileLines(metaPATH);
+        String[] tileMetaData = FileOpUtils.getFileLines(metaPATH);
         int tileID;
         int tileSetID;
         for(String line: tileMetaData) {
@@ -186,7 +186,7 @@ public class Map {
                 yCount++;
             }
         }
-        FileOps.writeFileLines(PATH, dataAsString);
+        FileOpUtils.writeFileLines(PATH, dataAsString);
         // Write .meta File
         dataAsString = new String[5];
         dataAsString[0] = ""; // {tileSetID}/{tileID},:FIRE
@@ -206,7 +206,7 @@ public class Map {
         dataAsString[2] = metaEnemies;
         dataAsString[3] = metaAllies;
         dataAsString[4] = metaStartLoc;
-        FileOps.writeFileLines(metaPATH, dataAsString);
+        FileOpUtils.writeFileLines(metaPATH, dataAsString);
     }
     // Getters and Setters
     /**

@@ -15,7 +15,9 @@ import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelReader;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -39,14 +41,18 @@ public class DevMenu extends Stage {
     public int SELECTED_MAP_ID = 0;
     public boolean EDIT_MODE;
     private final GridPane devMenu;
-    private final Text devTileID, devTileSetID, devMapID, devMapPath;
+    private final Text devTileID;
+    private final Text devTileSetID;
+    private final Text devMapID;
+    private final Text devMapPath;
     private ScrollPane charInfoPane;
     private final CheckBox isFire;
     private final CheckBox isImpassable;
     private ImageView tileSetView;
     private final ComboBox<String> mapList = new ComboBox<>();
     private final ComboBox<String> stateList = new ComboBox<>();
-    private ArrayList<Text> charInfo, memInfo;
+    private ArrayList<Text> charInfo;
+    private ArrayList<Text> memInfo;
     private final Font arial = new Font("Arial", 10);
     private String[] folders;
     private String shortPath;
@@ -500,7 +506,7 @@ public class DevMenu extends Stage {
     public void makeIcon() {
         String[] mapsFolder = app.getGameState().getCurrentMap().getPATH().split("\\\\");
         String targetName = mapsFolder[mapsFolder.length - 1].split("\\.")[0] + "_Icon.png";
-        String[] artFiles = FileOps.getFileNamesFromDirectory(Run.GAME_ART_PATH);
+        String[] artFiles = FileOpUtils.getFileNamesFromDirectory(Run.GAME_ART_PATH);
         boolean found = false;
         for(String name: artFiles) {
             if(name != null && name.equals(targetName)) {

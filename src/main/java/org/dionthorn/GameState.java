@@ -117,7 +117,7 @@ public class GameState {
         // so we must write a .meta and .dat file to disk via the maps .saveData() function.
         // only perform this if the map doesn't already exist on disk
         if(newMap.getPATH().contains("RANDOM")) {
-            if(!FileOps.doesFileExist(newMap.getPATH())) {
+            if(!FileOpUtils.doesFileExist(newMap.getPATH())) {
                 newMap.saveData();
             }
         }

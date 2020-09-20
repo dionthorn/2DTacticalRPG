@@ -6,7 +6,11 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.input.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.MouseDragEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import java.io.File;
@@ -45,7 +49,7 @@ public class Run extends Application {
      * Called after every update()
      * will check gameState and decide what to render from that.
      */
-    private void render() { Render.render(this, devMenu, gc); }
+    private void render() { RenderUtil.render(this, devMenu, gc); }
 
     /**
      * Called before every draw call
@@ -66,7 +70,7 @@ public class Run extends Application {
      * Sets up the gameState for a new game environment.
      */
     private void newGame() {
-        for(String path: FileOps.getFileNamesFromDirectory(GAME_MAP_PATH + File.separator)) {
+        for(String path: FileOpUtils.getFileNamesFromDirectory(GAME_MAP_PATH + File.separator)) {
             if(!path.equals(".gitattributes") && !path.contains("meta")) {
                 if(gameState != null) {
                     gameState.getMaps().add(new Map(GAME_MAP_PATH + File.separator + path));
@@ -247,13 +251,13 @@ public class Run extends Application {
                     gameState.setState(GameState.STATE.GAME);
                 } else if (key.getCode() == KeyCode.A) {
                     programLogger.log(Level.INFO, "Name: " + gameState.getAttacker().getName() + SYS_LINE_SEP +
-                            "IsAttacking: " + gameState.getAttacker().IsAttacking() + SYS_LINE_SEP +
+                            "IsAttacking: " + gameState.getAttacker().isAttacking() + SYS_LINE_SEP +
                             "isBattleTurn: " + gameState.getAttacker().isBattleTurn() + SYS_LINE_SEP +
                             "CompletedCycles: " + gameState.getAttacker().getCharClass().getCompletedCycles()
                     );
                 } else if (key.getCode() == KeyCode.D) {
                     programLogger.log(Level.INFO, "Name: " + gameState.getDefender().getName() + SYS_LINE_SEP +
-                            "IsAttacking: " + gameState.getDefender().IsAttacking() + SYS_LINE_SEP +
+                            "IsAttacking: " + gameState.getDefender().isAttacking() + SYS_LINE_SEP +
                             "isBattleTurn: " + gameState.getDefender().isBattleTurn() + SYS_LINE_SEP +
                             "CompletedCycles: " + gameState.getDefender().getCharClass().getCompletedCycles()
                     );
@@ -276,8 +280,8 @@ public class Run extends Application {
             programLogger.log(Level.INFO, "Mouse Event: (" + mouseX + ", " + mouseY + ")");
             if(gameState != null && devMenu != null && devMenu.EDIT_MODE &&
                     gameState.getCurrentState() == GameState.STATE.GAME) {
-                int tileX = (mouseX / gameState.getCurrentMap().getTileSize()) + Render.anchorUL[0];
-                int tileY = (mouseY / gameState.getCurrentMap().getTileSize()) + Render.anchorUL[1];
+                int tileX = (mouseX / gameState.getCurrentMap().getTileSize()) + RenderUtil.anchorUL[0];
+                int tileY = (mouseY / gameState.getCurrentMap().getTileSize()) + RenderUtil.anchorUL[1];
                 // programLogger.log(Level.INFO, "x,y: " + tileX + " " + tileY);
                 if (DRAG_LOC[0] == -1) {
                     if (mouseEvent.getButton() == MouseButton.PRIMARY) {
@@ -297,8 +301,8 @@ public class Run extends Application {
                     }
                 } else {
                     if (mouseEvent.getButton() == MouseButton.PRIMARY) {
-                        int releasedX = (int) (mouseEvent.getSceneX() / gameState.getCurrentMap().getTileSize()) + Render.anchorUL[0];
-                        int releasedY = (int) (mouseEvent.getSceneY() / gameState.getCurrentMap().getTileSize()) + Render.anchorUL[1];
+                        int releasedX = (int) (mouseEvent.getSceneX() / gameState.getCurrentMap().getTileSize()) + RenderUtil.anchorUL[0];
+                        int releasedY = (int) (mouseEvent.getSceneY() / gameState.getCurrentMap().getTileSize()) + RenderUtil.anchorUL[1];
                         if (releasedX <= DRAG_LOC[0] && !(releasedY <= DRAG_LOC[1])) {
                             for (int y = DRAG_LOC[1]; y < releasedY + 1; y++) {
                                 for (int x = releasedX; x < DRAG_LOC[0] + 1; x++) {
@@ -337,8 +341,8 @@ public class Run extends Application {
                             }
                         }
                     } else if (mouseEvent.getButton() == MouseButton.SECONDARY) {
-                        int releasedX = (int) (mouseEvent.getSceneX() / gameState.getCurrentMap().getTileSize()) + Render.anchorUL[0];
-                        int releasedY = (int) (mouseEvent.getSceneY() / gameState.getCurrentMap().getTileSize()) + Render.anchorUL[1];
+                        int releasedX = (int) (mouseEvent.getSceneX() / gameState.getCurrentMap().getTileSize()) + RenderUtil.anchorUL[0];
+                        int releasedY = (int) (mouseEvent.getSceneY() / gameState.getCurrentMap().getTileSize()) + RenderUtil.anchorUL[1];
                         if (releasedX <= DRAG_LOC[0] && !(releasedY <= DRAG_LOC[1])) {
                             for (int y = DRAG_LOC[1]; y < releasedY + 1; y++) {
                                 for (int x = releasedX; x < DRAG_LOC[0] + 1; x++) {
@@ -381,10 +385,10 @@ public class Run extends Application {
                     DRAG_LOC[1] = -1;
                 }
             } else if(gameState == null || gameState.getCurrentState() == GameState.STATE.MAIN_MENU) {
-                int xLoc = Render.menuNewGameBounds[0];
-                int yLoc = Render.menuNewGameBounds[1];
-                int xWidth = Render.menuNewGameBounds[2];
-                int yHeight = Render.menuNewGameBounds[3];
+                int xLoc = RenderUtil.menuNewGameBounds[0];
+                int yLoc = RenderUtil.menuNewGameBounds[1];
+                int xWidth = RenderUtil.menuNewGameBounds[2];
+                int yHeight = RenderUtil.menuNewGameBounds[3];
                 if(mouseX >= xLoc && mouseX <= xWidth + xLoc) {
                     if(mouseY <= yLoc && mouseY >= yLoc - yHeight) {
                         newGame();
@@ -470,8 +474,8 @@ public class Run extends Application {
         // Mouse drag click handling
         canvas.addEventHandler(MouseDragEvent.DRAG_DETECTED, (mouseEvent) -> {
             if(gameState != null && devMenu != null && devMenu.EDIT_MODE && gameState.getCurrentState() == GameState.STATE.GAME) {
-                DRAG_LOC[0] = (int) (mouseEvent.getSceneX() / gameState.getCurrentMap().getTileSize()) + Render.anchorUL[0];
-                DRAG_LOC[1] = (int) (mouseEvent.getSceneY() / gameState.getCurrentMap().getTileSize()) + Render.anchorUL[1];
+                DRAG_LOC[0] = (int) (mouseEvent.getSceneX() / gameState.getCurrentMap().getTileSize()) + RenderUtil.anchorUL[0];
+                DRAG_LOC[1] = (int) (mouseEvent.getSceneY() / gameState.getCurrentMap().getTileSize()) + RenderUtil.anchorUL[1];
             }
         });
         // Staging and animator setup
@@ -549,7 +553,7 @@ public class Run extends Application {
         programLogger.log(Level.INFO, "GameData folder found at: " + GAME_DATA_PATH);
         programLogger.log(Level.INFO, "GameData/Art folder found at: " + GAME_ART_PATH);
         programLogger.log(Level.INFO, "GameData/Maps folder found at: " + GAME_MAP_PATH);
-        String[] startUpSettings = FileOps.getFileLines(GAME_DATA_PATH + File.separator + "config.txt");
+        String[] startUpSettings = FileOpUtils.getFileLines(GAME_DATA_PATH + File.separator + "config.txt");
         for(String line: startUpSettings) {
             if(line.contains("SCREEN_WIDTH")) {
                 SCREEN_WIDTH = Integer.parseInt(line.split("=")[1]);

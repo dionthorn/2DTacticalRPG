@@ -13,7 +13,7 @@ import java.util.logging.Level;
  * If you wish to use this class in another project simply replace those lines with your own Logger or with
  * System.err.println() calls or your preferred method.
  */
-public class FileOps {
+public class FileOpUtils {
 
     /**
      * Will check to see if a file at path exists and return true or false.

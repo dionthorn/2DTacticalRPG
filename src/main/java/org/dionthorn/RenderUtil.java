@@ -11,7 +11,7 @@ import javafx.scene.text.TextAlignment;
 
 import java.io.File;
 
-public class Render {
+public class RenderUtil {
 
     private static final Image mainMenuBg = new Image("file:" + Run.GAME_ART_PATH + File.separator + "main_menu.png");
     private static final Image paperBg = new Image("file:" + Run.GAME_ART_PATH + File.separator + "paper.png",
@@ -144,7 +144,13 @@ public class Render {
                             }
                         }
                         if (e instanceof Character) {
-                            double x, y, maxHP, pixelPerHP, currentHP, currentHPDisplayed, YaxisMod;
+                            double x;
+                            double y;
+                            double maxHP;
+                            double pixelPerHP;
+                            double currentHP;
+                            double currentHPDisplayed;
+                            double YaxisMod;
                             x = ((Character) e).getX();
                             y = ((Character) e).getY();
                             double relX = ((Character) e).getRealtiveX();
@@ -230,7 +236,10 @@ public class Render {
             gc.fillRect(0, 0, Run.SCREEN_WIDTH, Run.SCREEN_MAP_HEIGHT);
             gc.drawImage(paperBg, 0, Run.SCREEN_MAP_HEIGHT);
             gc.setFill(Color.GREY);
-            int stageX, stageY, stageW, stageH;
+            int stageX;
+            int stageY;
+            int stageW;
+            int stageH;
             gc.fillRect(stageX = Run.SCREEN_WIDTH >> 5, stageY = Run.SCREEN_MAP_HEIGHT >> 5,
                     stageW = (Run.SCREEN_WIDTH - (Run.SCREEN_WIDTH >> 4)),
                     stageH = (Run.SCREEN_MAP_HEIGHT >> 1) + (Run.SCREEN_MAP_HEIGHT >> 3)
@@ -244,7 +253,9 @@ public class Render {
                     break;
                 }
             }
-            int allyX, allyY, spriteSize = stageW >> 2;
+            int allyX;
+            int allyY;
+            int spriteSize = stageW >> 2;
             gc.drawImage(ally.currentSprite,
                     allyX = stageX + (stageW >> 3),
                     allyY = stageY + (stageH >> 2) + (stageH >> 4),
@@ -283,7 +294,8 @@ public class Render {
                     xSpacingAlly,
                     Run.SCREEN_MAP_HEIGHT + (textHeight * 6)
             );
-            int enemyX, enemyY;
+            int enemyX;
+            int enemyY;
             gc.drawImage(enemy.currentSprite,
                     enemyX = stageX + stageW - (stageW >> 3) - (stageW >> 2),
                     enemyY = stageY + (stageH >> 2) + (stageH >> 4),
@@ -342,7 +354,7 @@ public class Render {
             battleFrameCounter++;
             if (ally.isBattleTurn()) {
                 if (app.getGameState().getPlayerEntity().equals(ally)) {
-                    if (ally.IsAttacking()) {
+                    if (ally.isAttacking()) {
                         if (ally.getCharClass().getCompletedCycles() > 2) {
                             ally.setIsAttacking(false);
                             ally.setBattleTurn(false);
@@ -362,7 +374,7 @@ public class Render {
                         ally.attackAnimation(battleFrameCounter);
                     }
                 } else {
-                    if (ally.IsAttacking()) {
+                    if (ally.isAttacking()) {
                         if (ally.getCharClass().getCompletedCycles() > 2) {
                             ally.setIsAttacking(false);
                             ally.setBattleTurn(false);
@@ -387,7 +399,7 @@ public class Render {
                 gc.drawImage(ally.getCurrentSprite(), allyX, allyY, spriteSize, spriteSize);
                 gc.drawImage(enemy.getCurrentSprite(), enemyX, enemyY, spriteSize, spriteSize);
             } else if (enemy.isBattleTurn()) {
-                if (enemy.IsAttacking()) {
+                if (enemy.isAttacking()) {
                     if (enemy.getCharClass().getCompletedCycles() > 2) {
                         enemy.setIsAttacking(false);
                         enemy.setBattleTurn(false);
@@ -450,7 +462,7 @@ public class Render {
                 int index;
                 index = Math.max((path.length - 1), 0);
                 String iconName = path[index].split("\\.")[0] + "_Icon.png";
-                if(FileOps.doesFileExist(Run.GAME_ART_PATH + File.separator + iconName)) {
+                if(FileOpUtils.doesFileExist(Run.GAME_ART_PATH + File.separator + iconName)) {
                     app.getGameState().getMaps().get(count).setIcon(new Image("file:" + Run.GAME_ART_PATH + File.separator + iconName));
                     gc.drawImage(app.getGameState().getMaps().get(count).getIcon(),
                             squareXY[count][0], squareXY[count][1],

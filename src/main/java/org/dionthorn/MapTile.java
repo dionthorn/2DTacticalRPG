@@ -12,7 +12,8 @@ public class MapTile {
      */
     public enum TileType { DEFAULT, IMPASSABLE, FIRE }
 
-    private int tileSet, tileID;
+    private int tileSet;
+    private int tileID;
     private TileType type;
 
     /**
