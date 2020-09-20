@@ -284,7 +284,7 @@ public class DevMenu extends Stage {
      */
     private void devMenuClicked(MouseEvent event) {
         Node clickedNode = event.getPickResult().getIntersectedNode();
-        if(clickedNode == tileSetView) {
+        if(clickedNode.equals(tileSetView)) {
             double heightDiff = tileSetView.getBoundsInParent().getMinY();
             Bounds bounds = clickedNode.getBoundsInParent();
             double x = event.getX();

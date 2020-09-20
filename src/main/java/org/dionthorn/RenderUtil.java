@@ -99,12 +99,10 @@ public class RenderUtil {
             }
             // System.out.println("anchorXY: (" + anchorUL[0] + ", " + anchorUL[1] + ")");
             // Render all the correct mapTiles to the correct relative locations.
-            if(mapAreaXY[1] >= currentMapXY[1]) {
-                if(mapAreaXY[0] >= currentMapXY[0]) {
-                    // this means we don't need to use the anchor for this map
-                    anchorUL[0] = 0;
-                    anchorUL[1] = 0;
-                }
+            if(mapAreaXY[1] >= currentMapXY[1] && mapAreaXY[0] >= currentMapXY[0]) {
+                // this means we don't need to use the anchor for this map
+                anchorUL[0] = 0;
+                anchorUL[1] = 0;
             }
             for(int y = 0; y < mapAreaXY[1]; y++) {
                 for(int x = 0; x < mapAreaXY[0]; x++) {
@@ -138,10 +136,8 @@ public class RenderUtil {
             for (Entity e : app.getGameState().getEntities()) {
                 if (e instanceof Drawable) {
                     if (((PhysicalEntity) e).getCurrentMap().equals(app.getGameState().getCurrentMap())) {
-                        if (e instanceof Character) {
-                            if (!((Character) e).isAlive()) {
-                                ((Character) e).setCurrentSprite(((Character) e).getCharClass().getDeadTileID());
-                            }
+                        if (e instanceof Character && !((Character) e).isAlive()) {
+                            ((Character) e).setCurrentSprite(((Character) e).getCharClass().getDeadTileID());
                         }
                         if (e instanceof Character) {
                             double x;
@@ -156,33 +152,32 @@ public class RenderUtil {
                             double relX = ((Character) e).getRealtiveX();
                             double relY = ((Character) e).getRealtiveY();
                             // check bounds of anchor map area
-                            if(y < mapAreaXY[1] + anchorUL[1] && y >= anchorUL[1]) {
-                                if(x < mapAreaXY[0] + anchorUL[0] && x >= anchorUL[0]) {
-                                    ((Drawable) e).draw(gc);
-                                    maxHP = ((Character) e).getMaxHP();
-                                    pixelPerHP = maxHP / Run.TILE_SIZE;
-                                    currentHP = ((Character) e).getHp();
-                                    currentHPDisplayed = currentHP / pixelPerHP;
-                                    YaxisMod = (relY * Run.TILE_SIZE) + ((maxHP - currentHP) / pixelPerHP);
-                                    gc.setFill(Color.RED);
+                            if((y < mapAreaXY[1] + anchorUL[1] && y >= anchorUL[1]) &&
+                                    (x < mapAreaXY[0] + anchorUL[0] && x >= anchorUL[0])) {
+                                ((Drawable) e).draw(gc);
+                                maxHP = ((Character) e).getMaxHP();
+                                pixelPerHP = maxHP / Run.TILE_SIZE;
+                                currentHP = ((Character) e).getHp();
+                                currentHPDisplayed = currentHP / pixelPerHP;
+                                YaxisMod = (relY * Run.TILE_SIZE) + ((maxHP - currentHP) / pixelPerHP);
+                                gc.setFill(Color.RED);
+                                gc.setStroke(Color.BLACK);
+                                if (app.getGameState().getPlayerTeam().contains(e)) {
+                                    gc.fillRect(relX * Run.TILE_SIZE, relY * Run.TILE_SIZE, 3, 32);
+                                    gc.setFill(Color.GREEN);
                                     gc.setStroke(Color.BLACK);
-                                    if (app.getGameState().getPlayerTeam().contains(e)) {
-                                        gc.fillRect(relX * Run.TILE_SIZE, relY * Run.TILE_SIZE, 3, 32);
-                                        gc.setFill(Color.GREEN);
-                                        gc.setStroke(Color.BLACK);
-                                        if (currentHPDisplayed < 0) {
-                                            currentHPDisplayed = 0;
-                                        }
-                                        gc.fillRect(relX * Run.TILE_SIZE, YaxisMod, 3, currentHPDisplayed);
-                                    } else if (app.getGameState().getEnemyTeam().contains(e)) {
-                                        gc.fillRect((relX * Run.TILE_SIZE) + 29, relY * Run.TILE_SIZE, 3, 32);
-                                        gc.setFill(Color.GREEN);
-                                        gc.setStroke(Color.BLACK);
-                                        if (currentHPDisplayed < 0) {
-                                            currentHPDisplayed = 0;
-                                        }
-                                        gc.fillRect((relX * Run.TILE_SIZE) + 29, YaxisMod, 3, currentHPDisplayed);
+                                    if (currentHPDisplayed < 0) {
+                                        currentHPDisplayed = 0;
                                     }
+                                    gc.fillRect(relX * Run.TILE_SIZE, YaxisMod, 3, currentHPDisplayed);
+                                } else if (app.getGameState().getEnemyTeam().contains(e)) {
+                                    gc.fillRect((relX * Run.TILE_SIZE) + 29, relY * Run.TILE_SIZE, 3, 32);
+                                    gc.setFill(Color.GREEN);
+                                    gc.setStroke(Color.BLACK);
+                                    if (currentHPDisplayed < 0) {
+                                        currentHPDisplayed = 0;
+                                    }
+                                    gc.fillRect((relX * Run.TILE_SIZE) + 29, YaxisMod, 3, currentHPDisplayed);
                                 }
                             }
                         }

@@ -116,10 +116,8 @@ public class GameState {
         // Check if map is a randomly generated one, this means it's in memory with no associated .meta file
         // so we must write a .meta and .dat file to disk via the maps .saveData() function.
         // only perform this if the map doesn't already exist on disk
-        if(newMap.getPATH().contains("RANDOM")) {
-            if(!FileOpUtils.doesFileExist(newMap.getPATH())) {
-                newMap.saveData();
-            }
+        if(newMap.getPATH().contains("RANDOM") && !FileOpUtils.doesFileExist(newMap.getPATH())) {
+            newMap.saveData();
         }
         // Otherwise we clear the current gameState for related map handling but we preserve the current Player object
         playerTeam.clear();

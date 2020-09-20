@@ -40,7 +40,6 @@ public class Run extends Application {
     private final long FPS = TimeUnit.SECONDS.toNanos(1L) / 60;
     private int lastSelectedCharUID;
     private long startTime = System.nanoTime();
-    private long currentTime;
     private GraphicsContext gc;
     private GameState gameState;
     private DevMenu devMenu;
@@ -155,7 +154,6 @@ public class Run extends Application {
             if (gameState == null || gameState.getCurrentState() == GameState.STATE.MAIN_MENU) {
                 if (key.getCode() == KeyCode.ESCAPE) {
                     primaryStage.close();
-                    System.exit(0);
                 }
             } else if(gameState.getCurrentState() == GameState.STATE.GAME) {
                 if(key.getCode() == KeyCode.ESCAPE) {
@@ -283,14 +281,14 @@ public class Run extends Application {
                 int tileX = (mouseX / gameState.getCurrentMap().getTileSize()) + RenderUtil.anchorUL[0];
                 int tileY = (mouseY / gameState.getCurrentMap().getTileSize()) + RenderUtil.anchorUL[1];
                 // programLogger.log(Level.INFO, "x,y: " + tileX + " " + tileY);
-                if (DRAG_LOC[0] == -1) {
-                    if (mouseEvent.getButton() == MouseButton.PRIMARY) {
+                if(DRAG_LOC[0] == -1) {
+                    if(mouseEvent.getButton() == MouseButton.PRIMARY) {
                         MapTile[][] tempMapTiles = gameState.getCurrentMap().getMapTiles();
                         // programLogger.log(Level.INFO, "TILEID: " + tempMapTiles[tileY][tileX].getTileID());
                         tempMapTiles[tileY][tileX].setTileID(devMenu.SELECTED_TILE_ID);
                         tempMapTiles[tileY][tileX].setTileSet(devMenu.SELECTED_TILE_SET_ID);
                         gameState.getCurrentMap().setMapTiles(tempMapTiles);
-                    } else if (mouseEvent.getButton() == MouseButton.SECONDARY) {
+                    } else if(mouseEvent.getButton() == MouseButton.SECONDARY) {
                         MapTile[][] tempMapTiles = gameState.getCurrentMap().getMapTiles();
                         // programLogger.log(Level.INFO, "TILEID: " + tempMapTiles[tileY][tileX].getTileID());
                         tempMapTiles[tileY][tileX].setTileID(gameState.getCurrentMap().getTileSet(
@@ -300,10 +298,10 @@ public class Run extends Application {
                         gameState.getCurrentMap().setMapTiles(tempMapTiles);
                     }
                 } else {
-                    if (mouseEvent.getButton() == MouseButton.PRIMARY) {
+                    if(mouseEvent.getButton() == MouseButton.PRIMARY) {
                         int releasedX = (int) (mouseEvent.getSceneX() / gameState.getCurrentMap().getTileSize()) + RenderUtil.anchorUL[0];
                         int releasedY = (int) (mouseEvent.getSceneY() / gameState.getCurrentMap().getTileSize()) + RenderUtil.anchorUL[1];
-                        if (releasedX <= DRAG_LOC[0] && !(releasedY <= DRAG_LOC[1])) {
+                        if(releasedX <= DRAG_LOC[0] && releasedY > DRAG_LOC[1]) {
                             for (int y = DRAG_LOC[1]; y < releasedY + 1; y++) {
                                 for (int x = releasedX; x < DRAG_LOC[0] + 1; x++) {
                                     MapTile[][] tempMap = gameState.getCurrentMap().getMapTiles();
@@ -312,8 +310,8 @@ public class Run extends Application {
                                     gameState.getCurrentMap().setMapTiles(tempMap);
                                 }
                             }
-                        } else if (releasedY <= DRAG_LOC[1] && !(releasedX <= DRAG_LOC[0])) {
-                            for (int y = releasedY; y < DRAG_LOC[1] + 1; y++) {
+                        } else if(releasedY <= DRAG_LOC[1] && releasedX > DRAG_LOC[0]) {
+                            for(int y = releasedY; y < DRAG_LOC[1] + 1; y++) {
                                 for (int x = DRAG_LOC[0]; x < releasedX + 1; x++) {
                                     MapTile[][] tempMap = gameState.getCurrentMap().getMapTiles();
                                     tempMap[y][x].setTileID(devMenu.SELECTED_TILE_ID);
@@ -321,9 +319,9 @@ public class Run extends Application {
                                     gameState.getCurrentMap().setMapTiles(tempMap);
                                 }
                             }
-                        } else if (releasedX <= DRAG_LOC[0]) {
-                            for (int y = releasedY; y < DRAG_LOC[1] + 1; y++) {
-                                for (int x = releasedX; x < DRAG_LOC[0] + 1; x++) {
+                        } else if(releasedX <= DRAG_LOC[0]) {
+                            for(int y = releasedY; y < DRAG_LOC[1] + 1; y++) {
+                                for(int x = releasedX; x < DRAG_LOC[0] + 1; x++) {
                                     MapTile[][] tempMap = gameState.getCurrentMap().getMapTiles();
                                     tempMap[y][x].setTileID(devMenu.SELECTED_TILE_ID);
                                     tempMap[y][x].setTileSet(devMenu.SELECTED_TILE_SET_ID);
@@ -331,8 +329,8 @@ public class Run extends Application {
                                 }
                             }
                         } else {
-                            for (int y = DRAG_LOC[1]; y < releasedY + 1; y++) {
-                                for (int x = DRAG_LOC[0]; x < releasedX + 1; x++) {
+                            for(int y = DRAG_LOC[1]; y < releasedY + 1; y++) {
+                                for(int x = DRAG_LOC[0]; x < releasedX + 1; x++) {
                                     MapTile[][] tempMap = gameState.getCurrentMap().getMapTiles();
                                     tempMap[y][x].setTileID(devMenu.SELECTED_TILE_ID);
                                     tempMap[y][x].setTileSet(devMenu.SELECTED_TILE_SET_ID);
@@ -340,30 +338,30 @@ public class Run extends Application {
                                 }
                             }
                         }
-                    } else if (mouseEvent.getButton() == MouseButton.SECONDARY) {
+                    } else if(mouseEvent.getButton() == MouseButton.SECONDARY) {
                         int releasedX = (int) (mouseEvent.getSceneX() / gameState.getCurrentMap().getTileSize()) + RenderUtil.anchorUL[0];
                         int releasedY = (int) (mouseEvent.getSceneY() / gameState.getCurrentMap().getTileSize()) + RenderUtil.anchorUL[1];
-                        if (releasedX <= DRAG_LOC[0] && !(releasedY <= DRAG_LOC[1])) {
-                            for (int y = DRAG_LOC[1]; y < releasedY + 1; y++) {
-                                for (int x = releasedX; x < DRAG_LOC[0] + 1; x++) {
+                        if(releasedX <= DRAG_LOC[0] && !(releasedY <= DRAG_LOC[1])) {
+                            for(int y = DRAG_LOC[1]; y < releasedY + 1; y++) {
+                                for(int x = releasedX; x < DRAG_LOC[0] + 1; x++) {
                                     MapTile[][] tempMap = gameState.getCurrentMap().getMapTiles();
                                     tempMap[y][x].setTileID(gameState.getCurrentMap().getTileSet(
                                             devMenu.SELECTED_TILE_SET_ID).getTotalTiles() - 1
                                     );
                                 }
                             }
-                        } else if (releasedY <= DRAG_LOC[1] && !(releasedX <= DRAG_LOC[0])) {
-                            for (int y = releasedY; y < DRAG_LOC[1] + 1; y++) {
-                                for (int x = DRAG_LOC[0]; x < releasedX + 1; x++) {
+                        } else if(releasedY <= DRAG_LOC[1] && !(releasedX <= DRAG_LOC[0])) {
+                            for(int y = releasedY; y < DRAG_LOC[1] + 1; y++) {
+                                for(int x = DRAG_LOC[0]; x < releasedX + 1; x++) {
                                     MapTile[][] tempMap = gameState.getCurrentMap().getMapTiles();
                                     tempMap[y][x].setTileID(gameState.getCurrentMap().getTileSet(
                                             devMenu.SELECTED_TILE_SET_ID).getTotalTiles() - 1
                                     );
                                 }
                             }
-                        } else if (releasedX <= DRAG_LOC[0]) {
-                            for (int y = releasedY; y < DRAG_LOC[1] + 1; y++) {
-                                for (int x = releasedX; x < DRAG_LOC[0] + 1; x++) {
+                        } else if(releasedX <= DRAG_LOC[0]) {
+                            for(int y = releasedY; y < DRAG_LOC[1] + 1; y++) {
+                                for(int x = releasedX; x < DRAG_LOC[0] + 1; x++) {
                                     MapTile[][] tempMap = gameState.getCurrentMap().getMapTiles();
                                     tempMap[y][x].setTileID(gameState.getCurrentMap().getTileSet(
                                             devMenu.SELECTED_TILE_SET_ID).getTotalTiles() - 1
@@ -371,8 +369,8 @@ public class Run extends Application {
                                 }
                             }
                         } else {
-                            for (int y = DRAG_LOC[1]; y < releasedY + 1; y++) {
-                                for (int x = DRAG_LOC[0]; x < releasedX + 1; x++) {
+                            for(int y = DRAG_LOC[1]; y < releasedY + 1; y++) {
+                                for(int x = DRAG_LOC[0]; x < releasedX + 1; x++) {
                                     MapTile[][] tempMap = gameState.getCurrentMap().getMapTiles();
                                     tempMap[y][x].setTileID(gameState.getCurrentMap().getTileSet(
                                             devMenu.SELECTED_TILE_SET_ID).getTotalTiles() - 1
@@ -423,22 +421,22 @@ public class Run extends Application {
                 final int defendY = (SCREEN_MAP_HEIGHT>>1)+(SCREEN_MAP_HEIGHT>>3)+(SCREEN_MAP_HEIGHT>>4);
                 final int defendW = (SCREEN_WIDTH>>2)+(SCREEN_WIDTH>>3);
                 final int defendH = SCREEN_MAP_HEIGHT>>2;
-                if(mouseX >= defendX && mouseX <= defendX + defendW) {
-                    if(mouseY >= defendY && mouseY <= defendY + defendH) {
-                        programLogger.log(Level.INFO, "Defend Button was Clicked");
-                    }
+                if((mouseX >= defendX && mouseX <= defendX + defendW) &&
+                        (mouseY >= defendY && mouseY <= defendY + defendH))
+                {
+                    programLogger.log(Level.INFO, "Defend Button was Clicked");
                 }
                 final int attackX = SCREEN_WIDTH>>4;
                 final int attackY = defendY;
                 final int attackW = (SCREEN_WIDTH>>2)+(SCREEN_WIDTH>>3);
                 final int attackH = SCREEN_MAP_HEIGHT>>2;
-                if(mouseX >= attackX && mouseX <= attackX + attackW) {
-                    if(mouseY >= attackY && mouseY <= mouseY + attackH) {
-                        if(gameState.getPlayerEntity().isBattleTurn()) {
-                            gameState.getPlayerEntity().setIsAttacking(true);
-                        }
-                        programLogger.log(Level.INFO, "Attack Button was Clicked");
+                if((mouseX >= attackX && mouseX <= attackX + attackW) &&
+                        (mouseY >= attackY && mouseY <= mouseY + attackH))
+                {
+                    if(gameState.getPlayerEntity().isBattleTurn()) {
+                        gameState.getPlayerEntity().setIsAttacking(true);
                     }
+                    programLogger.log(Level.INFO, "Attack Button was Clicked");
                 }
             } else if(gameState.getCurrentState() == GameState.STATE.LEVEL_SELECTION) {
                 int squareSize;
@@ -460,11 +458,11 @@ public class Run extends Application {
                 };
                 int count = 0;
                 for(int[] xy: squareXY) {
-                    if(mouseX >= xy[0] && mouseX <= xy[0] + squareSize) {
-                        if(mouseY >= xy[1] && mouseY <= xy[1] + squareSize) {
-                            if(count < gameState.getMaps().size()) {
-                                gameState.setCurrentMap(gameState.getMaps().get(count));
-                            }
+                    if((mouseX >= xy[0] && mouseX <= xy[0] + squareSize) &&
+                            (mouseY >= xy[1] && mouseY <= xy[1] + squareSize))
+                    {
+                        if(count < gameState.getMaps().size()) {
+                            gameState.setCurrentMap(gameState.getMaps().get(count));
                         }
                     }
                     count++;
@@ -484,7 +482,7 @@ public class Run extends Application {
         AnimationTimer animator = new AnimationTimer() {
             @Override
             public void handle(long arg0) {
-                currentTime = System.nanoTime();
+                long currentTime = System.nanoTime();
                 if (FPS <= (currentTime - startTime)) {
                     update();
                     render();
