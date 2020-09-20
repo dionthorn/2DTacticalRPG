@@ -14,8 +14,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelReader;
 import javafx.scene.image.WritableImage;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -117,7 +115,7 @@ public class DevMenu extends Stage {
         GridPane.setConstraints(loadMap, 1, 3, 2, 1);
         loadMap.setOnAction(event -> {
             for(Map toLoad: app.getGameState().getMaps()) {
-                String fullPath = Run.GAME_DATA_PATH + "/Maps/" + mapList.getSelectionModel().getSelectedItem();
+                String fullPath = Run.GAME_DATA_PATH + File.separator + "Maps" + File.separator + mapList.getSelectionModel().getSelectedItem();
                 if(fullPath.equals(toLoad.getPATH())) {
                     app.getGameState().setCurrentMap(toLoad);
                     Player temp = app.getGameState().getPlayerEntity();

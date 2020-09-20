@@ -257,17 +257,31 @@ public class Render {
             double currentHP = ally.getHp();
             double currentHPDisplayed = currentHP / pixelPerHP;
             int yAxisMod = stageY + (stageH >> 2) + (stageH >> 4) - 30;
-            gc.fillRect(stageW / 6, yAxisMod, stageW >> 2, 10);
+            int xSpacingAlly = 50;
+            int xSpacingEnemy = (Run.SCREEN_WIDTH >> 1) + xSpacingAlly;
+            gc.fillRect(stageW / 6f, yAxisMod, stageW >> 2, 10);
             gc.setFill(Color.GREEN);
-            gc.fillRect(stageW / 6, yAxisMod, currentHPDisplayed, 10);
+            gc.fillRect(stageW / 6f, yAxisMod, currentHPDisplayed, 10);
             gc.setFill(Color.BLACK);
             gc.setFont(mediumFont);
             gc.setTextAlign(TextAlignment.LEFT);
             String heightTest = String.format("Name: %s", ally.getName());
             double textHeight = new Text(heightTest).getBoundsInLocal().getHeight() + 5;
-            gc.fillText(heightTest, 50, Run.SCREEN_MAP_HEIGHT + textHeight + 5);
+            gc.fillText(heightTest,
+                    xSpacingAlly,
+                    Run.SCREEN_MAP_HEIGHT + (textHeight + 5)
+            );
+            gc.fillText(String.format("LVL: %d", ally.getCharClass().getLevel()),
+                    xSpacingAlly,
+                    Run.SCREEN_MAP_HEIGHT + (textHeight * 3)
+            );
             gc.fillText(String.format("HP: %.0f / %.0f", ally.getHp(), ally.getMaxHP()),
-                    50, Run.SCREEN_MAP_HEIGHT + textHeight * 3
+                    xSpacingAlly,
+                    Run.SCREEN_MAP_HEIGHT + (textHeight * 4) + 5
+            );
+            gc.fillText(String.format("Last Roll: %d", ally.getLastAttackRoll()),
+                    xSpacingAlly,
+                    Run.SCREEN_MAP_HEIGHT + (textHeight * 6)
             );
             int enemyX, enemyY;
             gc.drawImage(enemy.currentSprite,
@@ -285,11 +299,21 @@ public class Render {
             gc.setFill(Color.GREEN);
             gc.fillRect(enemyX, yAxisMod, currentHPDisplayed, 10);
             gc.setFill(Color.BLACK);
-            gc.fillText(String.format("Name: %s", enemy.getName()), (Run.SCREEN_WIDTH >> 1) + 50,
-                    Run.SCREEN_MAP_HEIGHT + textHeight + 5
+            gc.fillText(String.format("Name: %s", enemy.getName()),
+                    xSpacingEnemy,
+                    Run.SCREEN_MAP_HEIGHT + (textHeight + 5)
+            );
+            gc.fillText(String.format("LVL: %d", enemy.getCharClass().getLevel()),
+                    xSpacingEnemy,
+                    Run.SCREEN_MAP_HEIGHT + (textHeight * 3)
             );
             gc.fillText(String.format("HP: %.0f / %.0f", enemy.getHp(), enemy.getMaxHP()),
-                    (Run.SCREEN_WIDTH >> 1) + 50, Run.SCREEN_MAP_HEIGHT + textHeight * 3
+                    xSpacingEnemy,
+                    Run.SCREEN_MAP_HEIGHT + (textHeight * 4) + 5
+            );
+            gc.fillText(String.format("Last Roll: %d", enemy.getLastAttackRoll()),
+                    xSpacingEnemy,
+                    Run.SCREEN_MAP_HEIGHT + (textHeight * 6)
             );
             gc.setStroke(Color.BLACK);
             gc.setLineWidth(5);
@@ -451,9 +475,9 @@ public class Render {
             gc.setFill(Color.WHITE);
             gc.setTextAlign(TextAlignment.CENTER);
             gc.setFont(largeFont);
-            gc.fillText("GAME OVER!", Run.SCREEN_WIDTH >> 1, 24);
+            gc.fillText("GAME OVER!", Run.SCREEN_WIDTH >> 1, 50);
             gc.setFont(mediumFont);
-            gc.fillText("Press ESC to exit to Main Menu!", Run.SCREEN_WIDTH >> 1, 100);
+            gc.fillText("Press ESC to exit to Main Menu!", Run.SCREEN_WIDTH >> 1, 120);
         }
     }
 

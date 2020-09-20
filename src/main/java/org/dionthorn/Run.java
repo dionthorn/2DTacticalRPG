@@ -23,6 +23,7 @@ import java.util.logging.Logger;
 public class Run extends Application {
 
     public static final String PROGRAM_VERSION = "v0.2.2a";
+    public static final String SYS_LINE_SEP = System.lineSeparator();
     public static Logger programLogger = Logger.getLogger("programLogger");
     public static String GAME_DATA_PATH = "";
     public static String GAME_ART_PATH = "";
@@ -66,7 +67,7 @@ public class Run extends Application {
      */
     private void newGame() {
         for(String path: FileOps.getFileNamesFromDirectory(GAME_MAP_PATH + File.separator)) {
-            if(!path.equals("config.dat") && !path.equals(".gitattributes") && !path.contains("meta")) {
+            if(!path.equals(".gitattributes") && !path.contains("meta")) {
                 if(gameState != null) {
                     gameState.getMaps().add(new Map(GAME_MAP_PATH + File.separator + path));
                 } else {
@@ -77,6 +78,7 @@ public class Run extends Application {
         String[] startLoc = gameState.getCurrentMap().getMetaStartLoc().split(":")[0].split(",");
         String[] allies = gameState.getCurrentMap().getMetaAllies().split(":")[0].split("/");
         String[] enemies = gameState.getCurrentMap().getMetaEnemies().split(":")[0].split("/");
+        // For now a default player entity, in future will have a character_creation state for building the player
         gameState.getEntities().add(
                 new Player(
                         gameState.getCurrentMap(),
@@ -244,15 +246,15 @@ public class Run extends Application {
                 if (key.getCode() == KeyCode.ESCAPE) {
                     gameState.setState(GameState.STATE.GAME);
                 } else if (key.getCode() == KeyCode.A) {
-                    programLogger.log(Level.INFO, "Name: " + gameState.getAttacker().getName() + "\n" +
-                            "IsAttacking: " + gameState.getAttacker().IsAttacking() + "\n" +
-                            "isBattleTurn: " + gameState.getAttacker().isBattleTurn() + "\n" +
+                    programLogger.log(Level.INFO, "Name: " + gameState.getAttacker().getName() + SYS_LINE_SEP +
+                            "IsAttacking: " + gameState.getAttacker().IsAttacking() + SYS_LINE_SEP +
+                            "isBattleTurn: " + gameState.getAttacker().isBattleTurn() + SYS_LINE_SEP +
                             "CompletedCycles: " + gameState.getAttacker().getCharClass().getCompletedCycles()
                     );
                 } else if (key.getCode() == KeyCode.D) {
-                    programLogger.log(Level.INFO, "Name: " + gameState.getDefender().getName() + "\n" +
-                            "IsAttacking: " + gameState.getDefender().IsAttacking() + "\n" +
-                            "isBattleTurn: " + gameState.getDefender().isBattleTurn() + "\n" +
+                    programLogger.log(Level.INFO, "Name: " + gameState.getDefender().getName() + SYS_LINE_SEP +
+                            "IsAttacking: " + gameState.getDefender().IsAttacking() + SYS_LINE_SEP +
+                            "isBattleTurn: " + gameState.getDefender().isBattleTurn() + SYS_LINE_SEP +
                             "CompletedCycles: " + gameState.getDefender().getCharClass().getCompletedCycles()
                     );
                 }
@@ -392,20 +394,20 @@ public class Run extends Application {
                 int[] tileXY = { mouseX / TILE_SIZE, mouseY / TILE_SIZE };
                 for(Entity e: gameState.getEntities()) {
                     if(e instanceof Character) {
-                        int charX = ((Character) e).getX();
-                        int charY = ((Character) e).getY();
+                        int charX = ((Character) e).getRealtiveX();
+                        int charY = ((Character) e).getRealtiveY();
                         if(charX == tileXY[0] && charY == tileXY[1]) {
                             lastSelectedCharUID = e.getUID();
-                            programLogger.log(Level.INFO, "A Character was Clicked\n" +
-                                    "getName returns: " + ((Character) e).getName() + "\n" +
-                                    "isMoveTurn returns: " + ((Character) e).isMoveTurn() + "\n" +
-                                    "isAlive returns: " + ((Character) e).isAlive() + "\n" +
-                                    "getHp returns: " + ((Character)e).getHp() + "\n" +
-                                    "getAttack returns: " + ((Character)e).getAttack() + "\n" +
-                                    "getCritical returns: " + ((Character)e).getCritical() + "\n" +
-                                    "getDefense returns: " + ((Character)e).getDefense() + "\n" +
+                            programLogger.log(Level.INFO, "A Character was Clicked" + SYS_LINE_SEP +
+                                    "getName returns: " + ((Character) e).getName() + SYS_LINE_SEP +
+                                    "isMoveTurn returns: " + ((Character) e).isMoveTurn() + SYS_LINE_SEP +
+                                    "isAlive returns: " + ((Character) e).isAlive() + SYS_LINE_SEP +
+                                    "getHp returns: " + ((Character)e).getHp() + SYS_LINE_SEP +
+                                    "getAttack returns: " + ((Character)e).getAttack() + SYS_LINE_SEP +
+                                    "getCritical returns: " + ((Character)e).getCritical() + SYS_LINE_SEP +
+                                    "getDefense returns: " + ((Character)e).getDefense() + SYS_LINE_SEP +
                                     "getCharClass.getLevel returns: " +
-                                    ((Character) e).getCharClass().getLevel() + "\n" +
+                                    ((Character) e).getCharClass().getLevel() + SYS_LINE_SEP +
                                     "getCharClass.getCurrentXP returns: " +
                                     ((Character) e).getCharClass().getCurrentXP()
                             );
@@ -435,7 +437,12 @@ public class Run extends Application {
                     }
                 }
             } else if(gameState.getCurrentState() == GameState.STATE.LEVEL_SELECTION) {
-                int squareSize = 200;
+                int squareSize;
+                if(Run.SCREEN_MAP_HEIGHT < 768) {
+                    squareSize = 100;
+                } else {
+                    squareSize = 200;
+                }
                 int[][] squareXY = {
                         {(SCREEN_WIDTH>>4),         SCREEN_HEIGHT>>5},
                         {(SCREEN_WIDTH>>4) * 6,     SCREEN_HEIGHT>>5},
@@ -519,7 +526,7 @@ public class Run extends Application {
      * @param args command line options - unused.
      */
     public static void main(String[] args) {
-        String[] classPath = System.getProperty("java.class.path").split(";");
+        String[] classPath = System.getProperty("java.class.path").split(File.pathSeparator);
         boolean found = false;
         for(String line: classPath) {
             if(line.contains("target" + File.separator + "classes")) {

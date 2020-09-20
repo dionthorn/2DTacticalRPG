@@ -9,6 +9,9 @@ import java.util.logging.Level;
 
 /**
  * Dedicated class for static methods related to file operations
+ * Please note this class references the Run.programLogger for displaying messages.
+ * If you wish to use this class in another project simply replace those lines with your own Logger or with
+ * System.err.println() calls or your preferred method.
  */
 public class FileOps {
 

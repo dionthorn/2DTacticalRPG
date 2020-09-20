@@ -9,7 +9,7 @@ import java.util.logging.Level;
  */
 public class NonPlayerCharacter extends Character {
 
-    private Dice dice = new Dice(2);
+    private final Dice dice = new Dice(2);
     private int collisionCounter = 0;
 
     /**

@@ -10,7 +10,7 @@ import java.util.logging.Level;
  */
 public class GameState {
 
-    public enum STATE {MAIN_MENU, BATTLE, GAME, GAME_OVER, LEVEL_SELECTION, CHARACTER_STATUS, CHARACTER_CREATION}
+    public enum STATE { MAIN_MENU, BATTLE, GAME, GAME_OVER, LEVEL_SELECTION, CHARACTER_STATUS, CHARACTER_CREATION }
 
     private STATE currentState;
     private Map currentMap;

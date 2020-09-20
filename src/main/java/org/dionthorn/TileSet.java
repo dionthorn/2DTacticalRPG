@@ -33,8 +33,8 @@ public class TileSet {
     private Image blank;
     private int totalTiles;
     private final ArrayList<Integer> removedTileIDList = new ArrayList<>();
-    private ArrayList<Integer> metaFire = new ArrayList<>();
-    private ArrayList<Integer> metaImpassable = new ArrayList<>();
+    private final ArrayList<Integer> metaFire = new ArrayList<>();
+    private final ArrayList<Integer> metaImpassable = new ArrayList<>();
 
     /**
      * Constructor creates the TileSet object from a path to a .png file and the size of the squares to cut.
@@ -137,13 +137,9 @@ public class TileSet {
      */
     public Image getBlank() { return blank; }
 
-    public ArrayList<Integer> getMetaFire() {
-        return metaFire;
-    }
+    public ArrayList<Integer> getMetaFire() { return metaFire; }
 
-    public ArrayList<Integer> getMetaImpassable() {
-        return metaImpassable;
-    }
+    public ArrayList<Integer> getMetaImpassable() { return metaImpassable; }
 
     public void setMetaFireID(int tileID, boolean remove) {
         metaFire.trimToSize();

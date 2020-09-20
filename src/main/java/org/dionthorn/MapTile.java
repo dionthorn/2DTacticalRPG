@@ -43,7 +43,7 @@ public class MapTile {
      * Returns this MapTiles associated TileType
      * @return the TileType of this MapTile
      */
-    public TileType getType() { return type;}
+    public TileType getType() { return type; }
 
     /**
      * Returns this MapTiles associated tileID index as an integer

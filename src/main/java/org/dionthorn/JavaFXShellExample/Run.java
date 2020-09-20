@@ -1,4 +1,4 @@
-package org.dionthorn.JavaFXShellExample;
+package org.dionthorn.javafxshellexample;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
@@ -74,7 +74,6 @@ public class Run extends Application {
             System.out.println("Key Pressed: " + key.getCode());
             if (key.getCode() == KeyCode.ESCAPE) {
                 primaryStage.close();
-                System.exit(0);
             }
         });
 

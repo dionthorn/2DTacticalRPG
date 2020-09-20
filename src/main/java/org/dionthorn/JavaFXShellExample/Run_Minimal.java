@@ -1,4 +1,4 @@
-package org.dionthorn.JavaFXShellExample;
+package org.dionthorn.javafxshellexample;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;

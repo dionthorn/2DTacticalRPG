@@ -2,6 +2,7 @@ package org.dionthorn;
 
 import javafx.scene.image.Image;
 
+import java.io.File;
 import java.util.logging.Level;
 
 /**
@@ -18,6 +19,7 @@ public abstract class Character extends PhysicalEntity implements Drawable, Upda
     protected double maxHP;
     protected double hp;
     protected double attack;
+    protected int lastAttackRoll = 0;
     protected double critical;
     protected double defense;
     protected boolean isAlive;
@@ -36,12 +38,13 @@ public abstract class Character extends PhysicalEntity implements Drawable, Upda
      */
     public Character(Map map, String spritePath, String name, int x, int y, CharacterClass charClass) {
         super(map, x, y);
-        PATH = Run.GAME_DATA_PATH + "/Art/" + spritePath;
+        PATH = Run.GAME_DATA_PATH + File.separator + "Art" + File.separator + spritePath;
         tileSize = 32;
-        spriteSheet = new TileSet(spritePath, 160);
+        spriteSheet = new TileSet(spritePath, 160); // These sprite are larger than 32*32, however we can cut
+        // them into 160*160 and then resize the image to 32*32 during the Player or NPC subclasses .draw() calls
         currentSprite = spriteSheet.getTile(0);
         this.name = name;
-        this.hp = 50;
+        this.hp = charClass.getPerLevelHP();
         this.attack = charClass.getPerLevelAttack();
         this.critical = charClass.getPerLevelCritical();
         this.defense = charClass.getPerLevelDefense();
@@ -147,9 +150,10 @@ public abstract class Character extends PhysicalEntity implements Drawable, Upda
     protected void attack(Character enemy) {
         Dice d100 = new Dice(100);
         int attackRoll = d100.roll();
+        lastAttackRoll = attackRoll;
         if(attackRoll <= 70) {
             double reduction = attack;
-            Run.programLogger.log(Level.INFO, "[" + getUID() + "] " + getName() + "\n" +
+            Run.programLogger.log(Level.INFO, "[" + getUID() + "] " + getName() + System.lineSeparator() +
                     "Rolled: " + attackRoll
             );
             if(attackRoll <= 30) {
@@ -158,12 +162,12 @@ public abstract class Character extends PhysicalEntity implements Drawable, Upda
             }
             reduction -= enemy.getDefense() * 0.10;
             enemy.setHp(enemy.getHp() - reduction);
-            Run.programLogger.log(Level.INFO, "Attack damage: " + reduction + "\n" +
+            Run.programLogger.log(Level.INFO, "Attack damage: " + reduction + System.lineSeparator() +
                     "Enemy HP: " + enemy.getHp()
             );
         } else {
-            Run.programLogger.log(Level.INFO, "[" + getUID() + "] " + getName() + "\n" +
-                    "Missed!" + "\n" +
+            Run.programLogger.log(Level.INFO, "[" + getUID() + "] " + getName() + System.lineSeparator() +
+                    "Missed!" + System.lineSeparator() +
                     "Rolled: " + attackRoll
             );
         }
@@ -330,6 +334,8 @@ public abstract class Character extends PhysicalEntity implements Drawable, Upda
      * @param time used to select sprites for animation
      */
     protected void attackAnimation(int time) { setCurrentSprite(charClass.attackAnimationStage(time)); }
+
+    protected int getLastAttackRoll() { return lastAttackRoll; }
 
 }
 
