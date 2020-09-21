@@ -69,6 +69,7 @@ public class Run extends Application {
      * Sets up the gameState for a new game environment.
      */
     private void newGame() {
+        Entity.GEN_COUNT = 0;
         for(String path: FileOpUtils.getFileNamesFromDirectory(GAME_MAP_PATH + File.separator)) {
             if(!path.equals(".gitattributes") && !path.contains("meta")) {
                 if(gameState != null) {
@@ -157,7 +158,7 @@ public class Run extends Application {
                 }
             } else if(gameState.getCurrentState() == GameState.STATE.GAME) {
                 if(key.getCode() == KeyCode.ESCAPE) {
-                    gameState = null;
+                    gameState.setState(GameState.STATE.LEVEL_SELECTION);
                 }
                 if(key.getCode() == KeyCode.BACK_QUOTE) {
                     String[] folders = getGameState().getCurrentMap().getPATH().split("\\\\");
@@ -401,6 +402,7 @@ public class Run extends Application {
                         if(charX == tileXY[0] && charY == tileXY[1]) {
                             lastSelectedCharUID = e.getUID();
                             programLogger.log(Level.INFO, "A Character was Clicked" + SYS_LINE_SEP +
+                                    "getUID returns: " + e.getUID() + SYS_LINE_SEP +
                                     "getName returns: " + ((Character) e).getName() + SYS_LINE_SEP +
                                     "isMoveTurn returns: " + ((Character) e).isMoveTurn() + SYS_LINE_SEP +
                                     "isAlive returns: " + ((Character) e).isAlive() + SYS_LINE_SEP +
@@ -462,7 +464,11 @@ public class Run extends Application {
                             (mouseY >= xy[1] && mouseY <= xy[1] + squareSize))
                     {
                         if(count < gameState.getMaps().size()) {
-                            gameState.setCurrentMap(gameState.getMaps().get(count));
+                            if(gameState.getCurrentMap().getPATH().equals(gameState.getMaps().get(count).getPATH())) {
+                                programLogger.log(Level.INFO, "Map already loaded...");
+                            } else {
+                                gameState.setCurrentMap(gameState.getMaps().get(count));
+                            }
                         }
                     }
                     count++;

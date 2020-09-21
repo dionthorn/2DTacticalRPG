@@ -36,7 +36,6 @@ public class GameState {
         enemyTeam = new ArrayList<>();
         attacker = null;
         defender = null;
-        Entity.GEN_COUNT = 0;
     }
 
     /**
@@ -90,19 +89,19 @@ public class GameState {
     }
 
     /**
-     * Returns the GameState map ArrayList.
+     * getter for the GameState Map ArrayList.
      * @return the game state map array list
      */
     public ArrayList<Map> getMaps() { return maps; }
 
     /**
-     * Returns the GameState entities ArrayList.
+     * getter for the current Entity ArrayList.
      * @return the game state entities array list
      */
     public ArrayList<Entity> getEntities() { return entities; }
 
     /**
-     * Returns the GameState current map object.
+     * getter for the GameState Current Map.
      * @return the game state current map
      */
     public Map getCurrentMap() { return currentMap; }

@@ -16,14 +16,13 @@ package org.dionthorn;
 public abstract class Entity {
 
     public static int GEN_COUNT = 0;
-    protected final int UID;
+    protected final int UID = GEN_COUNT++;
 
     /**
      * Default Entity Constructor will assign the entity a unique id then increment the GEN_COUNT that's it.
      */
     protected Entity() {
-        UID = GEN_COUNT;
-        GEN_COUNT++;
+        // everything is done in the variables above.
     }
 
     /**
