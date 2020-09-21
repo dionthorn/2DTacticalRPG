@@ -84,39 +84,11 @@ public class RenderUtil {
         gc.clearRect(0, 0, Run.SCREEN_WIDTH, Run.SCREEN_HEIGHT); // Clear canvas
         MapTile[][] mapTiles = app.getGameState().getCurrentMap().getMapTiles();
         int[] mapAreaXY = Run.getMapAreaDimensions();
-        // System.out.println("mapAreaDimensions: (" + mapAreaXY[0] + ", " + mapAreaXY[1] + ")");
         int[] currentMapXY = {
                 app.getGameState().getCurrentMap().getMapWidth(),
                 app.getGameState().getCurrentMap().getMapHeight()
         };
-        // System.out.println("currentMapDimensions: (" + currentMapXY[0] + ", " + currentMapXY[1] + ")");
-        // now I have two squares whose width and height are in [width, height] format.
-        int[] playerXY = {
-                app.getGameState().getPlayerEntity().getX(),
-                app.getGameState().getPlayerEntity().getY()
-        };
-        // System.out.println("player location: (" + playerXY[0] + ", " + playerXY[1] + ")");
-        anchorUL[0] = 0;
-        anchorUL[1] = 0;
-        int howFarPastMiddle;
-        if(playerXY[1] > (mapAreaXY[1] / 2)) {
-            // if player is beyond half of the rendered area then we need to shift.
-            anchorUL[1] = (mapAreaXY[1] / 2);
-            howFarPastMiddle = playerXY[1] - mapAreaXY[1];
-            anchorUL[1] += howFarPastMiddle;
-        }
-        if(playerXY[0] > (mapAreaXY[0] / 2)) {
-            anchorUL[0] = (mapAreaXY[0] / 2);
-            howFarPastMiddle = playerXY[0] - mapAreaXY[0];
-            anchorUL[0] += howFarPastMiddle;
-        }
-        // System.out.println("anchorXY: (" + anchorUL[0] + ", " + anchorUL[1] + ")");
-        // Render all the correct mapTiles to the correct relative locations.
-        if(mapAreaXY[1] >= currentMapXY[1] && mapAreaXY[0] >= currentMapXY[0]) {
-            // this means we don't need to use the anchor for this map
-            anchorUL[0] = 0;
-            anchorUL[1] = 0;
-        }
+        anchorUL = getAnchorUL(app, mapAreaXY, currentMapXY);
         for(int y = 0; y < mapAreaXY[1]; y++) {
             for(int x = 0; x < mapAreaXY[0]; x++) {
                 int yOffset = Math.abs(anchorUL[1]);
@@ -144,7 +116,7 @@ public class RenderUtil {
             }
         }
         // Draw UI prompt area below map area here
-        gc.drawImage(paperBg, 0, Run.SCREEN_MAP_HEIGHT);
+        drawPromptArea(gc);
         // Draw all entities
         for (Entity e : app.getGameState().getEntities()) {
             if (e instanceof Drawable) {
@@ -244,7 +216,7 @@ public class RenderUtil {
         gc.clearRect(0, 0, Run.SCREEN_WIDTH, Run.SCREEN_HEIGHT);
         gc.setFill(Color.rgb(43, 107, 140));
         gc.fillRect(0, 0, Run.SCREEN_WIDTH, Run.SCREEN_MAP_HEIGHT);
-        gc.drawImage(paperBg, 0, Run.SCREEN_MAP_HEIGHT);
+        drawPromptArea(gc);
         gc.setFill(Color.GREY);
         int stageX;
         int stageY;
@@ -485,7 +457,7 @@ public class RenderUtil {
             }
             count++;
         }
-        gc.drawImage(paperBg, 0, Run.SCREEN_MAP_HEIGHT);
+        drawPromptArea(gc);
         gc.setFont(smallFont);
         String[] path = app.getGameState().getCurrentMap().getPATH().split("\\\\");
         gc.setFont(mediumFont);
@@ -504,6 +476,38 @@ public class RenderUtil {
         gc.fillText("GAME OVER!", Run.SCREEN_WIDTH >> 1, 50);
         gc.setFont(mediumFont);
         gc.fillText("Press ESC to exit to Main Menu!", Run.SCREEN_WIDTH >> 1, 120);
+    }
+
+    public static int[] getAnchorUL(Run app, int[] mapAreaXY, int[] currentMapXY) {
+        int[] playerXY = {
+                app.getGameState().getPlayerEntity().getX(),
+                app.getGameState().getPlayerEntity().getY()
+        };
+        anchorUL[0] = 0;
+        anchorUL[1] = 0;
+        int howFarPastMiddle;
+        if(playerXY[1] > (mapAreaXY[1] / 2)) {
+            // if player is beyond half of the rendered area then we need to shift.
+            anchorUL[1] = (mapAreaXY[1] / 2);
+            howFarPastMiddle = playerXY[1] - mapAreaXY[1];
+            anchorUL[1] += howFarPastMiddle;
+        }
+        if(playerXY[0] > (mapAreaXY[0] / 2)) {
+            anchorUL[0] = (mapAreaXY[0] / 2);
+            howFarPastMiddle = playerXY[0] - mapAreaXY[0];
+            anchorUL[0] += howFarPastMiddle;
+        }
+        // Render all the correct mapTiles to the correct relative locations.
+        if(mapAreaXY[1] >= currentMapXY[1] && mapAreaXY[0] >= currentMapXY[0]) {
+            // this means we don't need to use the anchor for this map
+            anchorUL[0] = 0;
+            anchorUL[1] = 0;
+        }
+        return anchorUL;
+    }
+
+    public static void drawPromptArea(GraphicsContext gc) {
+        gc.drawImage(paperBg, 0, Run.SCREEN_MAP_HEIGHT);
     }
 
 }

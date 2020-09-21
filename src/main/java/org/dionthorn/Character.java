@@ -98,8 +98,7 @@ public abstract class Character extends PhysicalEntity implements Drawable, Upda
         }
         if(gameState.getCurrentMap().getTileType((int) tempX, (int) tempY) == MapTile.TileType.IMPASSABLE) {
             hit = true;
-        }
-        if(gameState.getCurrentMap().getTileType((int) tempX, (int) tempY) == MapTile.TileType.FIRE) {
+        } else if(gameState.getCurrentMap().getTileType((int) tempX, (int) tempY) == MapTile.TileType.FIRE) {
             (this).setHp(this.getHp()-((int)((this).getMaxHP()/10)));
         }
         return hit;

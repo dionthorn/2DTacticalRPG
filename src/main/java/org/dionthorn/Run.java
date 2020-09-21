@@ -529,6 +529,8 @@ public class Run extends Application {
      */
     public Canvas getCanvas() { return gc.getCanvas(); }
 
+
+
     /**
      * The entry point for the program. We determine where /GameData/ folder is here.
      * @param args command line options - unused.

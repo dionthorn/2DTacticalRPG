@@ -116,6 +116,72 @@ public class NonPlayerCharacter extends Character {
         gc.drawImage(getCurrentSprite(),getRealtiveX() * tileSize,getRealtiveY() * tileSize, tileSize, tileSize);
     }
 
+    public void move(GameState gameState) {
+        boolean playerTeamCheck = false;
+        for(Entity e: gameState.getPlayerTeam()) {
+            if (e.equals(this)) {
+                playerTeamCheck = true;
+                break;
+            }
+        }
+        boolean onSameY = false;
+        boolean posX = false;
+        if(playerTeamCheck) {
+            for(Entity e: gameState.getEnemyTeam()) {
+                if(((PhysicalEntity) e).getY() == this.getY() && ((Character) e).isAlive()) {
+                    onSameY = true;
+                    if(((PhysicalEntity) e).getX() > this.getX()) {
+                        posX = true;
+                    }
+                }
+            }
+        } else {
+            for(Entity e: gameState.getPlayerTeam()) {
+                if(((PhysicalEntity) e).getY() == this.getY() && ((Character) e).isAlive()) {
+                    onSameY = true;
+                    if (((PhysicalEntity) e).getX() > this.getX()) {
+                        posX = true;
+                    }
+                }
+            }
+        }
+        if(onSameY) {
+            if(posX) {
+                Character target = checkEnemyCollision(gameState, this.x + 1, this.y);
+                if (target == null) {
+                    if(checkFriendlyCollision(gameState, this.x + 1, this.y)) {
+                        moveRandom(gameState);
+                    } else {
+                        move(1, 0);
+                    }
+                } else {
+                    if(target.isAlive()) {
+                        gameState.startBattle(this, target);
+                    } else {
+                        moveRandom(gameState);
+                    }
+                }
+            } else {
+                Character target = checkEnemyCollision(gameState, this.x - 1, this.y);
+                if (target == null) {
+                    if(checkFriendlyCollision(gameState, this.x - 1, this.y)) {
+                        moveRandom(gameState);
+                    } else {
+                        move(-1, 0);
+                    }
+                } else {
+                    if(target.isAlive()) {
+                        gameState.startBattle(this, target);
+                    } else {
+                        moveRandom(gameState);
+                    }
+                }
+            }
+        } else {
+            moveRandom(gameState);
+        }
+    }
+
     /**
      * When an NPC is updated it will perform its AI functions
      * @param gameState the current gameState used to update the entity
@@ -124,73 +190,7 @@ public class NonPlayerCharacter extends Character {
     public void update(GameState gameState) {
         if(isMoveTurn && gameState.getNextTurn()) {
             if(isAlive && collisionCounter < 10) {
-                boolean playerTeamCheck = false;
-                for(Entity e: gameState.getPlayerTeam()) {
-                    if (e.equals(this)) {
-                        playerTeamCheck = true;
-                        break;
-                    }
-                }
-                boolean onSameY = false;
-                boolean posX = false;
-                if(playerTeamCheck) {
-                    for(Entity e: gameState.getEnemyTeam()) {
-                        if(((PhysicalEntity) e).getY() == this.getY()) {
-                            if(((Character) e).isAlive()) {
-                                onSameY = true;
-                                if(((PhysicalEntity) e).getX() > this.getX()) {
-                                    posX = true;
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    for(Entity e: gameState.getPlayerTeam()) {
-                        if(((PhysicalEntity) e).getY() == this.getY()) {
-                            if(((Character) e).isAlive()) {
-                                onSameY = true;
-                                if (((PhysicalEntity) e).getX() > this.getX()) {
-                                    posX = true;
-                                }
-                            }
-                        }
-                    }
-                }
-                if(onSameY) {
-                    if(posX) {
-                        Character target = checkEnemyCollision(gameState, this.x + 1, this.y);
-                        if (target == null) {
-                            if(checkFriendlyCollision(gameState, this.x + 1, this.y)) {
-                                moveRandom(gameState);
-                            } else {
-                                move(1, 0);
-                            }
-                        } else {
-                            if(target.isAlive()) {
-                                gameState.startBattle(this, target);
-                            } else {
-                                moveRandom(gameState);
-                            }
-                        }
-                    } else {
-                        Character target = checkEnemyCollision(gameState, this.x - 1, this.y);
-                        if (target == null) {
-                            if(checkFriendlyCollision(gameState, this.x - 1, this.y)) {
-                                moveRandom(gameState);
-                            } else {
-                                move(-1, 0);
-                            }
-                        } else {
-                            if(target.isAlive()) {
-                                gameState.startBattle(this, target);
-                            } else {
-                                moveRandom(gameState);
-                            }
-                        }
-                    }
-                } else {
-                    moveRandom(gameState);
-                }
+                move(gameState);
             } else if(collisionCounter >= 10) {
                 Run.programLogger.log(Level.WARNING, "No AI movement solution found over 10 random tries");
                 collisionCounter = 0;
