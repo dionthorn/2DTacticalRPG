@@ -11,7 +11,6 @@ import java.util.Random;
  */
 public class Map {
 
-    private static int GEN_COUNT = 0;
     private final String PATH;
     private final String metaPATH;
     private String metaEnemies;
@@ -30,7 +29,6 @@ public class Map {
      * @param datPath the associated .dat file path to generate the map with.
      */
     public Map(String datPath) {
-        GEN_COUNT++;
         PATH = datPath;
         String[] tempStr = datPath.split("\\.");
         metaPATH = tempStr[0] + ".meta";
@@ -42,9 +40,8 @@ public class Map {
      * @param tilePaths the target paths to use for the new random map generation
      */
     public Map(String[] tilePaths) {
-        GEN_COUNT++;
         Random rand = new Random();
-        PATH = String.format(Run.GAME_DATA_PATH + File.separator + "Maps"+ File.separator + "RANDOM%d.dat", GEN_COUNT);
+        PATH = String.format(Run.GAME_DATA_PATH + File.separator + "Maps"+ File.separator + "RANDOM%d.dat", rand.nextInt(1000));
         int[] mapArea = Run.getMapAreaDimensions();
         mapWidth = mapArea[0];
         mapHeight = mapArea[1];
