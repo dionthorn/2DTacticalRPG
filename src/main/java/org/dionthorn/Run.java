@@ -6,6 +6,7 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
@@ -13,7 +14,14 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.MouseDragEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import java.io.File;
+
+import java.io.*;
+import java.net.URI;
+import java.net.URL;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -27,11 +35,12 @@ import java.util.logging.Logger;
 public class Run extends Application {
 
     public static final String PROGRAM_VERSION = "v0.2.2a";
+    public static boolean JRT = false;
     public static final String SYS_LINE_SEP = System.lineSeparator();
     public static Logger programLogger = Logger.getLogger("programLogger");
-    public static String GAME_DATA_PATH = "";
-    public static String GAME_ART_PATH = "";
-    public static String GAME_MAP_PATH = "";
+    public static URI GAME_DATA_PATH;
+    public static URI GAME_ART_PATH;
+    public static URI GAME_MAP_PATH;
     public static int SCREEN_WIDTH = 1024;
     public static int SCREEN_HEIGHT = 1024;
     public static int SCREEN_MAP_HEIGHT = 768;
@@ -70,12 +79,12 @@ public class Run extends Application {
      */
     private void newGame() {
         Entity.GEN_COUNT = 0;
-        for(String path: FileOpUtils.getFileNamesFromDirectory(GAME_MAP_PATH + File.separator)) {
+        for(String path: FileOpUtils.getFileNamesFromDirectory(GAME_MAP_PATH)) {
             if(!path.equals(".gitattributes") && !path.contains("meta")) {
                 if(gameState != null) {
-                    gameState.getMaps().add(new Map(GAME_MAP_PATH + File.separator + path));
+                    gameState.getMaps().add(new Map(GAME_MAP_PATH + (JRT ? "/" + path : path)));
                 } else {
-                    gameState = new GameState(new Map(GAME_MAP_PATH + File.separator + path));
+                    gameState = new GameState(new Map(GAME_MAP_PATH + (JRT ? "/" + path : path)));
                 }
             }
         }
@@ -141,6 +150,11 @@ public class Run extends Application {
      */
     @Override
     public void start(Stage primaryStage) {
+        RenderUtil.mainMenuBg = new Image(GAME_ART_PATH + (JRT ? "/main_menu.png" : "main_menu.png"));
+        RenderUtil.paperBg = new Image(GAME_ART_PATH + (JRT ? "/paper.png" : "paper.png"),
+                Run.SCREEN_WIDTH, Run.SCREEN_HEIGHT-Run.SCREEN_MAP_HEIGHT, false, false
+        );
+
         primaryStage.setTitle("OOP Game Project " + PROGRAM_VERSION);
         primaryStage.setResizable(false);
         Group rootGroup = new Group();
@@ -536,30 +550,29 @@ public class Run extends Application {
      * @param args command line options - unused.
      */
     public static void main(String[] args) {
-        String[] classPath = System.getProperty("java.class.path").split(File.pathSeparator);
-        boolean found = false;
-        for(String line: classPath) {
-            if(line.contains("target" + File.separator + "classes")) {
-                GAME_DATA_PATH = line + File.separator + "GameData";
-                programLogger.log(Level.INFO, "GameData found at: " + GAME_DATA_PATH + " Via Classpath");
-                found = true;
-            } else if(line.contains("TacticalRPG") && line.contains("bin")) {
-                GAME_DATA_PATH = line + File.separator + "GameData";
-                programLogger.log(Level.INFO, "GameData found at: " + GAME_DATA_PATH + " Via Classpath");
-                found = true;
-            }
+        String gameDatPath = "GameData/config.txt";
+        URL resource = Run.class.getClassLoader().getResource(gameDatPath);
+        if(resource == null) {
+            // This means we must use JRT URIs for the JLink image
+            JRT = true;
+            URI uri = URI.create("jrt:/MavenTactical/GameData/");
+            Path path = Path.of(uri);
+            assert(Files.exists(path));
+            FileSystem jrtfs = FileSystems.getFileSystem(URI.create("jrt:/"));
+            assert(Files.exists(jrtfs.getPath(path.toString())));
+            GAME_DATA_PATH = uri;
+            GAME_ART_PATH = URI.create(GAME_DATA_PATH + "Art");
+            GAME_MAP_PATH = URI.create(GAME_DATA_PATH + "Maps");
+        } else {
+            File gameData = new File(Paths.get("target", "classes", "GameData").toAbsolutePath().toString());
+            GAME_DATA_PATH = gameData.toURI();
+            File artData = new File(Paths.get("target", "classes", "GameData", "Art").toAbsolutePath().toString());
+            GAME_ART_PATH = artData.toURI();
+            File mapData = new File(Paths.get("target", "classes", "GameData", "Maps").toAbsolutePath().toString());
+            GAME_MAP_PATH = mapData.toURI();
         }
-        if(!found) {
-            GAME_DATA_PATH = Paths.get("").toAbsolutePath().toString() + File.separator + "GameData";
-            programLogger.log(Level.INFO, "GameData found at: " + GAME_DATA_PATH + " With Paths.get");
-        }
-        GAME_ART_PATH = GAME_DATA_PATH + File.separator + "Art";
-        GAME_MAP_PATH = GAME_DATA_PATH + File.separator + "Maps";
-        programLogger.setLevel(Level.INFO);
-        programLogger.log(Level.INFO, "GameData folder found at: " + GAME_DATA_PATH);
-        programLogger.log(Level.INFO, "GameData/Art folder found at: " + GAME_ART_PATH);
-        programLogger.log(Level.INFO, "GameData/Maps folder found at: " + GAME_MAP_PATH);
-        String[] startUpSettings = FileOpUtils.getFileLines(GAME_DATA_PATH + File.separator + "config.txt");
+        URI testing = URI.create(GAME_DATA_PATH + "config.txt");
+        String[] startUpSettings = FileOpUtils.getFileLines(testing);
         for(String line: startUpSettings) {
             if(line.contains("SCREEN_WIDTH")) {
                 SCREEN_WIDTH = Integer.parseInt(line.split("=")[1]);

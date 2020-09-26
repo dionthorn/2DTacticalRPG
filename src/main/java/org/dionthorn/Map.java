@@ -3,6 +3,7 @@ package org.dionthorn;
 import javafx.scene.image.Image;
 
 import java.io.File;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -41,7 +42,7 @@ public class Map {
      */
     public Map(String[] tilePaths) {
         Random rand = new Random();
-        PATH = String.format(Run.GAME_DATA_PATH + File.separator + "Maps"+ File.separator + "RANDOM%d.dat", rand.nextInt(1000));
+        PATH = String.format(Run.GAME_MAP_PATH + "RANDOM%d.dat", rand.nextInt(1000));
         int[] mapArea = Run.getMapAreaDimensions();
         mapWidth = mapArea[0];
         mapHeight = mapArea[1];
@@ -56,8 +57,8 @@ public class Map {
             }
         }
         // TileTypes are set in MapTile use .getType or .tagTileType(TileType) methods. Already has .DEFAULT type
-        metaAllies = "AO1,5,18,martial/:ALLIES";
-        metaEnemies = "MO2,20,19,magic/:ENEMIES";
+        metaAllies = "AO1,5,18,martial:ALLIES";
+        metaEnemies = "MO2,20,19,magic:ENEMIES";
         metaStartLoc = "5,17,:STARTLOC";
         metaPATH = PATH.split("\\.")[0] + ".meta";
     }
@@ -65,7 +66,7 @@ public class Map {
     public void loadMapData() {
         // load .dat information
         boolean first = true;
-        String[] data = FileOpUtils.getFileLines(PATH);
+        String[] data = FileOpUtils.getFileLines(URI.create(PATH));
         int xCount = 0;
         int yCount = 0;
         for(String line: data) {
@@ -97,7 +98,7 @@ public class Map {
             }
         }
         // load .meta information
-        String[] tileMetaData = FileOpUtils.getFileLines(metaPATH);
+        String[] tileMetaData = FileOpUtils.getFileLines(URI.create(metaPATH));
         int tileID;
         int tileSetID;
         for(String line: tileMetaData) {
@@ -162,7 +163,6 @@ public class Map {
         String[] dataAsString = new String[mapHeight + 1];
         StringBuilder formattedPaths = new StringBuilder();
         for(String path: getTileSetPaths()) {
-            System.out.println("TEST: " + path);
             formattedPaths.append(path).append(", ");
         }
         dataAsString[0] = String.format("%d, %d, %d, %s", mapWidth, mapHeight, TILE_SIZE, formattedPaths.toString());
@@ -183,7 +183,8 @@ public class Map {
                 yCount++;
             }
         }
-        FileOpUtils.writeFileLines(PATH, dataAsString);
+
+        FileOpUtils.writeFileLines(URI.create(PATH), dataAsString);
         // Write .meta File
         dataAsString = new String[5];
         dataAsString[0] = ""; // {tileSetID}/{tileID},:FIRE
@@ -203,7 +204,7 @@ public class Map {
         dataAsString[2] = metaEnemies;
         dataAsString[3] = metaAllies;
         dataAsString[4] = metaStartLoc;
-        FileOpUtils.writeFileLines(metaPATH, dataAsString);
+        FileOpUtils.writeFileLines(URI.create(metaPATH), dataAsString);
     }
     // Getters and Setters
     /**

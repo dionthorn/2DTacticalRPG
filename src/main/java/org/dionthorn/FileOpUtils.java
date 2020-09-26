@@ -4,8 +4,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
+import java.net.URI;
+import java.nio.file.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
+
+import static java.nio.file.FileSystems.getFileSystem;
 
 /**
  * Dedicated class for static methods related to file operations
@@ -17,13 +22,20 @@ public class FileOpUtils {
 
     /**
      * Will check to see if a file at path exists and return true or false.
-     * @param path the target files path
+     * @param targetFile the target file
      * @return returns boolean true if a file exists at path and boolean false if it doesn't.
      */
-    public static boolean doesFileExist(String path) {
+    public static boolean doesFileExist(URI targetFile) {
         boolean answer = false;
         try {
-            answer = new File(path).isFile();
+            if(targetFile.getScheme().equals("jrt")) {
+                Path path = Path.of(targetFile);
+                assert(Files.exists(path));
+                FileSystem jrtfs = FileSystems.getFileSystem(URI.create("jrt:/"));
+                return Files.exists(jrtfs.getPath(path.toString()));
+            } else {
+                answer = new File(targetFile.getPath()).isFile();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -33,23 +45,48 @@ public class FileOpUtils {
     /**
      * Returns the filenames from a directory as a string array where
      * each index is a name of a file including extensions
-     * @param path the target directory path
+     * @param targetFile the target file
      * @return a string array where each index is the name of a file in the directory at path
      */
-    public static String[] getFileNamesFromDirectory(String path) {
-        File[] files;
+    public static String[] getFileNamesFromDirectory(URI targetFile) {
+        ArrayList<String> fileNamesList = new ArrayList<>();
         String[] fileNames = new String[0];
         try {
-            files = new File(path).listFiles();
-            if(files != null) {
-                fileNames = new String[files.length];
-                for(int i=0; i<files.length; i++) {
-                    if(files[i].isFile()) {
-                        fileNames[i] = files[i].getName();
+            File[] files;
+            if(Run.JRT) {
+                Path path = Path.of(targetFile);
+                assert(Files.exists(path));
+                FileSystem jrtfs = FileSystems.getFileSystem(URI.create("jrt:/"));
+                assert(Files.exists(jrtfs.getPath(path.toString())));
+                try {
+                    DirectoryStream<Path> stream = Files.newDirectoryStream(jrtfs.getPath(path.toString()));
+                    for(Path entry: stream) {
+                        fileNamesList.add(entry.getFileName().toString());
                     }
+                    fileNames = fileNamesList.toArray(new String[0]);
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
+                files = new File(targetFile.getPath()).listFiles();
+            } else {
+                files = new File(targetFile.getPath()).listFiles();
+            }
+            if(files != null) {
+                if(!Run.JRT) {
+                    fileNames = new String[files.length];
+                    for(int i=0; i<files.length; i++) {
+                        if(files[i].isFile()) {
+                            fileNames[i] = files[i].getName();
+                        }
+                    }
+                } else {
+                    Run.programLogger.log(Level.INFO, "Using jrt for files");
+                }
+            } else {
+                if(!Run.JRT) {
+                    Run.programLogger.log(Level.INFO, "No Files Found In Directory " + targetFile);
                 }
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -57,48 +94,43 @@ public class FileOpUtils {
     }
 
     /**
-     * Will convert the file at path into a String[] where each index is a line from the file.
-     * @param path the target files path
-     * @return a string array where each index is the corresponding line in the target file at path
-     *         will return null if it fails or file doesn't exist
+     * Will process a target file as if it were lines of String using System.lineSeparator()
+     * @param targetFile the target file
+     * @return a string array where each index is a line from the file
      */
-    public static String[] getFileLines(String path) {
+    public static String[] getFileLines(URI targetFile) {
         String[] toReturn = null;
-        if(doesFileExist(path)) {
-            File targetFile = new File(path);
-            try {
-                byte[] fileByteData = Files.readAllBytes(targetFile.toPath());
-                toReturn = new String(fileByteData).split(System.lineSeparator());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } else {
-            Run.programLogger.log(Level.WARNING, String.format("File: %s Doesn't Exist!", path));
+        try {
+            byte[] fileByteData = Files.readAllBytes(Path.of(targetFile));
+            toReturn = new String(fileByteData).split(System.lineSeparator());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        Run.programLogger.log(Level.INFO, "Successfully located file at: " + targetFile.getPath());
         return toReturn;
     }
 
     /**
      * Will either create a new file at path, or overwrite an existing one. will take each string in data and
      * write a new line per string into the file at path.
-     * @param path the destination to create or overwrite data
+     * @param targetFile the target file
      * @param data the data where each index in data will be a new line in the file
      */
-    public static void writeFileLines(String path, String[] data) {
-        if(!doesFileExist(path)) {
-            Run.programLogger.log(Level.INFO, String.format("File: %s Doesn't Exist Creating New File!", path));
-            createFile(path);
+    public static void writeFileLines(URI targetFile, String[] data) {
+        if(!doesFileExist(targetFile)) {
+            Run.programLogger.log(Level.INFO, String.format("File: %s Doesn't Exist Creating New File!", targetFile.getPath()));
+            createFile(targetFile);
         }
-        File targetFile = new File(path);
+        File fileToWrite = new File(targetFile.getPath());
         try {
             ByteArrayOutputStream convertToBytes = new ByteArrayOutputStream();
-            FileOutputStream fileWriter = new FileOutputStream(targetFile);
+            FileOutputStream fileWriter = new FileOutputStream(fileToWrite);
             for(String s: data) {
                 s += System.lineSeparator();
                 convertToBytes.write(s.getBytes());
             }
             fileWriter.write(convertToBytes.toByteArray());
-            Run.programLogger.log(Level.INFO, String.format("File: %s Successfully Wrote Data", path));
+            Run.programLogger.log(Level.INFO, String.format("File: %s Successfully Wrote Data", targetFile.getPath()));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -108,7 +140,7 @@ public class FileOpUtils {
      * Will create a new File if no file at the given path exists otherwise it does nothing.
      * @param path the target path to create a new file, will do nothing if a file already exists
      */
-    public static void createFile(String path) {
+    public static void createFile(URI path) {
         File file = new File(path);
         try {
             if(file.createNewFile()) {

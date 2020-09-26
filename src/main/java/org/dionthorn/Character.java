@@ -38,7 +38,7 @@ public abstract class Character extends PhysicalEntity implements Drawable, Upda
      */
     public Character(Map map, String spritePath, String name, int x, int y, CharacterClass charClass) {
         super(map, x, y);
-        PATH = Run.GAME_DATA_PATH + File.separator + "Art" + File.separator + spritePath;
+        PATH = Run.GAME_ART_PATH + spritePath;
         tileSize = 32;
         spriteSheet = new TileSet(spritePath, 160); // These sprite are larger than 32*32, however we can cut
         // them into 160*160 and then resize the image to 32*32 during the Player or NPC subclasses .draw() calls

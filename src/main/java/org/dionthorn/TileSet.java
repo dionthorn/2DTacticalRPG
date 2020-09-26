@@ -5,7 +5,6 @@ import javafx.scene.image.PixelReader;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -51,7 +50,7 @@ public class TileSet {
                 break;
             }
         }
-        tileSetPath = path;
+        tileSetPath = (Run.JRT ? "/" + path : path);
         if(sameFound) {
             tileSetSrc = tileSetCache.get(sameIndex).getTileSetSrc();
             tiles = tileSetCache.get(sameIndex).getTiles();
@@ -62,7 +61,7 @@ public class TileSet {
             Collections.addAll(removedTileIDList, boxedArray);
             totalTiles = tileSetCache.get(sameIndex).getTotalTiles();
         } else {
-            tileSetSrc = new Image("file:" + Run.GAME_ART_PATH + File.separator + path);
+            tileSetSrc = new Image(Run.GAME_ART_PATH + tileSetPath);
             tiles = makeTiles(tileSetSrc, TILE_SIZE);
             if (tiles.length == 0) {
                 Run.programLogger.log(Level.SEVERE, "NO TILES DETECTED");

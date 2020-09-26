@@ -8,15 +8,12 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
-
-import java.io.File;
+import java.net.URI;
 
 public class RenderUtil {
 
-    private static final Image mainMenuBg = new Image("file:" + Run.GAME_ART_PATH + File.separator + "main_menu.png");
-    private static final Image paperBg = new Image("file:" + Run.GAME_ART_PATH + File.separator + "paper.png",
-            Run.SCREEN_WIDTH, Run.SCREEN_HEIGHT-Run.SCREEN_MAP_HEIGHT, false, false
-    );
+    public static Image mainMenuBg;
+    public static Image paperBg;
     private static int battleFrameCounter = 0;
     public static int[] menuNewGameBounds;
     public static int[] anchorUL = new int[2]; // the XY of tile that would be in the upper left of view area
@@ -200,7 +197,7 @@ public class RenderUtil {
                         gc.setStroke(Color.WHITE);
                         gc.setFill(Color.BLACK);
                         gc.setTextAlign(TextAlignment.LEFT);
-                        gc.fillText(name + " Please Press Spacebar To Advance Their Turn",
+                        gc.fillText(name + " Please Press Space bar To Advance Their Turn",
                                 10, Run.SCREEN_HEIGHT - 20);
                     } else {
                         if (!app.getGameState().getNextTurn() && !app.getGameState().getPlayerEntity().isMoveTurn()) {
@@ -446,8 +443,16 @@ public class RenderUtil {
             int index;
             index = Math.max((path.length - 1), 0);
             String iconName = path[index].split("\\.")[0] + "_Icon.png";
-            if(FileOpUtils.doesFileExist(Run.GAME_ART_PATH + File.separator + iconName)) {
-                app.getGameState().getMaps().get(count).setIcon(new Image("file:" + Run.GAME_ART_PATH + File.separator + iconName));
+            int lastSlash = -1;
+            for(int i=0; i<iconName.toCharArray().length; i++) {
+                if(iconName.charAt(i) == '/') {
+                    lastSlash = i;
+                }
+            }
+            iconName = iconName.substring(lastSlash + 1);
+            String toUse = Run.GAME_ART_PATH + (Run.JRT ? "/" + iconName : iconName);
+            if(FileOpUtils.doesFileExist(URI.create(toUse))) {
+                app.getGameState().getMaps().get(count).setIcon(new Image(toUse));
                 gc.drawImage(app.getGameState().getMaps().get(count).getIcon(),
                         squareXY[count][0], squareXY[count][1],
                         squareSize, squareSize
