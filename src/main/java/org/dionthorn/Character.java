@@ -1,8 +1,6 @@
 package org.dionthorn;
 
 import javafx.scene.image.Image;
-
-import java.io.File;
 import java.util.logging.Level;
 
 /**
@@ -11,15 +9,15 @@ import java.util.logging.Level;
 public abstract class Character extends PhysicalEntity implements Drawable, Updateable {
 
     protected final String PATH;
-    protected TileSet spriteSheet;
+    protected final String name;
+    protected final TileSet spriteSheet;
+    protected final CharacterClass charClass;
     protected Image currentSprite;
     protected int tileSize;
-    protected CharacterClass charClass;
-    protected String name;
+    protected int lastAttackRoll = 0;
     protected double maxHP;
     protected double hp;
     protected double attack;
-    protected int lastAttackRoll = 0;
     protected double critical;
     protected double defense;
     protected boolean isAlive;

@@ -11,14 +11,20 @@ import java.util.logging.Level;
  */
 public class GameState {
 
-    public enum STATE { MAIN_MENU, BATTLE, GAME, GAME_OVER, LEVEL_SELECTION, CHARACTER_STATUS, CHARACTER_CREATION }
+    public enum STATE {
+        MAIN_MENU, BATTLE,
+        GAME, GAME_OVER, GAME_WIN,
+        LEVEL_SELECTION,
+        CHARACTER_STATUS, CHARACTER_CREATION
+    }
 
-    private STATE currentState;
-    private Map currentMap;
     private final ArrayList<Map> maps;
     private final ArrayList<Entity> entities;
     private final ArrayList<Entity> playerTeam;
     private final ArrayList<Entity> enemyTeam;
+
+    private STATE currentState;
+    private Map currentMap;
     private Character attacker;
     private Character defender;
     private boolean nextTurn;

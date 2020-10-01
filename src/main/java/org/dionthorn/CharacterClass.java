@@ -1,7 +1,7 @@
 package org.dionthorn;
 
 /**
- * Abstract CharacterClass just a default template to make more distinct classes with such as Martial and Magic
+ * Abstract CharacterClass just a default template to make more distinct classes such as Martial and Magic
  * Has basic information about sprite types and animation sequences
  */
 public abstract class CharacterClass {
@@ -15,8 +15,8 @@ public abstract class CharacterClass {
     protected int perLevelCritical;
     protected int perLevelDefense;
     protected int deadTileID;
-    protected int[] attackAnimationSequence;
     protected int completedCycles = 0;
+    protected int[] attackAnimationSequence;
     protected String defaultSpriteAlly;
     protected String defaultSpriteEnemy;
 

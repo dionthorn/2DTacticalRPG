@@ -14,7 +14,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.MouseDragEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-
 import java.io.*;
 import java.net.URI;
 import java.net.URL;
@@ -79,7 +78,7 @@ public class Run extends Application {
      */
     private void newGame() {
         Entity.GEN_COUNT = 0;
-        for(String path: FileOpUtils.getFileNamesFromDirectory(GAME_MAP_PATH)) {
+        for(String path: FileOpUtils.getFileNamesFromDirectory(GAME_MAP_PATH, JRT)) {
             if(!path.equals(".gitattributes") && !path.contains("meta")) {
                 if(gameState != null) {
                     gameState.getMaps().add(new Map(GAME_MAP_PATH + (JRT ? "/" + path : path)));
@@ -280,6 +279,8 @@ public class Run extends Application {
                     gameState.setState(GameState.STATE.GAME);
                     gameState.getPlayerEntity().setMoveTurn(true);
                 }
+                // If you press escape in level selection mode it should prompt you if you 'really want to quit'.
+                // maybe a dedicated screen for this
             } else if(gameState.getCurrentState() == GameState.STATE.GAME_OVER) {
                 if(key.getCode() == KeyCode.ESCAPE) {
                     gameState = null;
@@ -356,7 +357,7 @@ public class Run extends Application {
                     } else if(mouseEvent.getButton() == MouseButton.SECONDARY) {
                         int releasedX = (int) (mouseEvent.getSceneX() / gameState.getCurrentMap().getTileSize()) + RenderUtil.anchorUL[0];
                         int releasedY = (int) (mouseEvent.getSceneY() / gameState.getCurrentMap().getTileSize()) + RenderUtil.anchorUL[1];
-                        if(releasedX <= DRAG_LOC[0] && !(releasedY <= DRAG_LOC[1])) {
+                        if(releasedX <= DRAG_LOC[0] && releasedY > DRAG_LOC[1]) {
                             for(int y = DRAG_LOC[1]; y < releasedY + 1; y++) {
                                 for(int x = releasedX; x < DRAG_LOC[0] + 1; x++) {
                                     MapTile[][] tempMap = gameState.getCurrentMap().getMapTiles();
@@ -365,7 +366,7 @@ public class Run extends Application {
                                     );
                                 }
                             }
-                        } else if(releasedY <= DRAG_LOC[1] && !(releasedX <= DRAG_LOC[0])) {
+                        } else if(releasedY <= DRAG_LOC[1] && releasedX > DRAG_LOC[0]) {
                             for(int y = releasedY; y < DRAG_LOC[1] + 1; y++) {
                                 for(int x = DRAG_LOC[0]; x < releasedX + 1; x++) {
                                     MapTile[][] tempMap = gameState.getCurrentMap().getMapTiles();

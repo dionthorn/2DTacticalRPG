@@ -1,6 +1,7 @@
 package org.dionthorn;
 
 import javafx.geometry.Bounds;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -36,25 +37,29 @@ import javafx.embed.swing.SwingFXUtils;
  */
 public class DevMenu extends Stage {
 
-    private final Run app;
+    // Global Variables
     public int SELECTED_TILE_ID = 0;
     public int SELECTED_TILE_SET_ID = 0;
     public int SELECTED_MAP_ID = 0;
     public boolean EDIT_MODE;
+
+    // Class Variables
+    private final Run app;
     private final GridPane devMenu;
     private final Text devTileID;
     private final Text devTileSetID;
     private final Text devMapID;
     private final Text devMapPath;
-    private ScrollPane charInfoPane;
     private final CheckBox isFire;
     private final CheckBox isImpassable;
-    private ImageView tileSetView;
     private final ComboBox<String> mapList = new ComboBox<>();
     private final ComboBox<String> stateList = new ComboBox<>();
+    private final Font smallFont = new Font("Arial", 10);
+    private final Font mediumFont = new Font("Arial", 16);
+    private ScrollPane charInfoPane;
+    private ImageView tileSetView;
     private ArrayList<Text> charInfo;
     private ArrayList<Text> memInfo;
-    private final Font arial = new Font("Arial", 10);
     private String[] folders;
     private String shortPath;
 
@@ -73,9 +78,9 @@ public class DevMenu extends Stage {
         Scene devRootScene = new Scene(devRoot, Run.SCREEN_WIDTH, Run.SCREEN_HEIGHT);
         BorderPane devMainUI = new BorderPane();
         devRoot.getChildren().add(devMainUI);
-        // create the devMenu GridPane object, this will be the main UI pane for menu
+        // create the devMenu GridPane object, this will be the main UI pane for the dev menu
         devMenu = new GridPane();
-        // devMenu.setGridLinesVisible(true); // testing purposes
+        // devMenu.setGridLinesVisible(true); // used for testing purposes
         devMenu.setHgap(10); // assign a 10 pixel gap between nodes
         devMenu.setVgap(10);
         devMainUI.setCenter(devMenu); // this is the primary node so center it
@@ -85,7 +90,7 @@ public class DevMenu extends Stage {
 
         // Row 0
         devTileSetID = new Text(String.format("TileSet ID: %s", SELECTED_TILE_SET_ID));
-        devTileSetID.setFont(new Font("Arial", 16));
+        devTileSetID.setFont(mediumFont);
         GridPane.setConstraints(devTileSetID, 0, 0);
         Button increaseTileSetID = new Button("+");
         GridPane.setConstraints(increaseTileSetID, 1, 0);
@@ -97,7 +102,7 @@ public class DevMenu extends Stage {
         // Row 1
 
         devMapID = new Text(String.format("Map ID: %s", SELECTED_MAP_ID));
-        devMapID.setFont(new Font("Arial", 16));
+        devMapID.setFont(mediumFont);
         GridPane.setConstraints(devMapID, 0, 1);
         Button increaseMapID = new Button("+");
         GridPane.setConstraints(increaseMapID, 1, 1);
@@ -109,7 +114,7 @@ public class DevMenu extends Stage {
         // Row 2
 
         devMapPath = new Text("null");
-        devMapPath.setFont(new Font("Arial", 10));
+        devMapPath.setFont(smallFont);
         GridPane.setConstraints(devMapPath, 0, 2);
         Button saveButton = new Button("Save Map");
         GridPane.setConstraints(saveButton, 1, 2, 2, 1);
@@ -122,7 +127,7 @@ public class DevMenu extends Stage {
         GridPane.setConstraints(loadMap, 1, 3, 2, 1);
         loadMap.setOnAction(event -> {
             for(Map toLoad: app.getGameState().getMaps()) {
-                String fullPath = Run.GAME_DATA_PATH + File.separator + "Maps" + File.separator + mapList.getSelectionModel().getSelectedItem();
+                String fullPath = Run.GAME_MAP_PATH + mapList.getSelectionModel().getSelectedItem();
                 if(fullPath.equals(toLoad.getPATH())) {
                     app.getGameState().setCurrentMap(toLoad);
                     Player temp = app.getGameState().getPlayerEntity();
@@ -196,7 +201,7 @@ public class DevMenu extends Stage {
                             temp.getAttack(), temp.getDefense(),
                             temp.getCritical()
                     ));
-                    tempText.setFont(arial);
+                    tempText.setFont(smallFont);
                     charInfo.add(tempText);
                 }
             }
@@ -234,7 +239,7 @@ public class DevMenu extends Stage {
         // Row 9
 
         devTileID = new Text(String.format("TileID: %s", SELECTED_TILE_ID));
-        devTileID.setFont(new Font("Arial", 16));
+        devTileID.setFont(mediumFont);
         GridPane.setConstraints(devTileID, 0, 9);
         // create the tileID + button
         Button increaseTileID = new Button("+");
@@ -505,9 +510,9 @@ public class DevMenu extends Stage {
      * icon names will always be {mapName}_Icon.png located in the /GameData/Art folder
      */
     public void makeIcon() {
-        String[] mapsFolder = app.getGameState().getCurrentMap().getPATH().split("\\\\");
+        String[] mapsFolder = app.getGameState().getCurrentMap().getPATH().split("/");
         String targetName = mapsFolder[mapsFolder.length - 1].split("\\.")[0] + "_Icon.png";
-        String[] artFiles = FileOpUtils.getFileNamesFromDirectory(Run.GAME_ART_PATH);
+        String[] artFiles = FileOpUtils.getFileNamesFromDirectory(Run.GAME_ART_PATH, Run.JRT);
         boolean found = false;
         for(String name: artFiles) {
             if(name != null && name.equals(targetName)) {
@@ -519,7 +524,9 @@ public class DevMenu extends Stage {
             Run.programLogger.log(Level.INFO, "Icon for this map already exists.");
         } else {
             Canvas toSaveCanvas = app.getCanvas();
+            Rectangle2D bound = new Rectangle2D(0, 0, Run.SCREEN_WIDTH, Run.SCREEN_MAP_HEIGHT);
             SnapshotParameters params = new SnapshotParameters();
+            params.setViewport(bound);
             params.setFill(Color.TRANSPARENT);
             Image toSaveImage = toSaveCanvas.snapshot(params, null);
             ImageView temp = new ImageView(toSaveImage);
@@ -527,8 +534,9 @@ public class DevMenu extends Stage {
             temp.setFitHeight(200);
             toSaveImage = temp.snapshot(null, null);
             try {
+                ImageIO.setUseCache(false);
                 ImageIO.write(SwingFXUtils.fromFXImage(toSaveImage, null), "png",
-                        new File(Run.GAME_ART_PATH + targetName)
+                        new File(URI.create(Run.GAME_ART_PATH + targetName))
                 );
                 Run.programLogger.log(Level.INFO,
                         "The new map icon can be found at: " + Run.GAME_ART_PATH + targetName

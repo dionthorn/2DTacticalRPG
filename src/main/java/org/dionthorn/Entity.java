@@ -22,7 +22,8 @@ public abstract class Entity {
      * Default Entity Constructor will assign the entity a unique id then increment the GEN_COUNT that's it.
      */
     protected Entity() {
-        // everything is done in the variables above.
+        // UID assignment takes place upon construction as defined by UID declaration at the class level.
+        // It is then ++ after assignment, giving us a Unique Identification number for every entity.
     }
 
     /**
