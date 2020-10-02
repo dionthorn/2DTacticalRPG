@@ -16,6 +16,7 @@ public class RenderUtil {
     public static Image paperBg;
     private static int battleFrameCounter = 0;
     public static int[] menuNewGameBounds;
+    public static int[] menuSettingsBounds;
     public static int[] anchorUL = new int[2]; // the XY of tile that would be in the upper left of view area
     private static final Font smallFont = new Font("Arial", 12);
     private static final Font mediumFont = new Font("Arial", 28);
@@ -48,6 +49,10 @@ public class RenderUtil {
             drawLevelSelectionScreen(app, gc);
         } else if(app.getGameState() != null && app.getGameState().getCurrentState() == GameState.STATE.GAME_OVER) {
             drawGameOverScreen(gc);
+        } else if(app.getGameState() != null && app.getGameState().getCurrentState() == GameState.STATE.EXIT_TO_MAIN) {
+            drawExitToMain(gc);
+        } else if(app.getGameState() != null && app.getGameState().getCurrentState() == GameState.STATE.SETTINGS) {
+            drawSettingsScreen(gc);
         }
     }
 
@@ -55,26 +60,57 @@ public class RenderUtil {
         gc.clearRect(0, 0, Run.SCREEN_WIDTH, Run.SCREEN_HEIGHT);
         gc.drawImage(mainMenuBg, 0, 0, Run.SCREEN_WIDTH, Run.SCREEN_HEIGHT);
         gc.setTextAlign(TextAlignment.LEFT);
-        Font menuTitleFont = largeFont;
-        gc.setFont(menuTitleFont);
+        gc.setFont(largeFont);
         gc.setFill(Color.WHITE);
+
         String title = "Game Project";
         Text menuTitle = new Text(title);
-        menuTitle.setFont(menuTitleFont);
+        menuTitle.setFont(largeFont);
         gc.fillText(title, (Run.SCREEN_WIDTH >> 1) - (menuTitle.getLayoutBounds().getWidth() / 2),
                 Run.SCREEN_HEIGHT >> 4
         );
-        Font menuOptionsFont = mediumFont;
-        gc.setFont(menuOptionsFont);
-        String newGameString = "Play";
-        Text newGameText = new Text(newGameString);
-        newGameText.setFont(menuOptionsFont);
+
+        gc.setFont(mediumFont);
+
+        Text newGameText = new Text("Play");
+        newGameText.setFont(mediumFont);
         menuNewGameBounds = new int[4];
         menuNewGameBounds[0] = (int) ((Run.SCREEN_WIDTH >> 1) - (newGameText.getLayoutBounds().getWidth() / 2));
         menuNewGameBounds[1] = (Run.SCREEN_HEIGHT >> 4) * 4;
         menuNewGameBounds[2] = (int) newGameText.getLayoutBounds().getWidth();
         menuNewGameBounds[3] = (int) newGameText.getLayoutBounds().getHeight();
-        gc.fillText(newGameString, menuNewGameBounds[0], menuNewGameBounds[1]);
+        gc.fillText(newGameText.getText(), menuNewGameBounds[0], menuNewGameBounds[1]);
+
+        Text settingsText = new Text("Settings");
+        settingsText.setFont(mediumFont);
+        menuSettingsBounds = new int[4];
+        menuSettingsBounds[0] = (int) ((Run.SCREEN_WIDTH >> 1) - (settingsText.getLayoutBounds().getWidth() / 2));
+        menuSettingsBounds[1] = (Run.SCREEN_HEIGHT >> 4) * 5;
+        menuSettingsBounds[2] = (int) settingsText.getLayoutBounds().getWidth();
+        menuSettingsBounds[3] = (int) settingsText.getLayoutBounds().getHeight();
+        gc.fillText(settingsText.getText(), menuSettingsBounds[0], menuSettingsBounds[1]);
+    }
+
+    public static void drawSettingsScreen(GraphicsContext gc) {
+        gc.clearRect(0, 0, Run.SCREEN_WIDTH, Run.SCREEN_HEIGHT);
+        gc.drawImage(mainMenuBg, 0, 0, Run.SCREEN_WIDTH, Run.SCREEN_HEIGHT);
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setFont(mediumFont);
+        gc.setFill(Color.WHITE);
+
+        String instructions = "Press 1 for 720p screens\nPress 2 for 1080p screens\nPress ESC to exit";
+        gc.fillText(instructions, Run.SCREEN_WIDTH >> 1, (Run.SCREEN_HEIGHT >> 4) * 4);
+    }
+
+    public static void drawExitToMain(GraphicsContext gc) {
+        gc.clearRect(0, 0, Run.SCREEN_WIDTH, Run.SCREEN_HEIGHT);
+        gc.drawImage(mainMenuBg, 0, 0, Run.SCREEN_WIDTH, Run.SCREEN_HEIGHT);
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setFont(largeFont);
+        gc.setFill(Color.WHITE);
+        gc.fillText("Are you sure you want to exit to main?\n\n(Y)es or (N)o",
+                (Run.SCREEN_WIDTH >> 1),
+                (Run.SCREEN_HEIGHT >> 4) * 4);
     }
 
     public static void drawGameScreen(Run app, GraphicsContext gc) {
@@ -188,7 +224,7 @@ public class RenderUtil {
                     gc.setFont(mediumFont);
                     if (app.getGameState().getPlayerEntity().isAlive()) {
                         gc.setTextAlign(TextAlignment.LEFT);
-                        gc.fillText("Please Take Your Turn", 10, Run.SCREEN_HEIGHT - 20);
+                        gc.fillText("Please Take Your Turn", 10, Run.SCREEN_MAP_HEIGHT + 30);
                     } else {
                         app.getGameState().setState(GameState.STATE.GAME_OVER);
                     }
@@ -198,7 +234,7 @@ public class RenderUtil {
                         gc.setFill(Color.BLACK);
                         gc.setTextAlign(TextAlignment.LEFT);
                         gc.fillText(name + " Please Press Space bar To Advance Their Turn",
-                                10, Run.SCREEN_HEIGHT - 20);
+                                10, Run.SCREEN_MAP_HEIGHT + 30);
                     } else {
                         if (!app.getGameState().getNextTurn() && !app.getGameState().getPlayerEntity().isMoveTurn()) {
                             app.getGameState().setNextTurn(true);
@@ -439,7 +475,7 @@ public class RenderUtil {
         gc.setFill(Color.BLACK);
         gc.setFont(smallFont);
         for(Map m: app.getGameState().getMaps()) {
-            String[] path = m.getPATH().split("\\\\");
+            String[] path = m.getPATH().split("/");
             int index;
             index = Math.max((path.length - 1), 0);
             String iconName = path[index].split("\\.")[0] + "_Icon.png";

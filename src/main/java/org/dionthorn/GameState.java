@@ -13,9 +13,11 @@ public class GameState {
 
     public enum STATE {
         MAIN_MENU, BATTLE,
+        EXIT_TO_MAIN,
         GAME, GAME_OVER, GAME_WIN,
         LEVEL_SELECTION,
-        CHARACTER_STATUS, CHARACTER_CREATION
+        CHARACTER_STATUS, CHARACTER_CREATION,
+        SETTINGS
     }
 
     private final ArrayList<Map> maps;
@@ -24,6 +26,7 @@ public class GameState {
     private final ArrayList<Entity> enemyTeam;
 
     private STATE currentState;
+    private STATE previousState;
     private Map currentMap;
     private Character attacker;
     private Character defender;
@@ -191,11 +194,16 @@ public class GameState {
      */
     public STATE getCurrentState() { return currentState; }
 
+    public STATE getPreviousState() { return previousState; }
+
     /**
      * Will set the currentState of the GameState to the provided newState
      * @param newState the target new state to place the game state into
      */
-    public void setState(STATE newState) { currentState = newState; }
+    public void setState(STATE newState) {
+        previousState = currentState;
+        currentState = newState;
+    }
 
     /**
      * Returns the current Player Character Object. Player object should always exist from Run.newGame()

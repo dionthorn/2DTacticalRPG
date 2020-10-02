@@ -33,16 +33,20 @@ import java.util.logging.Logger;
  */
 public class Run extends Application {
 
-    public static final String PROGRAM_VERSION = "v0.2.2a";
+    public static final String PROGRAM_VERSION = "v0.2.3a";
     public static boolean JRT = false;
+    public static boolean hasMod = false;
     public static final String SYS_LINE_SEP = System.lineSeparator();
     public static Logger programLogger = Logger.getLogger("programLogger");
     public static URI GAME_DATA_PATH;
     public static URI GAME_ART_PATH;
     public static URI GAME_MAP_PATH;
-    public static int SCREEN_WIDTH = 1024;
-    public static int SCREEN_HEIGHT = 1024;
-    public static int SCREEN_MAP_HEIGHT = 768;
+    public static URI MOD_PATH;
+    public static URI MOD_ART_PATH;
+    public static URI MOD_MAP_PATH;
+    public static int SCREEN_WIDTH;
+    public static int SCREEN_HEIGHT;
+    public static int SCREEN_MAP_HEIGHT;
     public static final int TILE_SIZE = 32;
     private final int[] DRAG_LOC = {-1, -1};
     private final long FPS = TimeUnit.SECONDS.toNanos(1L) / 60;
@@ -139,7 +143,6 @@ public class Run extends Application {
                 gameState.getEnemyTeam().add(tempChar);
             }
         }
-        gameState.setState(GameState.STATE.LEVEL_SELECTION);
     }
 
 
@@ -278,12 +281,38 @@ public class Run extends Application {
                 if(key.getCode() == KeyCode.ENTER) {
                     gameState.setState(GameState.STATE.GAME);
                     gameState.getPlayerEntity().setMoveTurn(true);
+                } else if(key.getCode() == KeyCode.ESCAPE) {
+                    gameState.setState(GameState.STATE.EXIT_TO_MAIN);
                 }
                 // If you press escape in level selection mode it should prompt you if you 'really want to quit'.
                 // maybe a dedicated screen for this
             } else if(gameState.getCurrentState() == GameState.STATE.GAME_OVER) {
                 if(key.getCode() == KeyCode.ESCAPE) {
                     gameState = null;
+                }
+            } else if(gameState.getCurrentState() == GameState.STATE.EXIT_TO_MAIN) {
+                if(key.getCode() == KeyCode.Y) {
+                    gameState = null;
+                } else if(key.getCode() == KeyCode.N) {
+                    gameState.setState(gameState.getPreviousState());
+                }
+            } else if(gameState.getCurrentState() == GameState.STATE.SETTINGS) {
+                if(key.getCode() == KeyCode.DIGIT1) {
+                    // need to assign screen settings for 720p screens
+                    primaryStage.setWidth(704);
+                    primaryStage.setHeight(704);
+                    SCREEN_WIDTH = 704;
+                    SCREEN_HEIGHT = 704;
+                    SCREEN_MAP_HEIGHT = 512;
+                } else if(key.getCode() == KeyCode.DIGIT2) {
+                    // need to assign screen settings for 1080p screens
+                    primaryStage.setWidth(1024);
+                    primaryStage.setHeight(1024);
+                    SCREEN_WIDTH = 1024;
+                    SCREEN_HEIGHT = 1024;
+                    SCREEN_MAP_HEIGHT = 768;
+                } else if(key.getCode() == KeyCode.ESCAPE) {
+                    gameState.setState(GameState.STATE.MAIN_MENU);
                 }
             }
         });
@@ -405,7 +434,21 @@ public class Run extends Application {
                 int yHeight = RenderUtil.menuNewGameBounds[3];
                 if(mouseX >= xLoc && mouseX <= xWidth + xLoc) {
                     if(mouseY <= yLoc && mouseY >= yLoc - yHeight) {
+                        gameState = null;
                         newGame();
+                        gameState.setState(GameState.STATE.LEVEL_SELECTION);
+                    }
+                }
+                xLoc = RenderUtil.menuSettingsBounds[0];
+                yLoc = RenderUtil.menuSettingsBounds[1];
+                xWidth = RenderUtil.menuSettingsBounds[2];
+                yHeight = RenderUtil.menuSettingsBounds[3];
+                if(mouseX >= xLoc && mouseX <= xWidth + xLoc) {
+                    if(mouseY <= yLoc && mouseY >= yLoc - yHeight) {
+                        if(gameState == null) {
+                            newGame();
+                        }
+                        gameState.setState(GameState.STATE.SETTINGS);
                     }
                 }
             } else if(gameState.getCurrentState() == GameState.STATE.GAME) {
@@ -548,6 +591,7 @@ public class Run extends Application {
 
     /**
      * The entry point for the program. We determine where /GameData/ folder is here.
+     * As well as any other pre launch variables we should set like screen configuration.
      * @param args command line options - unused.
      */
     public static void main(String[] args) {
@@ -565,15 +609,65 @@ public class Run extends Application {
             GAME_ART_PATH = URI.create(GAME_DATA_PATH + "Art");
             GAME_MAP_PATH = URI.create(GAME_DATA_PATH + "Maps");
         } else {
-            File gameData = new File(Paths.get("target", "classes", "GameData").toAbsolutePath().toString());
-            GAME_DATA_PATH = gameData.toURI();
-            File artData = new File(Paths.get("target", "classes", "GameData", "Art").toAbsolutePath().toString());
-            GAME_ART_PATH = artData.toURI();
-            File mapData = new File(Paths.get("target", "classes", "GameData", "Maps").toAbsolutePath().toString());
-            GAME_MAP_PATH = mapData.toURI();
+            GAME_DATA_PATH = Paths.get("target", "classes", "GameData").toAbsolutePath().toUri();
+            GAME_ART_PATH = Paths.get("target", "classes", "GameData", "Art").toAbsolutePath().toUri();
+            GAME_MAP_PATH = Paths.get("target", "classes", "GameData", "Maps").toAbsolutePath().toUri();
         }
-        URI testing = URI.create(GAME_DATA_PATH + "config.txt");
-        String[] startUpSettings = FileOpUtils.getFileLines(testing);
+        // The Mod folder will not use jrt as it should be easily accessible for end users.
+        // in JLink images /Mod/ will be found in the /bin folder.
+        MOD_PATH = Paths.get("", "Mod").toAbsolutePath().toUri();
+        boolean testDir;
+        if(new File(MOD_PATH).exists()) {
+            programLogger.log(Level.INFO,"Mod folder found at: " + MOD_PATH);
+        } else {
+            testDir = new File(MOD_PATH).mkdir();
+            if(!testDir) {
+                programLogger.log(Level.INFO,"Failed to Create Mod Directory!");
+            } else {
+                hasMod = true;
+                // We should create a couple files that list the internal jrt file system
+                // This way /mod/Maps/0_modMap.dat would be able to reference the internal jrt tile sets if needed.
+                // And we don't have to double copy those tile sets into /mod/Art/
+                // Don't copy config.txt, should have a Settings screen in the Main_Menu
+                // if they change settings we should create a user_settings.txt file in /mod/
+                // then use those settings on startup.
+                programLogger.log(Level.INFO,"Mod folder created here: " + MOD_PATH);
+
+            }
+        }
+        MOD_ART_PATH = URI.create(MOD_PATH + "/Art");
+        if(new File(MOD_ART_PATH.getPath()).exists()) {
+            programLogger.log(Level.INFO,"Mod/Art folder found at: " + MOD_ART_PATH);
+        } else {
+            testDir = new File(MOD_ART_PATH.getPath()).mkdir();
+            if(!testDir) {
+                programLogger.log(Level.INFO, "Failed to Create Mod/Art Directory!");
+            } else {
+                programLogger.log(Level.INFO,"Mod/Art folder will go here: " + MOD_ART_PATH);
+            }
+        }
+        MOD_MAP_PATH = URI.create(MOD_PATH + "/Maps");
+        if(new File(MOD_MAP_PATH.getPath()).exists()) {
+            programLogger.log(Level.INFO,"Mod/Maps folder found at: " + MOD_MAP_PATH);
+        } else {
+            testDir = new File(MOD_MAP_PATH.getPath()).mkdir();
+            if(!testDir) {
+                programLogger.log(Level.INFO, "Failed to Create Mod/Maps Directory!");
+            } else {
+                programLogger.log(Level.INFO,"Mod/Maps folder will go here: " + MOD_ART_PATH);
+            }
+        }
+        // Need to check if /Mod/ has a user_settings.txt
+        // if not then use the internal jrt config.txt default settings
+        URI config;
+        if(new File(URI.create(MOD_PATH + "user_settings.txt").getPath()).exists()) {
+            programLogger.log(Level.INFO, "user_settings was found in /Mod");
+            config = URI.create(MOD_PATH + "user_settings.txt");
+        } else {
+            programLogger.log(Level.INFO, "config default settings will be used");
+            config = URI.create(GAME_DATA_PATH + "config.txt");
+        }
+        String[] startUpSettings = FileOpUtils.getFileLines(config);
         for(String line: startUpSettings) {
             if(line.contains("SCREEN_WIDTH")) {
                 SCREEN_WIDTH = Integer.parseInt(line.split("=")[1]);
@@ -583,6 +677,7 @@ public class Run extends Application {
                 SCREEN_MAP_HEIGHT = Integer.parseInt(line.split("=")[1]);
             }
         }
+        // Launch the JavaFX Application this will take us to @Override public void start(Stage primaryStage)
         launch(args);
     }
 
