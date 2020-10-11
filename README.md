@@ -12,7 +12,7 @@ All github listed dependencies are related to maven plugins used to generate the
 
 I've added a Wiki to this Github Repo if you have any questions on how the system works please see [https://github.com/dionthorn/2DTacticalRPG/wiki]
 
-To test on windows (look into running jlink images with linux if your on linux) go to [https://github.com/dionthorn/2DTacticalRPG/releases]
+To test on windows (look into running jlink images with linux if you're on linux) go to [https://github.com/dionthorn/2DTacticalRPG/releases]
 
 Then choose the latest release and under 'assets' get the TacticalRPG{version}.zip file, then extract where you wish, go into the folder and into /bin then run App.bat
 
@@ -50,7 +50,7 @@ Here is a short youtube video of the game in action: [https://www.youtube.com/wa
 
 v0.2.2a Notes: added codacy to track my code quality, various bug fixes going on and a few major changes areas.
 
-v0.2.1a Notes: a complete restructuring of the code base using Intellij and Maven to produce jlink images rather than .jar files. Several other code maintence events have happend as well as the addition of the Level Selection screen.
+v0.2.1a Notes: a complete restructuring of the code base using Intellij and Maven to produce jlink images rather than .jar files. Several other code maintence events have happened as well as the addition of the Level Selection screen.
 
 v0.2.0a Notes: added more functionality to the DevMenu including the ability to manually change gameState. 
 	Added but not implemented a 'level selection' state to allow graphical selection of levels.
