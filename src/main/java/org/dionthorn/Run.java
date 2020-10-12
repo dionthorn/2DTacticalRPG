@@ -312,6 +312,20 @@ public class Run extends Application {
                     SCREEN_HEIGHT = 1024;
                     SCREEN_MAP_HEIGHT = 768;
                 } else if(key.getCode() == KeyCode.ESCAPE) {
+                    // check if in JRT file system, if true, check if user_settings exists in mod folder
+                    // if not then create one with the current graphics settings.
+                    if(JRT) {
+                        if(new File(URI.create(MOD_PATH + "/user_settings.txt").getPath()).exists()) {
+                            programLogger.log(Level.INFO, "user_settings was found in /Mod");
+                        } else {
+                            FileOpUtils.createFile(URI.create(MOD_PATH + "/user_settings.txt"));
+                        }
+                        String[] userSettings = { "SCREEN_WIDTH=" + SCREEN_WIDTH,
+                                "SCREEN_HEIGHT=" + SCREEN_HEIGHT,
+                                "SCREEN_MAP_HEIGHT=" + SCREEN_MAP_HEIGHT };
+                        FileOpUtils.writeFileLines(URI.create(MOD_PATH + "/user_settings.txt"), userSettings);
+                        programLogger.log(Level.INFO, "user_settings has been updated to current graphics settings");
+                    }
                     gameState.setState(GameState.STATE.MAIN_MENU);
                 }
             }
@@ -635,7 +649,7 @@ public class Run extends Application {
 
             }
         }
-        MOD_ART_PATH = URI.create(MOD_PATH + "/Art");
+        MOD_ART_PATH = URI.create(MOD_PATH + (JRT ? "/Art" : "Art"));
         if(new File(MOD_ART_PATH.getPath()).exists()) {
             programLogger.log(Level.INFO,"Mod/Art folder found at: " + MOD_ART_PATH);
         } else {
@@ -646,7 +660,7 @@ public class Run extends Application {
                 programLogger.log(Level.INFO,"Mod/Art folder will go here: " + MOD_ART_PATH);
             }
         }
-        MOD_MAP_PATH = URI.create(MOD_PATH + "/Maps");
+        MOD_MAP_PATH = URI.create(MOD_PATH + (JRT ? "/Maps" : "Maps"));
         if(new File(MOD_MAP_PATH.getPath()).exists()) {
             programLogger.log(Level.INFO,"Mod/Maps folder found at: " + MOD_MAP_PATH);
         } else {

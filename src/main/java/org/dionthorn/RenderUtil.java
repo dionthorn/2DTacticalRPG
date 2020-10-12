@@ -500,7 +500,7 @@ public class RenderUtil {
         }
         drawPromptArea(gc);
         gc.setFont(smallFont);
-        String[] path = app.getGameState().getCurrentMap().getPATH().split("\\\\");
+        String[] path = app.getGameState().getCurrentMap().getPATH().split("/");
         gc.setFont(mediumFont);
         gc.fillText("Selected Map: " + path[path.length - 1], Run.SCREEN_WIDTH>>4, Run.SCREEN_MAP_HEIGHT + (Run.SCREEN_MAP_HEIGHT>>4));
         gc.fillText("Press Enter to Load The Selected Map", Run.SCREEN_WIDTH>>4,
