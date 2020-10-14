@@ -91,6 +91,22 @@ public class Run extends Application {
                 }
             }
         }
+        // Need to also check for /Mod/Maps folder potential maps.
+        if(JRT && new File(MOD_MAP_PATH.getPath()).exists()) {
+            File testDir = new File(MOD_MAP_PATH.getPath());
+            if(testDir.isDirectory() && testDir.list() != null && testDir.list().length != 0) {
+                for(String path: FileOpUtils.getFileNamesFromDirectory(MOD_MAP_PATH, false)) {
+                    if(!path.contains("meta")) {
+                        if(gameState != null) {
+                            gameState.getMaps().add(new Map(MOD_MAP_PATH + (JRT ? "/" + path : path)));
+                            programLogger.log(Level.INFO, "Maps loaded from Mod/Maps");
+                        } else {
+                            programLogger.log(Level.INFO, "GameState is null can't load MOD Maps");
+                        }
+                    }
+                }
+            }
+        }
         String[] startLoc = gameState.getCurrentMap().getMetaStartLoc().split(":")[0].split(",");
         String[] allies = gameState.getCurrentMap().getMetaAllies().split(":")[0].split("/");
         String[] enemies = gameState.getCurrentMap().getMetaEnemies().split(":")[0].split("/");
@@ -156,7 +172,6 @@ public class Run extends Application {
         RenderUtil.paperBg = new Image(GAME_ART_PATH + (JRT ? "/paper.png" : "paper.png"),
                 Run.SCREEN_WIDTH, Run.SCREEN_HEIGHT-Run.SCREEN_MAP_HEIGHT, false, false
         );
-
         primaryStage.setTitle("OOP Game Project " + PROGRAM_VERSION);
         primaryStage.setResizable(false);
         Group rootGroup = new Group();
@@ -177,13 +192,13 @@ public class Run extends Application {
                     gameState.setState(GameState.STATE.LEVEL_SELECTION);
                 }
                 if(key.getCode() == KeyCode.BACK_QUOTE) {
-                    String[] folders = getGameState().getCurrentMap().getPATH().split("\\\\");
+                    String[] folders = getGameState().getCurrentMap().getPATH().split("/");
                     String shortPath = folders[folders.length - 1];
                     if(devMenu == null) {
                         devMenu = new DevMenu(this);
                         devMenu.getDevMapPath().setText(String.format("%s", shortPath));
                         for(Map toLoad: gameState.getMaps()) {
-                            folders = toLoad.getPATH().split("\\\\");
+                            folders = toLoad.getPATH().split("/");
                             shortPath = folders[folders.length - 1];
                             devMenu.getMapList().getItems().add(shortPath);
                         }
@@ -629,52 +644,47 @@ public class Run extends Application {
         }
         // The Mod folder will not use jrt as it should be easily accessible for end users.
         // in JLink images /Mod/ will be found in the /bin folder.
-        MOD_PATH = Paths.get("", "Mod").toAbsolutePath().toUri();
-        boolean testDir;
-        if(new File(MOD_PATH).exists()) {
-            programLogger.log(Level.INFO,"Mod folder found at: " + MOD_PATH);
-        } else {
-            testDir = new File(MOD_PATH).mkdir();
-            if(!testDir) {
-                programLogger.log(Level.INFO,"Failed to Create Mod Directory!");
+        if(JRT) {
+            MOD_PATH = Paths.get("", "Mod").toAbsolutePath().toUri();
+            boolean testDir;
+            if(new File(MOD_PATH).exists()) {
+                programLogger.log(Level.INFO,"Mod folder found at: " + MOD_PATH);
             } else {
-                hasMod = true;
-                // We should create a couple files that list the internal jrt file system
-                // This way /mod/Maps/0_modMap.dat would be able to reference the internal jrt tile sets if needed.
-                // And we don't have to double copy those tile sets into /mod/Art/
-                // Don't copy config.txt, should have a Settings screen in the Main_Menu
-                // if they change settings we should create a user_settings.txt file in /mod/
-                // then use those settings on startup.
-                programLogger.log(Level.INFO,"Mod folder created here: " + MOD_PATH);
-
+                testDir = new File(MOD_PATH).mkdir();
+                if(!testDir) {
+                    programLogger.log(Level.INFO,"Failed to Create Mod Directory!");
+                } else {
+                    hasMod = true;
+                    programLogger.log(Level.INFO,"Mod folder created here: " + MOD_PATH);
+                }
             }
-        }
-        MOD_ART_PATH = URI.create(MOD_PATH + (JRT ? "/Art" : "Art"));
-        if(new File(MOD_ART_PATH.getPath()).exists()) {
-            programLogger.log(Level.INFO,"Mod/Art folder found at: " + MOD_ART_PATH);
-        } else {
-            testDir = new File(MOD_ART_PATH.getPath()).mkdir();
-            if(!testDir) {
-                programLogger.log(Level.INFO, "Failed to Create Mod/Art Directory!");
+            MOD_ART_PATH = URI.create(MOD_PATH + (JRT ? "/Art" : "Art"));
+            if(new File(MOD_ART_PATH.getPath()).exists()) {
+                programLogger.log(Level.INFO,"Mod/Art folder found at: " + MOD_ART_PATH);
             } else {
-                programLogger.log(Level.INFO,"Mod/Art folder will go here: " + MOD_ART_PATH);
+                testDir = new File(MOD_ART_PATH.getPath()).mkdir();
+                if(!testDir) {
+                    programLogger.log(Level.INFO, "Failed to Create Mod/Art Directory!");
+                } else {
+                    programLogger.log(Level.INFO,"Mod/Art folder will go here: " + MOD_ART_PATH);
+                }
             }
-        }
-        MOD_MAP_PATH = URI.create(MOD_PATH + (JRT ? "/Maps" : "Maps"));
-        if(new File(MOD_MAP_PATH.getPath()).exists()) {
-            programLogger.log(Level.INFO,"Mod/Maps folder found at: " + MOD_MAP_PATH);
-        } else {
-            testDir = new File(MOD_MAP_PATH.getPath()).mkdir();
-            if(!testDir) {
-                programLogger.log(Level.INFO, "Failed to Create Mod/Maps Directory!");
+            MOD_MAP_PATH = URI.create(MOD_PATH + (JRT ? "/Maps" : "Maps"));
+            if(new File(MOD_MAP_PATH.getPath()).exists()) {
+                programLogger.log(Level.INFO,"Mod/Maps folder found at: " + MOD_MAP_PATH);
             } else {
-                programLogger.log(Level.INFO,"Mod/Maps folder will go here: " + MOD_ART_PATH);
+                testDir = new File(MOD_MAP_PATH.getPath()).mkdir();
+                if(!testDir) {
+                    programLogger.log(Level.INFO, "Failed to Create Mod/Maps Directory!");
+                } else {
+                    programLogger.log(Level.INFO,"Mod/Maps folder will go here: " + MOD_ART_PATH);
+                }
             }
         }
         // Need to check if /Mod/ has a user_settings.txt
         // if not then use the internal jrt config.txt default settings
         URI config;
-        if(new File(URI.create(MOD_PATH + "user_settings.txt").getPath()).exists()) {
+        if(JRT && new File(URI.create(MOD_PATH + "user_settings.txt").getPath()).exists()) {
             programLogger.log(Level.INFO, "user_settings was found in /Mod");
             config = URI.create(MOD_PATH + "user_settings.txt");
         } else {

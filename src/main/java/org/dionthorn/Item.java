@@ -1,13 +1,19 @@
 package org.dionthorn;
 
-public abstract class Item {
+import javafx.scene.image.Image;
 
+public abstract class Item extends Entity {
+
+    protected String name;
     protected int value;
     protected double weight;
+    private Image sprite;
 
-    public Item(int value, double weight) {
+    public Item(String name, int value, double weight, Image sprite) {
+        this.name = name;
         this.value = value;
         this.weight = weight;
+        this.sprite = sprite;
     }
 
     public int getValue() {
@@ -16,6 +22,14 @@ public abstract class Item {
 
     public double getWeight() {
         return weight;
+    }
+
+    public Image getSprite() {
+        return sprite;
+    }
+
+    public String getName() {
+        return name;
     }
 
 }

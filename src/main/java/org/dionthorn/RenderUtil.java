@@ -474,7 +474,9 @@ public class RenderUtil {
         int count = 0;
         gc.setFill(Color.BLACK);
         gc.setFont(smallFont);
+        boolean iconPathJRT;
         for(Map m: app.getGameState().getMaps()) {
+            iconPathJRT = m.getPATH().contains("Mod");
             String[] path = m.getPATH().split("/");
             int index;
             index = Math.max((path.length - 1), 0);
@@ -486,7 +488,12 @@ public class RenderUtil {
                 }
             }
             iconName = iconName.substring(lastSlash + 1);
-            String toUse = Run.GAME_ART_PATH + (Run.JRT ? "/" + iconName : iconName);
+            String toUse;
+            if(iconPathJRT) {
+                toUse = Run.MOD_ART_PATH + "/" + iconName;
+            } else {
+                toUse = Run.GAME_ART_PATH + "/" + iconName;
+            }
             if(FileOpUtils.doesFileExist(URI.create(toUse))) {
                 app.getGameState().getMaps().get(count).setIcon(new Image(toUse));
                 gc.drawImage(app.getGameState().getMaps().get(count).getIcon(),

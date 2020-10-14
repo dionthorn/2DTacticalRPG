@@ -100,7 +100,6 @@ public class DevMenu extends Stage {
         decreaseTileSetID.setOnAction(event -> tileSetMinCheck());
 
         // Row 1
-
         devMapID = new Text(String.format("Map ID: %s", SELECTED_MAP_ID));
         devMapID.setFont(mediumFont);
         GridPane.setConstraints(devMapID, 0, 1);
@@ -144,8 +143,12 @@ public class DevMenu extends Stage {
         Button devLevelUp = new Button("Level Up");
         GridPane.setConstraints(devLevelUp, 1, 4, 2, 1);
         devLevelUp.setOnAction(event -> {
-            if (app.getLastSelectChar() != -1) {
-                ((Character) app.getGameState().getEntities().get(app.getLastSelectChar())).levelUp();
+            if(app.getLastSelectChar() != -1) {
+                for(Entity e: app.getGameState().getEntities()) {
+                    if(e.getUID() == app.getLastSelectChar()) {
+                        ((Character) e).levelUp();
+                    }
+                }
             }
         });
         Button devMakeIcon = new Button("Make Icon");
@@ -264,7 +267,6 @@ public class DevMenu extends Stage {
         isImpassable = new CheckBox("isImpassable");
         GridPane.setConstraints(isImpassable, 6, 9);
         isImpassable.setOnAction(event -> setImpassable());
-        tileMetaCheck();
 
         // Row 10+ are the TileSet Image
 
@@ -281,7 +283,19 @@ public class DevMenu extends Stage {
         this.setX(0D);
         this.setScene(devRootScene);
         this.show();
+        mapListCheck();
+        tileMetaCheck();
+    }
 
+    public void mapListCheck() {
+        for(int i=0; i< app.getGameState().getMaps().size(); i++) {
+            if(app.getGameState().getMaps().get(i).getPATH().equals(app.getGameState().getCurrentMap().getPATH())) {
+                SELECTED_MAP_ID = i;
+                break;
+            }
+        }
+        devMapID.setText(String.format("Map ID: %s", SELECTED_MAP_ID));
+        mapList.getSelectionModel().select(SELECTED_MAP_ID);
     }
 
     /**
@@ -461,9 +475,9 @@ public class DevMenu extends Stage {
             app.getGameState().setCurrentMap(app.getGameState().getMaps().get(SELECTED_MAP_ID + 1));
             SELECTED_MAP_ID++;
             devMapID.setText(String.format("Map ID: %s", SELECTED_MAP_ID));
-            folders = app.getGameState().getCurrentMap().getPATH().split("\\\\");
+            folders = app.getGameState().getCurrentMap().getPATH().split("/");
             shortPath = folders[folders.length - 1];
-            devMapPath.setText(String.format("File Name: %s", shortPath));
+            devMapPath.setText(shortPath);
             tileMetaCheck();
         } catch (Exception e) {
             Run.programLogger.log(Level.INFO,
@@ -473,9 +487,9 @@ public class DevMenu extends Stage {
             app.getGameState().setCurrentMap(app.getGameState().getMaps().get(SELECTED_MAP_ID + 1));
             SELECTED_MAP_ID++;
             devMapID.setText(String.format("Map ID: %s", SELECTED_MAP_ID));
-            folders = app.getGameState().getCurrentMap().getPATH().split("\\\\");
+            folders = app.getGameState().getCurrentMap().getPATH().split("/");
             shortPath = folders[folders.length - 1];
-            devMapPath.setText(String.format("File Name: %s", shortPath));
+            devMapPath.setText(shortPath);
             mapList.getItems().add(shortPath);
             mapList.getSelectionModel().select(SELECTED_MAP_ID);
             tileMetaCheck();
@@ -493,7 +507,7 @@ public class DevMenu extends Stage {
                 app.getGameState().setCurrentMap(app.getGameState().getMaps().get(SELECTED_MAP_ID - 1));
                 SELECTED_MAP_ID--;
                 devMapID.setText(String.format("Map ID: %s", SELECTED_MAP_ID));
-                folders = app.getGameState().getCurrentMap().getPATH().split("\\\\");
+                folders = app.getGameState().getCurrentMap().getPATH().split("/");
                 shortPath = folders[folders.length - 1];
                 devMapPath.setText(String.format("File Name: %s", shortPath));
                 tileMetaCheck();
@@ -507,17 +521,25 @@ public class DevMenu extends Stage {
      * Will generate a .png of a 200x200 pixel 'icon' of the map for use on the level_selection screen.
      * if no icon is found then it will just render the name of the .dat file
      * will first check to see if an icon exists, if it does you must rename it from the .dat file name
-     * icon names will always be {mapName}_Icon.png located in the /GameData/Art folder
+     * icon names will always be {mapName}_Icon.png located in the /GameData/Art folder or /Mod/Art
      */
     public void makeIcon() {
         String[] mapsFolder = app.getGameState().getCurrentMap().getPATH().split("/");
         String targetName = mapsFolder[mapsFolder.length - 1].split("\\.")[0] + "_Icon.png";
-        String[] artFiles = FileOpUtils.getFileNamesFromDirectory(Run.GAME_ART_PATH, Run.JRT);
+        System.out.println("TARGET: " + targetName);
+        String[] artFiles;
+        if(Run.JRT) {
+            artFiles = FileOpUtils.getFileNamesFromDirectory(Run.MOD_ART_PATH, true);
+        } else {
+            artFiles = FileOpUtils.getFileNamesFromDirectory(Run.GAME_ART_PATH, false);
+        }
         boolean found = false;
-        for(String name: artFiles) {
-            if(name != null && name.equals(targetName)) {
-                found = true;
-                break;
+        if(artFiles.length != 0) {
+            for(String name: artFiles) {
+                if(name != null && name.equals(targetName)) {
+                    found = true;
+                    break;
+                }
             }
         }
         if(found) {
@@ -535,12 +557,22 @@ public class DevMenu extends Stage {
             toSaveImage = temp.snapshot(null, null);
             try {
                 ImageIO.setUseCache(false);
-                ImageIO.write(SwingFXUtils.fromFXImage(toSaveImage, null), "png",
-                        new File(URI.create(Run.GAME_ART_PATH + targetName))
-                );
-                Run.programLogger.log(Level.INFO,
-                        "The new map icon can be found at: " + Run.GAME_ART_PATH + targetName
-                );
+                if(Run.JRT) {
+                    ImageIO.write(SwingFXUtils.fromFXImage(toSaveImage, null), "png",
+                            new File(URI.create(Run.MOD_ART_PATH + "/" + targetName))
+                    );
+                    Run.programLogger.log(Level.INFO,
+                            "The new map icon can be found at: " + Run.MOD_ART_PATH + "/" + targetName
+                    );
+                } else {
+                    ImageIO.write(SwingFXUtils.fromFXImage(toSaveImage, null), "png",
+                            new File(URI.create(Run.GAME_ART_PATH +  targetName))
+                    );
+                    Run.programLogger.log(Level.INFO,
+                            "The new map icon can be found at: " + Run.GAME_ART_PATH + targetName
+                    );
+                }
+
             } catch (IOException e) {
                 e.printStackTrace();
             }

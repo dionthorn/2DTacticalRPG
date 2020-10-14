@@ -7,6 +7,8 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Random;
 
+import static org.dionthorn.Run.JRT;
+
 /**
  * The Map Class will manage tilesets and tile meta information
  */
@@ -42,12 +44,13 @@ public class Map {
      */
     public Map(String[] tilePaths) {
         Random rand = new Random();
-        PATH = String.format(Run.GAME_MAP_PATH + "RANDOM%d.dat", rand.nextInt(1000));
+        PATH = String.format((JRT ? Run.MOD_MAP_PATH + "/RANDOM%d.dat" : Run.GAME_MAP_PATH + "RANDOM%d.dat"), rand.nextInt(1000));
+        System.out.println(PATH);
         int[] mapArea = Run.getMapAreaDimensions();
         mapWidth = mapArea[0];
         mapHeight = mapArea[1];
         for(String path: tilePaths) {
-            tileSets.add(new TileSet(path, TILE_SIZE));
+            tileSets.add(new TileSet(path.replaceAll("/", ""), TILE_SIZE));
         }
         mapTiles = new MapTile[mapHeight][mapWidth];
         for(int y=0; y<mapHeight; y++) {
@@ -82,7 +85,7 @@ public class Map {
                 TILE_SIZE = Integer.parseInt(splitLine[TILE_DATA]);
                 tileSets.clear();
                 for(int step = IMG_SRC_DATA; step<splitLine.length; step++) {
-                    tileSets.add(new TileSet(splitLine[step], TILE_SIZE));
+                    tileSets.add(new TileSet(splitLine[step].replaceAll("/", ""), TILE_SIZE));
                 }
                 first = false;
             } else {
@@ -165,7 +168,7 @@ public class Map {
         for(String path: getTileSetPaths()) {
             formattedPaths.append(path).append(", ");
         }
-        dataAsString[0] = String.format("%d, %d, %d, %s", mapWidth, mapHeight, TILE_SIZE, formattedPaths.toString());
+        dataAsString[0] = String.format("%d, %d, %d, %s", mapWidth, mapHeight, TILE_SIZE, formattedPaths.toString().replaceAll("/", ""));
         int yCount = 0;
         int xCount = 0;
         int lineCount = 1;
@@ -206,6 +209,7 @@ public class Map {
         dataAsString[4] = metaStartLoc;
         FileOpUtils.writeFileLines(URI.create(metaPATH), dataAsString);
     }
+
     // Getters and Setters
     /**
      * Returns an Image of the tile provided by its TileSet index and TileID associated with this Map.
