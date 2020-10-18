@@ -35,7 +35,6 @@ public class Run extends Application {
 
     public static final String PROGRAM_VERSION = "v0.2.3a";
     public static boolean JRT = false;
-    public static boolean hasMod = false;
     public static final String SYS_LINE_SEP = System.lineSeparator();
     public static Logger programLogger = Logger.getLogger("programLogger");
     public static URI GAME_DATA_PATH;
@@ -82,7 +81,7 @@ public class Run extends Application {
      */
     private void newGame() {
         Entity.GEN_COUNT = 0;
-        for(String path: FileOpUtils.getFileNamesFromDirectory(GAME_MAP_PATH, JRT)) {
+        for(String path: FileOpUtils.getFileNamesFromDirectory(GAME_MAP_PATH)) {
             if(!path.equals(".gitattributes") && !path.contains("meta")) {
                 if(gameState != null) {
                     gameState.getMaps().add(new Map(GAME_MAP_PATH + (JRT ? "/" + path : path)));
@@ -94,8 +93,9 @@ public class Run extends Application {
         // Need to also check for /Mod/Maps folder potential maps.
         if(JRT && new File(MOD_MAP_PATH.getPath()).exists()) {
             File testDir = new File(MOD_MAP_PATH.getPath());
-            if(testDir.isDirectory() && testDir.list() != null && testDir.list().length != 0) {
-                for(String path: FileOpUtils.getFileNamesFromDirectory(MOD_MAP_PATH, false)) {
+            String[] tempList = testDir.list();
+            if(testDir.isDirectory() && tempList != null && tempList.length != 0) {
+                for(String path: FileOpUtils.getFileNamesFromDirectory(MOD_MAP_PATH)) {
                     if(!path.contains("meta")) {
                         if(gameState != null) {
                             gameState.getMaps().add(new Map(MOD_MAP_PATH + (JRT ? "/" + path : path)));
@@ -638,6 +638,8 @@ public class Run extends Application {
             GAME_ART_PATH = URI.create(GAME_DATA_PATH + "Art");
             GAME_MAP_PATH = URI.create(GAME_DATA_PATH + "Maps");
         } else {
+            // This means we are using an IDE to run, so we can use Paths.get to find the out folders.
+            // in my Intellij setup this is target/classes
             GAME_DATA_PATH = Paths.get("target", "classes", "GameData").toAbsolutePath().toUri();
             GAME_ART_PATH = Paths.get("target", "classes", "GameData", "Art").toAbsolutePath().toUri();
             GAME_MAP_PATH = Paths.get("target", "classes", "GameData", "Maps").toAbsolutePath().toUri();
@@ -654,11 +656,10 @@ public class Run extends Application {
                 if(!testDir) {
                     programLogger.log(Level.INFO,"Failed to Create Mod Directory!");
                 } else {
-                    hasMod = true;
                     programLogger.log(Level.INFO,"Mod folder created here: " + MOD_PATH);
                 }
             }
-            MOD_ART_PATH = URI.create(MOD_PATH + (JRT ? "/Art" : "Art"));
+            MOD_ART_PATH = URI.create(MOD_PATH + "/Art");
             if(new File(MOD_ART_PATH.getPath()).exists()) {
                 programLogger.log(Level.INFO,"Mod/Art folder found at: " + MOD_ART_PATH);
             } else {
@@ -669,7 +670,7 @@ public class Run extends Application {
                     programLogger.log(Level.INFO,"Mod/Art folder will go here: " + MOD_ART_PATH);
                 }
             }
-            MOD_MAP_PATH = URI.create(MOD_PATH + (JRT ? "/Maps" : "Maps"));
+            MOD_MAP_PATH = URI.create(MOD_PATH + "/Maps");
             if(new File(MOD_MAP_PATH.getPath()).exists()) {
                 programLogger.log(Level.INFO,"Mod/Maps folder found at: " + MOD_MAP_PATH);
             } else {

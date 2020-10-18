@@ -253,7 +253,7 @@ public class DevMenu extends Stage {
         GridPane.setConstraints(decreaseTileID, 2, 9);
         decreaseTileID.setOnAction(event -> tileMinCheck());
         // Column Index 3 is the Selected Tile image
-        // create the Edit Mode check box, this is used to paint the map during runtime for graphicalf map creation.
+        // create the Edit Mode check box, this is used to paint the map during runtime for graphical map creation.
         CheckBox editMode = new CheckBox("Edit Mode");
         editMode.setSelected(false);
         EDIT_MODE = false;
@@ -526,12 +526,11 @@ public class DevMenu extends Stage {
     public void makeIcon() {
         String[] mapsFolder = app.getGameState().getCurrentMap().getPATH().split("/");
         String targetName = mapsFolder[mapsFolder.length - 1].split("\\.")[0] + "_Icon.png";
-        System.out.println("TARGET: " + targetName);
         String[] artFiles;
         if(Run.JRT) {
-            artFiles = FileOpUtils.getFileNamesFromDirectory(Run.MOD_ART_PATH, true);
+            artFiles = FileOpUtils.getFileNamesFromDirectory(Run.MOD_ART_PATH);
         } else {
-            artFiles = FileOpUtils.getFileNamesFromDirectory(Run.GAME_ART_PATH, false);
+            artFiles = FileOpUtils.getFileNamesFromDirectory(Run.GAME_ART_PATH);
         }
         boolean found = false;
         if(artFiles.length != 0) {

@@ -45,12 +45,12 @@ public class FileOpUtils {
      * @param targetFile the target file
      * @return a string array where each index is the name of a file in the directory at path
      */
-    public static String[] getFileNamesFromDirectory(URI targetFile, boolean JRT) {
+    public static String[] getFileNamesFromDirectory(URI targetFile) {
         ArrayList<String> fileNamesList = new ArrayList<>();
         String[] fileNames = new String[0];
         try {
             File[] files;
-            if(JRT) {
+            if(targetFile.getScheme().equals("jrt")) {
                 Path path = Path.of(targetFile);
                 assert(Files.exists(path));
                 FileSystem jrtfs = FileSystems.getFileSystem(URI.create("jrt:/"));
@@ -67,7 +67,7 @@ public class FileOpUtils {
             }
             files = new File(targetFile.getPath()).listFiles();
             if(files != null) {
-                if(!JRT) {
+                if(!targetFile.getScheme().equals("jrt")) {
                     fileNames = new String[files.length];
                     for(int i=0; i<files.length; i++) {
                         if(files[i].isFile()) {
@@ -78,7 +78,7 @@ public class FileOpUtils {
                     Run.programLogger.log(Level.INFO, "Using JRT Filesystem");
                 }
             } else {
-                if(!JRT) {
+                if(!targetFile.getScheme().equals("jrt")) {
                     Run.programLogger.log(Level.INFO, "No Files Found In Directory " + targetFile);
                 }
             }

@@ -7,7 +7,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Random;
 
-import static org.dionthorn.Run.JRT;
 
 /**
  * The Map Class will manage tilesets and tile meta information
@@ -44,7 +43,7 @@ public class Map {
      */
     public Map(String[] tilePaths) {
         Random rand = new Random();
-        PATH = String.format((JRT ? Run.MOD_MAP_PATH + "/RANDOM%d.dat" : Run.GAME_MAP_PATH + "RANDOM%d.dat"), rand.nextInt(1000));
+        PATH = String.format((Run.JRT ? Run.MOD_MAP_PATH + "/RANDOM%d.dat" : Run.GAME_MAP_PATH + "RANDOM%d.dat"), rand.nextInt(1000));
         System.out.println(PATH);
         int[] mapArea = Run.getMapAreaDimensions();
         mapWidth = mapArea[0];
@@ -193,14 +192,14 @@ public class Map {
         dataAsString[0] = ""; // {tileSetID}/{tileID},:FIRE
         for(int index=0; index<tileSets.size(); index++) {
             for(int tileID: tileSets.get(index).getMetaFire()) {
-                dataAsString[0] += index + File.separator + tileID + ",";
+                dataAsString[0] += index + "/" + tileID + ",";
             }
         }
         dataAsString[0] += ":FIRE";
-        dataAsString[1] = ""; // :IMPASSABLE
+        dataAsString[1] = ""; // {tileSetID}/{tileID},:IMPASSABLE
         for(int index=0; index<tileSets.size(); index++) {
             for(int tileID: tileSets.get(index).getMetaImpassable()) {
-                dataAsString[1] += index + File.separator + tileID + ",";
+                dataAsString[1] += index + "/" + tileID + ",";
             }
         }
         dataAsString[1] += ":IMPASSABLE";

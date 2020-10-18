@@ -5,6 +5,8 @@ import javafx.scene.image.PixelReader;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
+
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -50,7 +52,14 @@ public class TileSet {
                 break;
             }
         }
-        tileSetPath = (Run.JRT ? "/" + path : path);
+        boolean useMOD = false;
+        if(path.contains("MOD.")) {
+            System.out.println("USE MOD");
+            useMOD = true;
+            System.out.println(path);
+        }
+        tileSetPath = path;
+        System.out.println(tileSetPath);
         if(sameFound) {
             tileSetSrc = tileSetCache.get(sameIndex).getTileSetSrc();
             tiles = tileSetCache.get(sameIndex).getTiles();
@@ -61,7 +70,9 @@ public class TileSet {
             Collections.addAll(removedTileIDList, boxedArray);
             totalTiles = tileSetCache.get(sameIndex).getTotalTiles();
         } else {
-            tileSetSrc = new Image(Run.GAME_ART_PATH + tileSetPath);
+            // (useJRT ? Run.MOD_ART_PATH + tileSetPath : Run.GAME_ART_PATH + tileSetPath
+            System.out.println("USING: " + (useMOD ? Run.MOD_ART_PATH : Run.GAME_ART_PATH) + "/" + tileSetPath);
+            tileSetSrc = new Image((useMOD ? Run.MOD_ART_PATH : Run.GAME_ART_PATH) + "/" + tileSetPath);
             tiles = makeTiles(tileSetSrc, TILE_SIZE);
             if (tiles.length == 0) {
                 Run.programLogger.log(Level.SEVERE, "NO TILES DETECTED");
