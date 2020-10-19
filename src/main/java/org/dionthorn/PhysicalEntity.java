@@ -60,9 +60,9 @@ public abstract class PhysicalEntity extends Entity {
      */
     protected int getY() { return y; }
 
-    protected int getRealtiveX() { return x - RenderUtil.anchorUL[0]; }
+    protected int getRelativeX() { return x - RenderUtil.anchorUL[0]; }
 
-    protected int getRealtiveY() { return y - RenderUtil.anchorUL[1]; }
+    protected int getRelativeY() { return y - RenderUtil.anchorUL[1]; }
 
     /**
      * Assigns this entity a new x location.

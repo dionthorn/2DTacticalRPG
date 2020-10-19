@@ -13,3 +13,6 @@ Character Art
 https://opengameart.org/content/lpc-forest-tiles
 Forest Tiles - Please also see included 'forest_tiles_credits.txt'
 
+https://opengameart.org/content/set-items
+items_0
+

@@ -40,9 +40,11 @@ public class Run extends Application {
     public static URI GAME_DATA_PATH;
     public static URI GAME_ART_PATH;
     public static URI GAME_MAP_PATH;
+    public static URI GAME_ITEM_PATH;
     public static URI MOD_PATH;
     public static URI MOD_ART_PATH;
     public static URI MOD_MAP_PATH;
+    public static URI MOD_ITEM_PATH;
     public static int SCREEN_WIDTH;
     public static int SCREEN_HEIGHT;
     public static int SCREEN_MAP_HEIGHT;
@@ -80,7 +82,8 @@ public class Run extends Application {
      * Sets up the gameState for a new game environment.
      */
     private void newGame() {
-        Entity.GEN_COUNT = 0;
+
+        Entity.GEN_COUNT = 0; // reset entity counter since this should be a 'fresh' game.
         for(String path: FileOpUtils.getFileNamesFromDirectory(GAME_MAP_PATH)) {
             if(!path.equals(".gitattributes") && !path.contains("meta")) {
                 if(gameState != null) {
@@ -90,6 +93,7 @@ public class Run extends Application {
                 }
             }
         }
+
         // Need to also check for /Mod/Maps folder potential maps.
         if(JRT && new File(MOD_MAP_PATH.getPath()).exists()) {
             File testDir = new File(MOD_MAP_PATH.getPath());
@@ -110,6 +114,8 @@ public class Run extends Application {
         String[] startLoc = gameState.getCurrentMap().getMetaStartLoc().split(":")[0].split(",");
         String[] allies = gameState.getCurrentMap().getMetaAllies().split(":")[0].split("/");
         String[] enemies = gameState.getCurrentMap().getMetaEnemies().split(":")[0].split("/");
+        String[] items = gameState.getCurrentMap().getMetaItems().split(":")[0].split("/");
+
         // For now a default player entity, in future will have a character_creation state for building the player
         gameState.getEntities().add(
                 new Player(
@@ -120,6 +126,8 @@ public class Run extends Application {
                 )
         );
         gameState.getPlayerTeam().add(gameState.getPlayerEntity());
+
+        // setup allies
         CharacterClass tempClass = null;
         for(String ally: allies) {
             if(!ally.equals("")) {
@@ -140,6 +148,8 @@ public class Run extends Application {
                 gameState.getPlayerTeam().add(tempChar);
             }
         }
+
+        // setup enemies
         for(String enemy: enemies) {
             if(!enemy.equals("")) {
                 String[] temp = enemy.split(",");
@@ -157,6 +167,18 @@ public class Run extends Application {
                 );
                 gameState.getEntities().add(tempChar);
                 gameState.getEnemyTeam().add(tempChar);
+            }
+        }
+
+        // setup items
+        for(String line: items) {
+            System.out.println(line);
+            // Gold,10,10/:ITEMS
+            if(!line.equals("") && !line.contains("//")) {
+                String[] values = line.split(",");
+                System.out.println("ADDING ITEM: " + values[1]);
+                gameState.getEntities().add(ItemOnMap.makeItemOnMap(values[0], values[1],
+                        Integer.parseInt(values[2]), Integer.parseInt(values[3])));
             }
         }
     }
@@ -180,6 +202,7 @@ public class Run extends Application {
         Canvas canvas = new Canvas(SCREEN_WIDTH, SCREEN_HEIGHT);
         gc = canvas.getGraphicsContext2D();
         rootGroup.getChildren().add(canvas);
+
         // Keyboard handling
         rootScene.addEventHandler(KeyEvent.KEY_PRESSED, (key) -> {
             // programLogger.log(Level.INFO, "[DEBUG] KeyInput: " + key.getCode());
@@ -345,6 +368,7 @@ public class Run extends Application {
                 }
             }
         });
+
         // Mouse left click handling
         canvas.addEventHandler(MouseEvent.MOUSE_CLICKED, (mouseEvent) -> {
             int mouseX = (int) mouseEvent.getX();
@@ -484,8 +508,8 @@ public class Run extends Application {
                 int[] tileXY = { mouseX / TILE_SIZE, mouseY / TILE_SIZE };
                 for(Entity e: gameState.getEntities()) {
                     if(e instanceof Character) {
-                        int charX = ((Character) e).getRealtiveX();
-                        int charY = ((Character) e).getRealtiveY();
+                        int charX = ((Character) e).getRelativeX();
+                        int charY = ((Character) e).getRelativeY();
                         if(charX == tileXY[0] && charY == tileXY[1]) {
                             lastSelectedCharUID = e.getUID();
                             programLogger.log(Level.INFO, "A Character was Clicked" + SYS_LINE_SEP +
@@ -562,6 +586,7 @@ public class Run extends Application {
                 }
             }
         });
+
         // Mouse drag click handling
         canvas.addEventHandler(MouseDragEvent.DRAG_DETECTED, (mouseEvent) -> {
             if(gameState != null && devMenu != null && devMenu.EDIT_MODE && gameState.getCurrentState() == GameState.STATE.GAME) {
@@ -569,6 +594,7 @@ public class Run extends Application {
                 DRAG_LOC[1] = (int) (mouseEvent.getSceneY() / gameState.getCurrentMap().getTileSize()) + RenderUtil.anchorUL[1];
             }
         });
+
         // Staging and animator setup
         primaryStage.setScene(rootScene);
         primaryStage.show();
@@ -624,6 +650,7 @@ public class Run extends Application {
      * @param args command line options - unused.
      */
     public static void main(String[] args) {
+        // Check for file system setup.
         String gameDatPath = "GameData/config.txt";
         URL resource = Run.class.getClassLoader().getResource(gameDatPath);
         if(resource == null) {
@@ -637,13 +664,16 @@ public class Run extends Application {
             GAME_DATA_PATH = uri;
             GAME_ART_PATH = URI.create(GAME_DATA_PATH + "Art");
             GAME_MAP_PATH = URI.create(GAME_DATA_PATH + "Maps");
+            GAME_ITEM_PATH = URI.create(GAME_ITEM_PATH + "Items");
         } else {
             // This means we are using an IDE to run, so we can use Paths.get to find the out folders.
-            // in my Intellij setup this is target/classes
+            // in my Intellij setup this is target/classes folder
             GAME_DATA_PATH = Paths.get("target", "classes", "GameData").toAbsolutePath().toUri();
             GAME_ART_PATH = Paths.get("target", "classes", "GameData", "Art").toAbsolutePath().toUri();
             GAME_MAP_PATH = Paths.get("target", "classes", "GameData", "Maps").toAbsolutePath().toUri();
+            GAME_ITEM_PATH = Paths.get("target", "classes", "GameData", "Items").toAbsolutePath().toUri();
         }
+
         // The Mod folder will not use jrt as it should be easily accessible for end users.
         // in JLink images /Mod/ will be found in the /bin folder.
         if(JRT) {
@@ -681,7 +711,19 @@ public class Run extends Application {
                     programLogger.log(Level.INFO,"Mod/Maps folder will go here: " + MOD_ART_PATH);
                 }
             }
+            MOD_ITEM_PATH = URI.create(MOD_PATH + "/Items");
+            if(new File(MOD_ITEM_PATH.getPath()).exists()) {
+                programLogger.log(Level.INFO, "Mod/Items folder found at: " + MOD_ITEM_PATH);
+            } else {
+                testDir = new File(MOD_ITEM_PATH.getPath()).mkdir();
+                if(!testDir) {
+                    programLogger.log(Level.INFO, "Failed to Create Mod/Items Directory!");
+                } else {
+                    programLogger.log(Level.INFO, "Mod/Items folder will go here: " + MOD_ITEM_PATH);
+                }
+            }
         }
+
         // Need to check if /Mod/ has a user_settings.txt
         // if not then use the internal jrt config.txt default settings
         URI config;
@@ -692,6 +734,7 @@ public class Run extends Application {
             programLogger.log(Level.INFO, "config default settings will be used");
             config = URI.create(GAME_DATA_PATH + "config.txt");
         }
+
         String[] startUpSettings = FileOpUtils.getFileLines(config);
         for(String line: startUpSettings) {
             if(line.contains("SCREEN_WIDTH")) {

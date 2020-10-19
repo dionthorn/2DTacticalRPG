@@ -113,7 +113,7 @@ public class NonPlayerCharacter extends Character {
      */
     @Override
     public void draw(GraphicsContext gc) {
-        gc.drawImage(getCurrentSprite(),getRealtiveX() * tileSize,getRealtiveY() * tileSize, tileSize, tileSize);
+        gc.drawImage(getCurrentSprite(), getRelativeX() * tileSize, getRelativeY() * tileSize, tileSize, tileSize);
     }
 
     public void move(GameState gameState) {

@@ -5,8 +5,6 @@ import javafx.scene.image.PixelReader;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
-
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -43,6 +41,7 @@ public class TileSet {
      * @param TILE_SIZE the size of the squares to cut the image into default 32
      */
     public TileSet(String path, int TILE_SIZE) {
+
         boolean sameFound = false;
         int sameIndex = 0;
         for(int i=0; i<tileSetCache.size(); i++) {
@@ -52,14 +51,7 @@ public class TileSet {
                 break;
             }
         }
-        boolean useMOD = false;
-        if(path.contains("MOD.")) {
-            System.out.println("USE MOD");
-            useMOD = true;
-            System.out.println(path);
-        }
         tileSetPath = path;
-        System.out.println(tileSetPath);
         if(sameFound) {
             tileSetSrc = tileSetCache.get(sameIndex).getTileSetSrc();
             tiles = tileSetCache.get(sameIndex).getTiles();
@@ -70,8 +62,10 @@ public class TileSet {
             Collections.addAll(removedTileIDList, boxedArray);
             totalTiles = tileSetCache.get(sameIndex).getTotalTiles();
         } else {
-            // (useJRT ? Run.MOD_ART_PATH + tileSetPath : Run.GAME_ART_PATH + tileSetPath
-            System.out.println("USING: " + (useMOD ? Run.MOD_ART_PATH : Run.GAME_ART_PATH) + "/" + tileSetPath);
+            boolean useMOD = false;
+            if(path.contains("MOD.")) {
+                useMOD = true;
+            }
             tileSetSrc = new Image((useMOD ? Run.MOD_ART_PATH : Run.GAME_ART_PATH) + "/" + tileSetPath);
             tiles = makeTiles(tileSetSrc, TILE_SIZE);
             if (tiles.length == 0) {

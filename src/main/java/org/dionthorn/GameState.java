@@ -144,6 +144,7 @@ public class GameState {
         // now setup allies and enemies
         String[] allies = getCurrentMap().getMetaAllies().split(":")[0].split("/");
         String[] enemies = getCurrentMap().getMetaEnemies().split(":")[0].split("/");
+        String[] items = getCurrentMap().getMetaItems().split(":")[0].split("/");
         CharacterClass tempClass = null;
         for(String ally: allies) {
             if(!ally.equals("")) {
@@ -181,6 +182,17 @@ public class GameState {
                 );
                 getEntities().add(tempChar);
                 getEnemyTeam().add(tempChar);
+            }
+        }
+        // setup items
+        for(String line: items) {
+            System.out.println(line);
+            // Gold,10,10/:ITEMS
+            if(!line.equals("") && !line.contains("//")) {
+                String[] values = line.split(",");
+                System.out.println("ADDING ITEM: " + values[1]);
+                getEntities().add(ItemOnMap.makeItemOnMap(values[0], values[1],
+                        Integer.parseInt(values[2]), Integer.parseInt(values[3])));
             }
         }
         playerTeam.trimToSize();

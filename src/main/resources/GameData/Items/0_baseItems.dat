@@ -1,1 +1,2 @@
-// Items definition
+// Items definitions, {name},{value},{weight},{tileSetPath}:{tileID} names MUST be unique!
+Gold,1,0.01,0_baseItems.png:2

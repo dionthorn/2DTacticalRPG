@@ -153,7 +153,9 @@ public class RenderUtil {
         // Draw all entities
         for (Entity e : app.getGameState().getEntities()) {
             if (e instanceof Drawable) {
-                if (((PhysicalEntity) e).getCurrentMap().equals(app.getGameState().getCurrentMap())) {
+                if(e instanceof ItemOnMap) {
+                    ((ItemOnMap) e).draw(gc);
+                } else if (((PhysicalEntity) e).getCurrentMap().equals(app.getGameState().getCurrentMap())) {
                     if (e instanceof Character && !((Character) e).isAlive()) {
                         ((Character) e).setCurrentSprite(((Character) e).getCharClass().getDeadTileID());
                     }
@@ -167,8 +169,8 @@ public class RenderUtil {
                         double YaxisMod;
                         x = ((Character) e).getX();
                         y = ((Character) e).getY();
-                        double relX = ((Character) e).getRealtiveX();
-                        double relY = ((Character) e).getRealtiveY();
+                        double relX = ((Character) e).getRelativeX();
+                        double relY = ((Character) e).getRelativeY();
                         // check bounds of anchor map area
                         if((y < mapAreaXY[1] + anchorUL[1] && y >= anchorUL[1]) &&
                                 (x < mapAreaXY[0] + anchorUL[0] && x >= anchorUL[0])) {

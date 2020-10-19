@@ -3,3 +3,4 @@
 MO0,20,17,magic/MO1,20,18,martial/MO2,20,19,magic/:ENEMIES
 AO1,5,18,martial/AO2,5,19,martial/:ALLIES
 5,17,:STARTLOC
+:ITEMS

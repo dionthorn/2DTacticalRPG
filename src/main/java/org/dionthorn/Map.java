@@ -1,8 +1,6 @@
 package org.dionthorn;
 
 import javafx.scene.image.Image;
-
-import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Random;
@@ -18,6 +16,7 @@ public class Map {
     private String metaEnemies;
     private String metaAllies;
     private String metaStartLoc;
+    private String metaItems;
     private int TILE_SIZE = 32;
     private MapTile[][] mapTiles;
     private int mapWidth;
@@ -62,6 +61,7 @@ public class Map {
         metaAllies = "AO1,5,18,martial:ALLIES";
         metaEnemies = "MO2,20,19,magic:ENEMIES";
         metaStartLoc = "5,17,:STARTLOC";
+        metaItems = ":ITEMS";
         metaPATH = PATH.split("\\.")[0] + ".meta";
     }
 
@@ -144,6 +144,8 @@ public class Map {
                 metaAllies = line;
             } else if(line.contains("STARTLOC")) {
                 metaStartLoc = line;
+            } else if(line.contains("ITEMS")) {
+                metaItems = line;
             }
         }
     }
@@ -188,7 +190,7 @@ public class Map {
 
         FileOpUtils.writeFileLines(URI.create(PATH), dataAsString);
         // Write .meta File
-        dataAsString = new String[5];
+        dataAsString = new String[6];
         dataAsString[0] = ""; // {tileSetID}/{tileID},:FIRE
         for(int index=0; index<tileSets.size(); index++) {
             for(int tileID: tileSets.get(index).getMetaFire()) {
@@ -206,6 +208,7 @@ public class Map {
         dataAsString[2] = metaEnemies;
         dataAsString[3] = metaAllies;
         dataAsString[4] = metaStartLoc;
+        dataAsString[5] = metaItems;
         FileOpUtils.writeFileLines(URI.create(metaPATH), dataAsString);
     }
 
@@ -323,6 +326,8 @@ public class Map {
      * @return a string that represents the players start location for this map
      */
     public String getMetaStartLoc() { return metaStartLoc; }
+
+    public String getMetaItems() { return metaItems; }
 
     /**
      * Returns the associated icon image if one exists in the /art folder

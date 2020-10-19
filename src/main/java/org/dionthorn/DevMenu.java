@@ -206,6 +206,12 @@ public class DevMenu extends Stage {
                     ));
                     tempText.setFont(smallFont);
                     charInfo.add(tempText);
+                } else if(e instanceof Item) {
+                    Item temp = (Item) e;
+                    Text tempText = new Text(String.format("[%d] %s Value: %d Weight: %.2f", e.getUID(), temp.getName(),
+                            temp.getValue(), temp.getWeight()));
+                    tempText.setFont(smallFont);
+                    charInfo.add(tempText);
                 }
             }
             VBox infoList = new VBox();
