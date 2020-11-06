@@ -120,7 +120,7 @@ public class Run extends Application {
         gameState.getEntities().add(
                 new Player(
                         gameState.getCurrentMap(),
-                        "MartialClassPlayer.png", "Player",
+                        "Characters/MartialClassPlayer.png", "Player",
                         Integer.parseInt(startLoc[0]), Integer.parseInt(startLoc[1]),
                         new MartialClass()
                 )
@@ -176,7 +176,7 @@ public class Run extends Application {
             // Gold,10,10/:ITEMS
             if(!line.equals("") && !line.contains("//")) {
                 String[] values = line.split(",");
-                System.out.println("ADDING ITEM: " + values[1]);
+                // System.out.println("ADDING ITEM: " + values[1]);
                 gameState.getEntities().add(ItemOnMap.makeItemOnMap(values[0], values[1],
                         Integer.parseInt(values[2]), Integer.parseInt(values[3])));
             }
@@ -234,6 +234,18 @@ public class Run extends Application {
                     if(gameState.getPlayerEntity().isMoveTurn()) {
                         Character player = gameState.getPlayerEntity();
                         Character enemy = player.checkEnemyCollision(gameState, player.getX(), player.getY() - 1);
+
+                        ItemOnMap item = player.checkItemCollision(gameState, player.getX(), player.getY() - 1);
+                        if(item != null) {
+                            player.addItem(item);
+                            for(Entity e: gameState.getEntities()) {
+                                if(e.equals(item)) {
+                                    gameState.getEntities().remove(item);
+                                    break;
+                                }
+                            }
+                        }
+
                         if (!player.checkFriendlyCollision(gameState, player.getX(), player.getY() - 1)) {
                             if(enemy != null) {
                                 if(enemy.isAlive()) {
@@ -250,6 +262,18 @@ public class Run extends Application {
                     if(gameState.getPlayerEntity().isMoveTurn()) {
                         Character player = gameState.getPlayerEntity();
                         Character enemy = player.checkEnemyCollision(gameState, player.getX() + 1, player.getY());
+
+                        ItemOnMap item = player.checkItemCollision(gameState, player.getX() + 1, player.getY());
+                        if(item != null) {
+                            player.addItem(item);
+                            for(Entity e: gameState.getEntities()) {
+                                if(e.equals(item)) {
+                                    gameState.getEntities().remove(item);
+                                    break;
+                                }
+                            }
+                        }
+
                         if (!player.checkFriendlyCollision(gameState, player.getX() + 1, player.getY())) {
                             if(enemy != null) {
                                 if(enemy.isAlive()) {
@@ -266,6 +290,18 @@ public class Run extends Application {
                     if(gameState.getPlayerEntity().isMoveTurn()) {
                         Character player = gameState.getPlayerEntity();
                         Character enemy = player.checkEnemyCollision(gameState, player.getX() - 1, player.getY());
+
+                        ItemOnMap item = player.checkItemCollision(gameState, player.getX() - 1, player.getY());
+                        if(item != null) {
+                            player.addItem(item);
+                            for(Entity e: gameState.getEntities()) {
+                                if(e.equals(item)) {
+                                    gameState.getEntities().remove(item);
+                                    break;
+                                }
+                            }
+                        }
+
                         if (!player.checkFriendlyCollision(gameState, player.getX() - 1, player.getY())) {
                             if(enemy != null) {
                                 if(enemy.isAlive()) {
@@ -282,6 +318,18 @@ public class Run extends Application {
                     if(gameState.getPlayerEntity().isMoveTurn()) {
                         Character player = gameState.getPlayerEntity();
                         Character enemy = player.checkEnemyCollision(gameState, player.getX(), player.getY() + 1);
+
+                        ItemOnMap item = player.checkItemCollision(gameState, player.getX(), player.getY() + 1);
+                        if(item != null) {
+                            player.addItem(item);
+                            for(Entity e: gameState.getEntities()) {
+                                if(e.equals(item)) {
+                                    gameState.getEntities().remove(item);
+                                    break;
+                                }
+                            }
+                        }
+
                         if (!player.checkFriendlyCollision(gameState, player.getX(), player.getY() + 1)) {
                             if(enemy != null) {
                                 if(enemy.isAlive()) {
@@ -642,8 +690,6 @@ public class Run extends Application {
      */
     public Canvas getCanvas() { return gc.getCanvas(); }
 
-
-
     /**
      * The entry point for the program. We determine where /GameData/ folder is here.
      * As well as any other pre launch variables we should set like screen configuration.
@@ -664,7 +710,7 @@ public class Run extends Application {
             GAME_DATA_PATH = uri;
             GAME_ART_PATH = URI.create(GAME_DATA_PATH + "Art");
             GAME_MAP_PATH = URI.create(GAME_DATA_PATH + "Maps");
-            GAME_ITEM_PATH = URI.create(GAME_ITEM_PATH + "Items");
+            GAME_ITEM_PATH = URI.create(GAME_DATA_PATH + "Items");
         } else {
             // This means we are using an IDE to run, so we can use Paths.get to find the out folders.
             // in my Intellij setup this is target/classes folder
@@ -700,6 +746,27 @@ public class Run extends Application {
                     programLogger.log(Level.INFO,"Mod/Art folder will go here: " + MOD_ART_PATH);
                 }
             }
+            // Want to add the Art_Attributions.txt/Outside_Art_Originals folder
+            // to this as well as the Characters/Items/Maps subfolders
+            testDir = new File(URI.create(MOD_ART_PATH + "/Characters").getPath()).mkdir();
+            if(!testDir) {
+                programLogger.log(Level.INFO, "Failed to Create Mod/Art/Characters Directory!");
+            } else {
+                programLogger.log(Level.INFO,"Mod/Art/Characters folder will go here: " + MOD_ART_PATH);
+            }
+            testDir = new File(URI.create(MOD_ART_PATH + "/Items").getPath()).mkdir();
+            if(!testDir) {
+                programLogger.log(Level.INFO, "Failed to Create Mod/Art/Items Directory!");
+            } else {
+                programLogger.log(Level.INFO,"Mod/Art/Items folder will go here: " + MOD_ART_PATH);
+            }
+            testDir = new File(URI.create(MOD_ART_PATH + "/Maps").getPath()).mkdir();
+            if(!testDir) {
+                programLogger.log(Level.INFO, "Failed to Create Mod/Art/Maps Directory!");
+            } else {
+                programLogger.log(Level.INFO,"Mod/Art/Maps folder will go here: " + MOD_ART_PATH);
+            }
+            //
             MOD_MAP_PATH = URI.create(MOD_PATH + "/Maps");
             if(new File(MOD_MAP_PATH.getPath()).exists()) {
                 programLogger.log(Level.INFO,"Mod/Maps folder found at: " + MOD_MAP_PATH);

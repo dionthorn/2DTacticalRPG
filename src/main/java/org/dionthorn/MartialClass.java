@@ -16,8 +16,8 @@ public class MartialClass extends CharacterClass {
         this.perLevelDefense = 20;
         this.perLevelHP = 30;
         this.attackAnimationSequence = new int[] { 0, 1, 2, 3, 2, 1, 2, 3, 0 };
-        this.defaultSpriteEnemy = "MartialClassComputer.png";
-        this.defaultSpriteAlly = "MartialClassComputerAlly.png";
+        this.defaultSpriteEnemy = "Characters/MartialClassComputer.png";
+        this.defaultSpriteAlly = "Characters/MartialClassComputerAlly.png";
     }
 
 }

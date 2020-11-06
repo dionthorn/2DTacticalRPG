@@ -492,9 +492,9 @@ public class RenderUtil {
             iconName = iconName.substring(lastSlash + 1);
             String toUse;
             if(iconPathJRT) {
-                toUse = Run.MOD_ART_PATH + "/" + iconName;
+                toUse = Run.MOD_ART_PATH + "/Maps/" + iconName;
             } else {
-                toUse = Run.GAME_ART_PATH + "/" + iconName;
+                toUse = Run.GAME_ART_PATH + "/Maps/" + iconName;
             }
             if(FileOpUtils.doesFileExist(URI.create(toUse))) {
                 app.getGameState().getMaps().get(count).setIcon(new Image(toUse));

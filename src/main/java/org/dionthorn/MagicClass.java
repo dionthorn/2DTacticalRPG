@@ -16,8 +16,8 @@ public class MagicClass extends CharacterClass {
         this.perLevelDefense = 5;
         this.perLevelHP = 20;
         this.attackAnimationSequence = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 1, 0 };
-        this.defaultSpriteEnemy = "MagicClassComputer.png";
-        this.defaultSpriteAlly = "MagicClassComputerAlly.png";
+        this.defaultSpriteEnemy = "Characters/MagicClassComputer.png";
+        this.defaultSpriteAlly = "Characters/MagicClassComputerAlly.png";
     }
 
 }

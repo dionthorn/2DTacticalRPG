@@ -1,6 +1,8 @@
 package org.dionthorn;
 
 import javafx.scene.image.Image;
+
+import java.util.ArrayList;
 import java.util.logging.Level;
 
 /**
@@ -24,6 +26,7 @@ public abstract class Character extends PhysicalEntity implements Drawable, Upda
     protected boolean isMoveTurn;
     protected boolean isBattleTurn;
     protected boolean isAttacking;
+    protected ArrayList<ItemInInventory> items = new ArrayList<>();
 
     /**
      * Default Abstract Character Constructor will generate everything needed for a 'character' in the game
@@ -49,6 +52,24 @@ public abstract class Character extends PhysicalEntity implements Drawable, Upda
         this.maxHP = this.hp;
         this.isAlive = true;
         this.charClass = charClass;
+    }
+
+    protected ItemOnMap checkItemCollision(GameState gameState, double x, double y) {
+        ItemOnMap toReturn = null;
+        for(Entity e: gameState.getEntities()) {
+            if(e instanceof ItemOnMap) {
+                ItemOnMap target = (ItemOnMap) e;
+                if(target.getX() == x && target.getY() == y) {
+                    toReturn = target;
+                }
+            }
+        }
+        return toReturn;
+    }
+
+    protected void addItem(ItemOnMap item) {
+        this.items.add(item.toInInventory());
+        System.err.println("ADDED ITEM: " + items.get(items.size() - 1).getName());
     }
 
     /**

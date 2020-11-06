@@ -84,7 +84,7 @@ public class Map {
                 TILE_SIZE = Integer.parseInt(splitLine[TILE_DATA]);
                 tileSets.clear();
                 for(int step = IMG_SRC_DATA; step<splitLine.length; step++) {
-                    tileSets.add(new TileSet(splitLine[step].replaceAll("/", ""), TILE_SIZE));
+                    tileSets.add(new TileSet(splitLine[step], TILE_SIZE));
                 }
                 first = false;
             } else {

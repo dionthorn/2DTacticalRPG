@@ -2,7 +2,6 @@ package org.dionthorn;
 
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
-
 import java.net.URI;
 
 public class ItemOnMap extends Item implements Drawable {
@@ -23,11 +22,11 @@ public class ItemOnMap extends Item implements Drawable {
         String spritePath = "";
         int tileId = 0;
         // uses just the path to the item set and the unique item name within the set, then loads off memory
-        String[] itemsDefs = FileOpUtils.getFileLines(URI.create(Run.GAME_ITEM_PATH + path + ".dat"));
+        URI pathTo = URI.create((Run.JRT ? Run.GAME_ITEM_PATH + "/" : Run.GAME_ITEM_PATH) + path + ".dat");
+        String[] itemsDefs = FileOpUtils.getFileLines(pathTo);
         for(String itemDef: itemsDefs) {
             String[] info = itemDef.split(",");
             if(info[0].equals(name)) {
-                System.out.println("FOUND TARGET ITEM: " + name);
                 value = Integer.parseInt(info[1]);
                 weight = Double.parseDouble(info[2]);
                 spritePath = info[3].split(":")[0];
@@ -35,10 +34,13 @@ public class ItemOnMap extends Item implements Drawable {
                 break;
             }
         }
-        System.out.println("Item/" + spritePath);
-        Image sprite = new TileSet("Item/" + spritePath, Run.TILE_SIZE).getTile(tileId);
+        Image sprite = new TileSet("Items/" + spritePath, Run.TILE_SIZE).getTile(tileId);
         return new ItemOnMap(name, value, weight, x, y, sprite);
     }
+
+    public int getX() { return x; }
+
+    public int getY() { return y; }
 
     public int getRelativeX() { return x - RenderUtil.anchorUL[0]; }
 
