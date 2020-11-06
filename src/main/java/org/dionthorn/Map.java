@@ -43,7 +43,6 @@ public class Map {
     public Map(String[] tilePaths) {
         Random rand = new Random();
         PATH = String.format((Run.JRT ? Run.MOD_MAP_PATH + "/RANDOM%d.dat" : Run.GAME_MAP_PATH + "RANDOM%d.dat"), rand.nextInt(1000));
-        System.out.println(PATH);
         int[] mapArea = Run.getMapAreaDimensions();
         mapWidth = mapArea[0];
         mapHeight = mapArea[1];

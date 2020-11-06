@@ -17,11 +17,7 @@ import javafx.stage.Stage;
 import java.io.*;
 import java.net.URI;
 import java.net.URL;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -172,11 +168,9 @@ public class Run extends Application {
 
         // setup items
         for(String line: items) {
-            System.out.println(line);
             // Gold,10,10/:ITEMS
             if(!line.equals("") && !line.contains("//")) {
                 String[] values = line.split(",");
-                // System.out.println("ADDING ITEM: " + values[1]);
                 gameState.getEntities().add(ItemOnMap.makeItemOnMap(values[0], values[1],
                         Integer.parseInt(values[2]), Integer.parseInt(values[3])));
             }
@@ -745,28 +739,33 @@ public class Run extends Application {
                 } else {
                     programLogger.log(Level.INFO,"Mod/Art folder will go here: " + MOD_ART_PATH);
                 }
+                testDir = new File(URI.create(MOD_ART_PATH + "/Characters").getPath()).mkdir();
+                if(!testDir) {
+                    programLogger.log(Level.INFO, "Failed to Create Mod/Art/Characters Directory!");
+                } else {
+                    programLogger.log(Level.INFO,"Mod/Art/Characters folder will go here: " + MOD_ART_PATH + "/Characters");
+                }
+                testDir = new File(URI.create(MOD_ART_PATH + "/Items").getPath()).mkdir();
+                if(!testDir) {
+                    programLogger.log(Level.INFO, "Failed to Create Mod/Art/Items Directory!");
+                } else {
+                    programLogger.log(Level.INFO,"Mod/Art/Items folder will go here: " + MOD_ART_PATH + "/Items");
+                }
+                testDir = new File(URI.create(MOD_ART_PATH + "/Maps").getPath()).mkdir();
+                if(!testDir) {
+                    programLogger.log(Level.INFO, "Failed to Create Mod/Art/Maps Directory!");
+                } else {
+                    programLogger.log(Level.INFO,"Mod/Art/Maps folder will go here: " + MOD_ART_PATH + "/Maps");
+                }
+                // Want to add the Art_Attributions.txt file and Outside_Art_Originals folder
+                Path path = new File(MOD_ART_PATH.getPath() + "/Art_Attributions.txt").toPath();
+                URI u = URI.create(GAME_ART_PATH + "/Art_Attributions.txt");
+                try (InputStream in = u.toURL().openStream()) {
+                    Files.copy(in, path);
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
             }
-            // Want to add the Art_Attributions.txt/Outside_Art_Originals folder
-            // to this as well as the Characters/Items/Maps subfolders
-            testDir = new File(URI.create(MOD_ART_PATH + "/Characters").getPath()).mkdir();
-            if(!testDir) {
-                programLogger.log(Level.INFO, "Failed to Create Mod/Art/Characters Directory!");
-            } else {
-                programLogger.log(Level.INFO,"Mod/Art/Characters folder will go here: " + MOD_ART_PATH);
-            }
-            testDir = new File(URI.create(MOD_ART_PATH + "/Items").getPath()).mkdir();
-            if(!testDir) {
-                programLogger.log(Level.INFO, "Failed to Create Mod/Art/Items Directory!");
-            } else {
-                programLogger.log(Level.INFO,"Mod/Art/Items folder will go here: " + MOD_ART_PATH);
-            }
-            testDir = new File(URI.create(MOD_ART_PATH + "/Maps").getPath()).mkdir();
-            if(!testDir) {
-                programLogger.log(Level.INFO, "Failed to Create Mod/Art/Maps Directory!");
-            } else {
-                programLogger.log(Level.INFO,"Mod/Art/Maps folder will go here: " + MOD_ART_PATH);
-            }
-            //
             MOD_MAP_PATH = URI.create(MOD_PATH + "/Maps");
             if(new File(MOD_MAP_PATH.getPath()).exists()) {
                 programLogger.log(Level.INFO,"Mod/Maps folder found at: " + MOD_MAP_PATH);
