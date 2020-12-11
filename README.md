@@ -47,11 +47,3 @@ Here is a short youtube video of the game in action: [https://www.youtube.com/wa
 ![Alt text](/ExampleScreenShots/devMenuExample.PNG?raw=true "Dev Menu")
 
 ![Alt text](/ExampleScreenShots/graphicalLevelSelection.PNG?raw=true "Level Selection")
-
-v0.2.2a Notes: added codacy to track my code quality, various bug fixes going on and a few major changes areas.
-
-v0.2.1a Notes: a complete restructuring of the code base using Intellij and Maven to produce jlink images rather than .jar files. Several other code maintence events have happened as well as the addition of the Level Selection screen.
-
-v0.2.0a Notes: added more functionality to the DevMenu including the ability to manually change gameState. 
-	Added but not implemented a 'level selection' state to allow graphical selection of levels.
-	When loading a new map the engine will now load .meta data to generate NPCs both allies and enemies
