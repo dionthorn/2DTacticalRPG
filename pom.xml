@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.dionthorn</groupId>
-    <artifactId>MaventTactical</artifactId>
+    <artifactId>MavenTactical</artifactId>
     <version>v0.2.3-alpha</version>
 
     <properties>
